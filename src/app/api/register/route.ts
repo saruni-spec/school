@@ -16,26 +16,26 @@ export async function POST(request: Request) {
   // Parse the request body to extract model-specific data
   const body: {
     data: Record<string, unknown>;
-    modelName: string;
+    model_name: string;
   } = await request.json();
 
   // Extract the data and model name from the request body
   const data = body.data;
-  const modelName = body.modelName;
+  const model_name = body.model_name;
   //
   try {
     // Create the record
-    const record = await prisma[modelName].create({ data });
+    const record = await prisma[model_name].create({ data });
     return NextResponse.json(record, { status: 201 });
   } catch (error) {
     // handle duplicate records
-    console.error(`Error registering ${modelName}:`, error);
+    console.error(`Error registering ${model_name}:`, error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002") {
         console.log("Duplicate record", error.meta);
         return NextResponse.json(
           {
-            error: `Duplicate record in ${modelName} already exists`,
+            error: `Duplicate record in ${model_name} already exists`,
             details: error.message,
           },
           { status: 500 } // Internal Server Error
@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     if (error instanceof Error) {
       return NextResponse.json(
         {
-          error: `Error registering ${modelName}`,
+          error: `Error registering ${model_name}`,
           details: error.message,
         },
         { status: 500 } // Internal Server Error
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
 
     // Fallback for unexpected error types
     return NextResponse.json(
-      { error: `Unexpected error registering ${modelName}` },
+      { error: `Unexpected error registering ${model_name}` },
       { status: 500 }
     );
   }

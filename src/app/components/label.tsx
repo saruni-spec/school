@@ -2,11 +2,11 @@ import React from "react";
 
 // Custom Label Component
 interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
-  children?: React.ReactNode;
+  button_name?: React.ReactNode;
 }
 
 export const Label: React.FC<LabelProps> = ({
-  children,
+  button_name: children,
   className,
   ...props
 }) => {

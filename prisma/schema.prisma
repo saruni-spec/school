@@ -47,12 +47,11 @@ enum exam_type {
 }
 
 enum facility_type {
-  library
-  lab
-  sports_field
-  canteen
-  swimming_pool
-  transport
+  Educational
+  Recreational
+  Dining
+  Sports
+  Transportation
 }
 
 enum fee_type_enum {
@@ -166,7 +165,7 @@ model facility {
 model school_facility {
   school_id   Int
   facility_id Int
-  notes       String?   @db.VarChar(100)
+  description       String?   @db.VarChar(100)
   deleted_at  DateTime? @db.Timestamptz(6)
   facility    facility? @relation(fields: [facility_id], references: [facility_id], onDelete: NoAction, onUpdate: NoAction)
   school      school?   @relation(fields: [school_id], references: [school_id], onDelete: NoAction, onUpdate: NoAction)
@@ -277,7 +276,7 @@ model users {
   phone                              String?                  @db.VarChar(20)
   address                            String?
   role                               user_role
-  password_hash                      String
+  password                     String
   emergency_contacts                 Json?
   deleted_at                         DateTime?                @db.Timestamptz(6)
   announcement                       announcement[]

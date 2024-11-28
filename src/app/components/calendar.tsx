@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 // Comprehensive Date Picker Props
 interface DatePickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
-  error?: string;
+  error?: string | null;
   minDate?: Date;
   maxDate?: Date;
   containerClassName?: string;

@@ -2,65 +2,57 @@
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
-import { Validation } from "@/app/hooks/validation";
-
-// Validators
-const required = (value: string) =>
-  value.trim() === "" ? "This field is required" : null;
-
-const validateJson = (value: string) => {
-  if (value.trim() === "") return null; // Allow empty string
-  try {
-    JSON.parse(value);
-    return null;
-  } catch {
-    return "Invalid JSON format";
-  }
-};
+import validation, { required, validateJson } from "@/app/hooks/validation";
 
 // School Registration Component
-const SchoolRegistrationForm: React.FC = () => {
-  const nameField = Validation("", [required]);
-  const typeField = Validation("", [required]);
-  const addressField = Validation("", []);
-  const contactInfoField = Validation("", [validateJson]);
-  const licenseInfoField = Validation("", [validateJson]);
+const School: React.FC = () => {
+  const name_field = validation("", [required]);
+  const type_field = validation("", [required]);
+  const address_field = validation("", []);
+  const contact_info_field = validation("", [validateJson]);
+  const license_info_field = validation("", [validateJson]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
 
       // Validate all fields before submission
-      const isFormValid = [
-        nameField,
-        typeField,
-        addressField,
-        contactInfoField,
-        licenseInfoField,
+      const is_form_valid = [
+        name_field,
+        type_field,
+        address_field,
+        contact_info_field,
+        license_info_field,
       ].every((field) => field.validate(field.value));
 
-      if (!isFormValid) return;
+      if (!is_form_valid) return;
 
       // Send data to server or handle submission
-      const schoolData = {
-        name: nameField.value,
-        type: typeField.value,
-        address: addressField.value,
-        contact_info: contactInfoField.value
-          ? JSON.parse(contactInfoField.value)
+      const school_data = {
+        name: name_field.value,
+        type: type_field.value,
+        address: address_field.value,
+        contact_info: contact_info_field.value
+          ? JSON.parse(contact_info_field.value)
           : null,
-        license_info: licenseInfoField.value
-          ? JSON.parse(licenseInfoField.value)
+        license_info: license_info_field.value
+          ? JSON.parse(license_info_field.value)
           : null,
       };
 
       await fetch("http://localhost:3000/api/register", {
         method: "POST",
-        body: JSON.stringify({ data: schoolData, modelName: "school" }),
+        body: JSON.stringify({ data: school_data, model_name: "school" }),
       });
       // Add your submission logic here
     },
-    [nameField, typeField, addressField, contactInfoField, licenseInfoField]
+    [
+      name_field,
+      type_field,
+      address_field,
+      contact_info_field,
+      license_info_field,
+    ]
   );
 
   return (
@@ -75,41 +67,41 @@ const SchoolRegistrationForm: React.FC = () => {
         label="School Name"
         placeholder="Enter the school name"
         required
-        value={nameField.value}
-        onChange={nameField.handle_change}
-        error={nameField.error}
+        value={name_field.value}
+        onChange={name_field.handle_change}
+        error={name_field.error}
       />
       <Input
         label="School Type"
         placeholder="Enter the school type (e.g., Primary, Secondary)"
         required
-        value={typeField.value}
-        onChange={typeField.handle_change}
-        error={typeField.error}
+        value={type_field.value}
+        onChange={type_field.handle_change}
+        error={type_field.error}
       />
       <Input
         label="Address"
         placeholder="Enter the school address"
-        value={addressField.value}
-        onChange={addressField.handle_change}
-        error={addressField.error}
+        value={address_field.value}
+        onChange={address_field.handle_change}
+        error={address_field.error}
       />
       <Input
         label="Contact Info"
         placeholder='Enter contact info as JSON (e.g., {"email": "info@example.com", "phone": "1234567890"})'
-        value={contactInfoField.value}
-        onChange={contactInfoField.handle_change}
-        error={contactInfoField.error}
+        value={contact_info_field.value}
+        onChange={contact_info_field.handle_change}
+        error={contact_info_field.error}
       />
       <Input
         label="License Info"
         placeholder='Enter license info as JSON (e.g., {"number": "ABC123", "expiry": "2025-01-01"})'
-        value={licenseInfoField.value}
-        onChange={licenseInfoField.handle_change}
-        error={licenseInfoField.error}
+        value={license_info_field.value}
+        onChange={license_info_field.handle_change}
+        error={license_info_field.error}
       />
     </Form>
   );
 };
 
-export default SchoolRegistrationForm;
+export default School;
