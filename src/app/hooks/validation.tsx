@@ -78,16 +78,6 @@ export default function Validation(
 export const required = (value: string) =>
   value.trim() === "" ? "This field is required" : null;
 
-export const validateJson = (value: string) => {
-  if (value.trim() === "") return null; // Allow empty string
-  try {
-    JSON.parse(value);
-    return null;
-  } catch {
-    return "Invalid JSON format";
-  }
-};
-
 // Utility to format enum keys into human-readable labels
 // Conert an enum type key to a string
 export const formatEnumLabel = (enumValue: string) =>
@@ -104,3 +94,15 @@ export const getEnumSelectOptions = <T extends Record<string, string>>(
     value,
     label: formatEnumLabel(value),
   }));
+// Example validators
+export const validateKey = (value: string) => {
+  if (!value) return "Key is required";
+  if (value.length < 2) return "Key must be at least 2 characters";
+  return null;
+};
+
+export const validateValue = (value: string) => {
+  if (!value) return "Value is required";
+  if (value.length < 3) return "Value must be at least 3 characters";
+  return null;
+};

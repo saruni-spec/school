@@ -10,7 +10,7 @@ import { Button } from "@/app/components/button";
 
 // Generic form wrapper component
 export interface FormWrapperProps {
-  title: string;
+  title?: string;
   description?: string;
   children: React.ReactNode;
   onSubmit: (e: React.FormEvent) => void;

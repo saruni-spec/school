@@ -1,8 +1,8 @@
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
-import Validation, { required } from "@/app/hooks/validation";
-import React, { useCallback } from "react";
+import { MultiInput } from "@/app/components/multi_input";
+import { required, validateKey, validateValue } from "@/app/hooks/validation";
+import React, { useCallback, useState } from "react";
 
 const Student = () => {
   //get the birth date od the student
@@ -11,12 +11,12 @@ const Student = () => {
     maxDate: new Date(),
     customValidator: () => required(date_of_birth.value),
   });
-  const medical_info = Validation("", []);
+  const [medical_info, set_medical_info] = useState<Record<string, string>>({});
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const is_form_valid = [date_of_birth, medical_info].every((field) =>
+      const is_form_valid = [date_of_birth].every((field) =>
         field.validate(field.value)
       );
       if (!is_form_valid) return;
@@ -40,13 +40,17 @@ const Student = () => {
         maxDate={new Date()}
         required
       />
-      <Input
+      <MultiInput
         label="Medical Information"
         placeholder="Enter Medical Information"
-        required
-        value={medical_info.value}
-        onChange={medical_info.handle_change}
-        error={medical_info.error}
+        value={medical_info}
+        onChange={set_medical_info}
+        keyPlaceholder="Contact Type (email, phone)"
+        valuePlaceholder="Value"
+        validators={{
+          key: [validateKey],
+          value: [validateValue],
+        }}
       />
     </Form>
   );

@@ -1,22 +1,28 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
-import Validation, { required } from "@/app/hooks/validation";
+import Validation, {
+  required,
+  validateKey,
+  validateValue,
+} from "@/app/hooks/validation";
+import { MultiInput } from "@/app/components/multi_input";
 
 const Staff = () => {
   const employment_status = Validation("", [required]);
-  const qualifications = Validation("", []);
   const join_date = useDateValidation(`${new Date()}`, { maxDate: new Date() });
+
+  const [qualifications, set_qualifications] = useState<Record<string, string>>(
+    {}
+  );
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const is_form_valid = [
-        employment_status,
-        qualifications,
-        join_date,
-      ].every((field) => field.validate(field.value));
+      const is_form_valid = [employment_status, join_date].every((field) =>
+        field.validate(field.value)
+      );
       if (!is_form_valid) return;
       await fetch("", {
         method: "POST",
@@ -53,13 +59,17 @@ const Staff = () => {
         maxDate={new Date()}
         required
       />
-      <Input
+      <MultiInput
         label="Professional Qualifications"
-        placeholder="Enter Your Qualifications"
-        required
-        value={qualifications.value}
-        onChange={qualifications.handle_change}
-        error={qualifications.error}
+        placeholder='Enter contact info (e.g., {"email": "info@example.com", "phone": "1234567890"})'
+        value={qualifications}
+        onChange={set_qualifications}
+        keyPlaceholder="Contact Type (email, phone)"
+        valuePlaceholder="Value"
+        validators={{
+          key: [validateKey],
+          value: [validateValue],
+        }}
       />
     </Form>
   );
