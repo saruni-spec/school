@@ -90,7 +90,7 @@ const School: React.FC = () => {
         }}
       />
       <MultiInput
-        label="Contact Info"
+        label="License Info"
         placeholder="Enter License info"
         value={license_info}
         onChange={set_license_info}

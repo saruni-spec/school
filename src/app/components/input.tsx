@@ -4,6 +4,7 @@ import React from "react";
 //add a class to each input for additional styling
 //add a name for the label of the input
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  type?: string;
   label?: string;
   error?: string | null;
   containerClassName?: string;
@@ -14,6 +15,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 //
 //add additonal properties as needed when creating an input element
 export const Input: React.FC<InputProps> = ({
+  type = "text",
   label,
   error,
   className,
@@ -40,6 +42,7 @@ export const Input: React.FC<InputProps> = ({
         </label>
       )}
       <input
+        type={type}
         className={`
             w-full
             px-3

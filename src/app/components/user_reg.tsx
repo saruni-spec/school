@@ -11,7 +11,7 @@ import React, { useCallback, useState } from "react";
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
 //
 //the possible users that can be registred
-export type UserType = "faculty" | "teacher" | "student";
+export type UserType = "faculty" | "teacher" | "student" | "school_admin";
 //
 //steps for registration
 export type RegistrationStep =
@@ -33,6 +33,7 @@ export const User = ({
   const address = Validation("", []);
   const role = Validation("", []);
   const password = Validation("", []);
+  const date_of_birth = useDateValidation("", true, undefined, new Date());
   const [emergency_contacts, set_emergency_contacts] = useState<
     Record<string, string>
   >({});
@@ -48,8 +49,11 @@ export const User = ({
         address,
         role,
         password,
+        date_of_birth,
       ].every((field) => field.validate(field.value));
       if (!is_form_valid) return;
+
+      console.log(date_of_birth.value);
 
       const result = await fetch("http://localhost:3000/api/register", {
         method: "POST",
@@ -61,6 +65,7 @@ export const User = ({
             phone: phone.value,
             address: address.value,
             password: password.value,
+            date_of_birth: date_of_birth.formatted_date,
             emergency_contacts: emergency_contacts,
           },
           model_name: "users",
@@ -78,6 +83,7 @@ export const User = ({
       address,
       role,
       password,
+      date_of_birth,
       emergency_contacts,
       set_user,
     ]
@@ -107,6 +113,12 @@ export const User = ({
         onChange={phone.handle_change}
         value={phone.value}
         error={phone.error}
+      />
+      <DatePicker
+        label="Date of Birth"
+        value={date_of_birth.value}
+        onChange={date_of_birth.handle_change}
+        error={date_of_birth.error || ""}
       />
       <Input
         label="Address"
@@ -190,10 +202,7 @@ export const Student = ({
 }) => {
   //get the birth date od the student
   //the max possible date is today,and the field is required
-  const date_of_birth = useDateValidation("", {
-    maxDate: new Date(),
-    customValidator: () => required(date_of_birth.value),
-  });
+  const date_of_birth = useDateValidation("", true, undefined, new Date());
   const [medical_info, set_medical_info] = useState<Record<string, string>>({});
 
   const handleSubmit = useCallback(
@@ -224,7 +233,6 @@ export const Student = ({
         value={date_of_birth.value}
         onChange={date_of_birth.handle_change}
         error={date_of_birth.error || ""}
-        maxDate={new Date()}
         required
       />
       <MultiInput
@@ -255,7 +263,12 @@ export const Staff = ({
   onSubmit?: () => void;
 }) => {
   const employment_status = Validation("", [required]);
-  const join_date = useDateValidation(`${new Date()}`, { maxDate: new Date() });
+  const join_date = useDateValidation(
+    `${new Date()}`,
+    false,
+    undefined,
+    new Date()
+  );
 
   const [qualifications, set_qualifications] = useState<Record<string, string>>(
     {}
@@ -311,7 +324,6 @@ export const Staff = ({
         value={join_date.value}
         onChange={join_date.handle_change}
         error={join_date.error || ""}
-        maxDate={new Date()}
         required
       />
       <MultiInput
@@ -365,6 +377,7 @@ export const UserTypeComponent = ({
           onSubmit={handleAdditionalDetailsSubmit}
         />
       )}
+      {user_type === "school_admin" && user && <></>}
     </>
   );
 };
