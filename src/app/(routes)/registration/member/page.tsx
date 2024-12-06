@@ -9,7 +9,10 @@ import {
 import React, { useState } from "react";
 import UserTypeSelection from "@/app/components/select_user_type";
 import { RenderProgressIndicator } from "@/app/components/progress_indicator";
-import { RenderContent,handleStepChange } from "@/app/components/conditional_render";
+import {
+  RenderContent,
+  handleStepChange,
+} from "@/app/components/conditional_render";
 //
 //registration component
 const UserRegistration = () => {
@@ -20,7 +23,7 @@ const UserRegistration = () => {
   //select the user type
   const [user_type, set_user_type] = useState<UserType>();
   //save the user after registration
-  const [user, set_user] = useState<Record<string, string | unknown>>();
+  const [user, set_user] = useState<record>();
   //label the steps
   //save the user type selected and move to user details
   const handleUserTypeSelect = (selectedUserType: UserType) => {
@@ -28,9 +31,7 @@ const UserRegistration = () => {
     setCurrentStep("user_details");
   };
   //save the user registered and move to additional details
-  const handleUserRegistration = (
-    registeredUser: Record<string, string | unknown>
-  ) => {
+  const handleUserRegistration = (registeredUser: record) => {
     set_user(registeredUser);
     setCurrentStep("additional_details");
   };
@@ -94,7 +95,6 @@ const UserRegistration = () => {
     });
   };
 
-
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full h-screen bg-white shadow-2xl rounded-xl overflow-hidden">
@@ -102,13 +102,15 @@ const UserRegistration = () => {
           <RenderProgressIndicator
             steps={steps}
             currentStep={currentStep}
-            handleStepChange={() => handleStepChange({
+            handleStepChange={() =>
+              handleStepChange({
                 steps,
                 currentStep,
                 targetStep,
                 setCurrentStep,
                 resetDataCallbacks,
-              })}
+              })
+            }
           />
           <RenderContent steps={steps} currentStep={currentStep} />
         </div>

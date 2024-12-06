@@ -32,7 +32,7 @@ export async function GET(request: Request) {
     }
     const records = await prisma[tableName].findMany({
       select: {
-        [`${tableName}_id`]: true,
+        [`id`]: true,
         name: true,
       },
     });

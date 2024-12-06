@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useCallback } from "react";
+import { record } from "../types/types";
 
 /**
  * A custom React hook for managing form input validation
@@ -105,4 +106,121 @@ export const validateValue = (value: string) => {
   if (!value) return "Value is required";
   if (value.length < 3) return "Value must be at least 3 characters";
   return null;
+};
+
+//validator for email
+export const validateEmail = (value: string) => {
+  //check if the email is valid
+  if (!value) return "Email is required";
+  if (!/\S+@\S+\.\S+/.test(value)) return "Email is invalid";
+  return null;
+};
+
+//validator for password
+export const validatePassword = (value: string) => {
+  //check if the password is valid
+  if (!value) return "Password is required";
+  if (value.length < 6) return "Password must be at least 6 characters";
+  return null;
+};
+
+export const ValidateMultipleOptions = <T extends record>({
+  initialSelected = [],
+  maxSelections,
+  minSelections,
+  onSelectionChange,
+}: {
+  initialSelected?: T[];
+  maxSelections?: number;
+  minSelections?: number;
+  onSelectionChange?: (selected: T[]) => void;
+}) => {
+  // State to keep track of selected options
+  const [selectedOptions, setSelectedOptions] = useState<T[]>(initialSelected);
+  const [error, setError] = useState<string | null>(null);
+
+  // Validation function
+  const validate = useCallback(
+    (selectedOptions: T[]) => {
+      // Check if the number of selected options is within the allowed range
+      if (maxSelections && selectedOptions.length > maxSelections) {
+        setError(`You can only select ${maxSelections} options`);
+        return false;
+      }
+
+      // Check if the number of selected options meets the minimum requirement
+      if (minSelections && selectedOptions.length < minSelections) {
+        setError(`You must select at least ${minSelections} options`);
+        return false;
+      }
+
+      setError(null);
+      return true;
+    },
+    [maxSelections, minSelections]
+  );
+
+  // Handler to toggle option selection
+  const handleOptionToggle = useCallback(
+    (option: T) => {
+      setSelectedOptions((prevSelected) => {
+        // Check if option is already selected
+        const isAlreadySelected = prevSelected.some(
+          (selected) => selected.id === option.id
+        );
+
+        let newSelection: T[];
+        if (isAlreadySelected) {
+          // Remove the option if already selected
+          newSelection = prevSelected.filter(
+            (selected) => selected.id !== option.id
+          );
+        } else {
+          // Add the option if not at max selections
+          if (maxSelections && prevSelected.length >= maxSelections) {
+            return prevSelected; // Do nothing if at max selections
+          }
+          newSelection = [...prevSelected, option];
+        }
+
+        // Call onSelectionChange if provided
+        if (onSelectionChange) {
+          onSelectionChange(newSelection);
+        }
+
+        // Validate the new selection
+        validate(selectedOptions);
+
+        return newSelection;
+      });
+    },
+    [maxSelections, onSelectionChange, validate, selectedOptions]
+  );
+
+  // Handler to remove a specific option
+  const handleRemoveOption = useCallback(
+    (optionToRemove: T) => {
+      const newSelection = selectedOptions.filter(
+        (option) => option.id !== optionToRemove.id
+      );
+
+      setSelectedOptions(newSelection);
+
+      if (onSelectionChange) {
+        onSelectionChange(newSelection);
+      }
+
+      validate(selectedOptions);
+    },
+    [selectedOptions, onSelectionChange, validate]
+  );
+
+  return {
+    value: selectedOptions,
+    error,
+    handleOptionToggle,
+    handleRemoveOption,
+    validate,
+    setSelectedOptions,
+  };
 };

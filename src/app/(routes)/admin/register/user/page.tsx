@@ -11,6 +11,7 @@ import React, { useState } from "react";
 import UserTypeSelection from "@/app/components/select_user_type";
 import { RenderProgressIndicator } from "@/app/components/progress_indicator";
 import { RenderContent } from "@/app/components/conditional_render";
+import { record } from "@/app/types/types";
 //
 //registration component
 const UserRegistration = () => {
@@ -20,14 +21,12 @@ const UserRegistration = () => {
   //select the user type
   const [user_type, set_user_type] = useState<UserType>();
   //save the user after registration
-  const [user, set_user] = useState<Record<string, string | unknown>>();
+  const [user, set_user] = useState<record>();
   //save the school selected
-  const [school, set_school] = useState<Record<string, string | number>>();
+  const [school, set_school] = useState<record>();
   //label the steps
   //save the school selected and move to user selection
-  const handleSchoolSelect = (
-    selectedSchool: Record<string, string | number>
-  ) => {
+  const handleSchoolSelect = (selectedSchool: record) => {
     set_school(selectedSchool);
     setCurrentStep("user_type_selection");
   };
@@ -37,9 +36,7 @@ const UserRegistration = () => {
     setCurrentStep("user_details");
   };
   //save the user registered and move to additional details
-  const handleUserRegistration = (
-    registeredUser: Record<string, string | unknown>
-  ) => {
+  const handleUserRegistration = (registeredUser: record) => {
     set_user(registeredUser);
     setCurrentStep("additional_details");
   };

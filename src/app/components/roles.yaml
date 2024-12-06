@@ -1,268 +1,234 @@
+# Role Permissions Mapping
 
-enum roles_available {
- admin-[admin]
- registrar-[register,update,review]
- auditor-[review]
- principal-[admin_school]
- school_admin-[admin_school]
- vice_pricipal-[review_school, update_school,admin_department,register_exam,admin_events,review_exam,update_exam,register_facility,update_facility,review_facility,register_finance,review_finance,update_finance,review_self,update_self]
- head_of_department-[admin_department,review_school,update_school,register_exam,update_exam,review_exam,register_events,update_events,update_exam,review_events,register_facility,update_facility,review_facility,register_finance,review_finance,update_finance,review_self,update_self]
- exam_officer-[admin_exam]
- event_manager-[admin_events]
- finance_officer-[admin_finance]
- facility_manager-[admin_facility]
- librarian-[admin_lib]
- secretary-[review_department, update_department,register_department,review_facility,update_events,review_events,register_events,review_exam,update_exam,register_exam,review_self,update_self]
- staff-[review_department,review_self,update_self,review_events,review_exam,review_facility]
- class_teacher-[review_department,review_stream,update_stream,register_student_parent,review_student_parent,update_student_parent,review_self,update_self,review_events,review_exam,update_exam,review_facility,register_student_parent,review_student_parent,update_student_parent]
- teacher-[review_department,review_stream,update_stream,review_student_parent,update_student_parent,review_self,update_self,review_events,review_exam,update_exam,review_facility]
- faculty-[review_department,review_self,update_self,review_events,review_exam,review_facility]
- parent-[review_stream,review_self,update_self,review_events,review_exam,review_facility]
- student-[review_stream,review_self, update_self,review_events,review_exam,review_facility,review_teacher]
- non_faculty-[review_department,review_facility,review-self,review_events]
- security-[review_facility,review_self,update_self,review_events,review_users]
- accounting-[register_finance,review_finance,update_finance,review_self,update_self,review_events]
- human_resource-[register_users,review_users,update_users,review_self,update_self,review_events]
- doctor-[admin_medical,review_users,review_self,update_self,review_events]
- chef-[review_facility,update_facility,review_self,update_self,review_events]
- assistant_librarian-[review_lib,update_lib,review_self,update_self,review_events]
- admmissions-[register_users,review_users,update_users,review_self,update_self,review_events]
- counselor-[review_student_parent,update_medical,review_medical,review_self,update_self,review_events]
-}
+## Key Observations
+1. We'll align the permissions with the `system_resource` and CRUD operations
+2. We'll use privilege scopes to define the extent of each permission
+3. We'll categorize roles using the `role_type` and `privilege_category`
 
+## Detailed Role Permissions Mapping
 
-enum privileges {
-  admin
-  review
-  update
-  register
+### System Administrator
+- **Role Type**: SYSTEM_ADMINISTRATOR
+- **Privilege Category**: SYSTEM_ADMIN
+- **Permissions**:
+  - All resources (SYSTEM, INSTITUTION, USERS, etc.)
+  - Global scope
+  - Full CRUD (admin) access
 
-  admin_school
-  review_school
-  update_school
+### Principal
+- **Role Type**: PRINCIPAL
+- **Privilege Category**: EXECUTIVE
+- **Permissions**:
+  - Primary resources: INSTITUTION, DEPARTMENTS, STUDENTS, STAFF
+  - Institutional scope
+  - Full read and update access
+  - Selective admin access for critical systems
 
-register_users
-  update_users
-  review_users
+### Vice Principal
+- **Role Type**: VICE_PRINCIPAL
+- **Privilege Category**: EXECUTIVE
+- **Permissions**:
+  - Resources: INSTITUTION, DEPARTMENTS, EVENTS, EXAMINATIONS, FACILITIES
+  - Institutional scope
+  - Comprehensive read and update access
+  - Limited admin access for academic and administrative systems
 
-  register_student_parent
-  review_student_parent
-  update_student_parent
+### Head of Department
+- **Role Type**: HEAD_OF_DEPARTMENT
+- **Privilege Category**: ADMINISTRATIVE
+- **Permissions**:
+  - Primary resources: DEPARTMENTS, CURRICULUM, STUDENTS, EXAMINATIONS
+  - Departmental scope
+  - Full read and update access
+  - Limited create and delete permissions
 
-  register_events
-  admin_events
-  review_events
-  update_events
+### Exam Officer
+- **Role Type**: EXAM_CONTROLLER
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resource: EXAMINATIONS
+  - Departmental scope
+  - Full read and update access
+  - Limited create permissions
 
+### Class Teacher
+- **Role Type**: CLASS_TEACHER
+- **Privilege Category**: SUPERVISORY
+- **Permissions**:
+  - Resources: STUDENTS, STREAM, EVENTS, EXAMINATIONS
+  - Class/Stream scope
+  - Read and update access for student and class-related information
+  - Review capabilities for events and exams
 
+### Teacher
+- **Role Type**: TEACHER
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resources: STREAM, STUDENTS, EVENTS, EXAMINATIONS
+  - Departmental/Stream scope
+  - Read access
+  - Limited update for personal teaching activities
 
-register_department
-  admin_department
-  review_department
-  update_department
+### Parent
+- **Role Type**: PARENT
+- **Privilege Category**: PERSONAL
+- **Permissions**:
+  - Resources: STREAM, STUDENTS, EVENTS, EXAMINATIONS
+  - Personal scope
+  - Read-only access to child's information
+  - Event and examination review
 
-register_facility
-  admin_facility
-  review_facility
-  update_facility
+### Student
+- **Role Type**: STUDENT
+- **Privilege Category**: PERSONAL
+- **Permissions**:
+  - Resources: STREAM, PERSONAL_INFORMATION, EVENTS, EXAMINATIONS
+  - Personal scope
+  - Read and update self-information
+  - Review events and examinations
 
-register_finance
-  admin_finance
-  review_finance
-  update_finance
+### Facility Manager
+- **Role Type**: FACILITY_MANAGER
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resource: FACILITIES
+  - Institutional scope
+  - Full CRUD access for facilities
 
-  register_exam
-  admin_exam
-  review_exam
-  update_exam
+### Finance Officer
+- **Role Type**: FINANCIAL_OFFICER
+- **Privilege Category**: ADMINISTRATIVE
+- **Permissions**:
+  - Resource: FINANCES
+  - Institutional scope
+  - Full read and update access
+  - Limited admin capabilities
 
-register_class
-  admin_class
-  review_class
-  update_class
+### Human Resource
+- **Role Type**: HUMAN_RESOURCES_MANAGER
+- **Privilege Category**: ADMINISTRATIVE
+- **Permissions**:
+  - Resources: USERS, STAFF
+  - Institutional scope
+  - User management (create, read, update)
+  - Review access to various institutional resources
 
+### Secretary
+- **Role Type**: ADMINISTRATIVE_STAFF
+- **Privilege Category**: ADMINISTRATIVE
+- **Permissions**:
+  - Resources: DEPARTMENTS, FACILITIES, EVENTS, EXAMINATIONS, USERS
+  - Departmental scope
+  - Comprehensive review access
+  - Limited create and update permissions for department, events, and user-related information
 
-  review_stream
-  update_stream
+### Non-Faculty Staff
+- **Role Type**: ADMINISTRATIVE_STAFF
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resources: DEPARTMENTS, FACILITIES, EVENTS
+  - Departmental scope
+  - Review-only access
+  - Limited to operational information
 
-  register_medical
-  admin_medical
-  review_medical
-  update_medical
+### Event Manager
+- **Role Type**: EVENT_COORDINATOR
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resource: EVENTS
+  - Institutional scope
+  - Full read and update access
+  - Create and manage event-related information
 
+### Librarian
+- **Role Type**: LIBRARIAN
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resource: LIBRARY
+  - Institutional scope
+  - Full administrative access to library resources
+  - Manage library-related user interactions
 
-  admin_lib
-  review_lib
-  update_lib
+### Assistant Librarian
+- **Role Type**: LIBRARIAN
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resource: LIBRARY
+  - Departmental scope
+  - Review and update library resources
+  - Support primary librarian's activities
 
-  review_self
-  update_self
-}
+### Admissions Officer
+- **Role Type**: ADMISSIONS_OFFICER
+- **Privilege Category**: ADMINISTRATIVE
+- **Permissions**:
+  - Resources: USERS, STUDENTS, ADMISSIONS
+  - Institutional scope
+  - Full create, read, and update access for admission-related processes
+  - Review user and student information
 
+### Counselor
+- **Role Type**: COUNSELOR
+- **Privilege Category**: SUPERVISORY
+- **Permissions**:
+  - Resources: STUDENTS, MEDICAL, USERS
+  - Departmental scope
+  - Review and update medical information
+  - Limited access to student and parent records
+  - Focus on student well-being and support
 
-// Role to RoleType mapping
-admin               -> RoleType.SYSTEM_ADMIN
-registrar           -> RoleType.REGISTRAR
-auditor             -> RoleType.AUDITOR
-principal           -> RoleType.PRINCIPAL
-school_admin        -> RoleType.SCHOOL_ADMIN
-vice_principal      -> RoleType.VICE_PRINCIPAL
-head_of_department  -> RoleType.HEAD_OF_DEPARTMENT
-exam_officer        -> RoleType.EXAM_OFFICER
-event_manager       -> RoleType.EVENT_MANAGER
-finance_officer     -> RoleType.FINANCE_OFFICER
-facility_manager    -> RoleType.FACILITY_MANAGER
-librarian           -> RoleType.LIBRARIAN
-secretary           -> RoleType.SECRETARY
-staff               -> RoleType.STAFF
-class_teacher       -> RoleType.CLASS_TEACHER
-teacher             -> RoleType.TEACHER
-faculty             -> RoleType.TEACHER  // Combined with teacher
-parent              -> RoleType.PARENT
-student             -> RoleType.STUDENT
-non_faculty         -> RoleType.STAFF    // Merged with staff
-security            -> RoleType.SECURITY
-accounting          -> RoleType.FINANCE_OFFICER  // Merged
-human_resource      -> RoleType.HUMAN_RESOURCE
-doctor              -> RoleType.MEDICAL_STAFF
-chef                -> RoleType.FACILITY_MANAGER // Merged
-assistant_librarian -> RoleType.LIBRARIAN  // Merged
-admissions          -> RoleType.ADMISSIONS
-counselor           -> RoleType.COUNSELOR
+### Doctor/Medical Staff
+- **Role Type**: MEDICAL_STAFF
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resources: MEDICAL, USERS, STUDENTS
+  - Departmental scope
+  - Full administrative access to medical records
+  - Review and update medical information
 
+### Chef
+- **Role Type**: ADMINISTRATIVE_STAFF
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resources: FACILITIES
+  - Departmental scope
+  - Review and update facility-related information
+  - Focus on food service and related facilities
 
+### School Administrator
+- **Role Type**: SCHOOL_ADMINISTRATOR
+- **Privilege Category**: ADMINISTRATIVE
+- **Permissions**:
+  - Resources: INSTITUTION, DEPARTMENTS, STUDENTS, STAFF, EVENTS, EXAMINATIONS, FACILITIES, FINANCES
+  - School/Institutional scope
+  - Comprehensive administrative access
+  - Full CRUD (Create, Read, Update, Delete) permissions for most institutional resources
+  - Key responsibilities include:
+    * Overseeing school-wide operations
+    * Managing departmental structures
+    * Coordinating institutional events
+    * Supervising financial resources
+    * Managing staff and student information
+  - Selective global access within the school's context
+  - Ability to create and modify school-level configurations
+  - Limited by the broader institutional policies defined by system or executive administrators
 
+### Security Personnel
+- **Role Type**: SECURITY_PERSONNEL
+- **Privilege Category**: SUPERVISORY
+- **Permissions**:
+  - Resources: FACILITIES, USERS
+  - Institutional scope
+  - Review and limited update capabilities
 
+## Implementation Notes
+1. Use the `permission` model to granularly define each role's access
+2. Leverage `scope` to control the extent of permissions
+3. Use boolean flags (`can_admin`, `can_create`, etc.) for fine-grained access control
+4. Consider using department, school, or facility IDs to further restrict permissions
 
-
-
-
-
-
-
-// Example Permission Configurations
-
-// System Admin: Full access everywhere
-Role: SYSTEM_ADMIN
-Permissions: [
-  {
-    resource: SystemResource.SCHOOL,
-    can_admin: true,
-    can_create: true,
-    can_read: true,
-    can_update: true,
-    can_delete: true,
-    scope: PrivilegeScope.GLOBAL
-  },
-  // ... similar permissions for all resources
-]
-
-// Principal: School-wide management
-Role: PRINCIPAL
-Permissions: [
-  {
-    resource: SystemResource.SCHOOL,
-    can_admin: true,
-    can_read: true,
-    can_update: true,
-    scope: PrivilegeScope.GLOBAL
-  },
-  {
-    resource: SystemResource.DEPARTMENTS,
-    can_read: true,
-    can_update: true,
-    scope: PrivilegeScope.DEPARTMENTAL
-  },
-  // Other selective permissions
-]
-
-// Vice Principal: Comprehensive school oversight
-Role: VICE_PRINCIPAL
-Permissions: [
-  {
-    resource: SystemResource.SCHOOL,
-    can_read: true,
-    can_update: true,
-    scope: PrivilegeScope.GLOBAL
-  },
-  {
-    resource: SystemResource.DEPARTMENTS,
-    can_admin: true,
-    scope: PrivilegeScope.DEPARTMENTAL
-  },
-  {
-    resource: SystemResource.EXAMS,
-    can_read: true,
-    can_update: true,
-    scope: PrivilegeScope.DEPARTMENTAL
-  },
-  {
-    resource: SystemResource.EVENTS,
-    can_admin: true,
-    scope: PrivilegeScope.DEPARTMENTAL
-  },
-  // More granular permissions
-]
-
-// Teacher: Limited operational access
-Role: TEACHER
-Permissions: [
-  {
-    resource: SystemResource.DEPARTMENTS,
-    can_read: true,
-    scope: PrivilegeScope.DEPARTMENTAL
-  },
-  {
-    resource: SystemResource.STUDENTS,
-    can_read: true,
-    scope: PrivilegeScope.DEPARTMENTAL
-  },
-  {
-    resource: SystemResource.CLASSES,
-    can_read: true,
-    can_update: true,
-    scope: PrivilegeScope.DEPARTMENTAL
-  },
-  {
-    resource: SystemResource.SELF,
-    can_read: true,
-    can_update: true,
-    scope: PrivilegeScope.PERSONAL
-  }
-]
-
-// Student: Very limited access
-Role: STUDENT
-Permissions: [
-  {
-    resource: SystemResource.SELF,
-    can_read: true,
-    can_update: true,
-    scope: PrivilegeScope.PERSONAL
-  },
-  {
-    resource: SystemResource.CLASSES,
-    can_read: true,
-    scope: PrivilegeScope.DEPARTMENTAL
-  },
-  {
-    resource: SystemResource.EVENTS,
-    can_read: true,
-    scope: PrivilegeScope.DEPARTMENTAL
-  }
-]
-
-// Parent: Limited view of student information
-Role: PARENT
-Permissions: [
-  {
-    resource: SystemResource.STUDENTS,
-    can_read: true,
-    scope: PrivilegeScope.PERSONAL  // Only their own children
-  },
-  {
-    resource: SystemResource.EVENTS,
-    can_read: true,
-    scope: PrivilegeScope.DEPARTMENTAL
-  }
-]
+## Recommendations
+- Implement a hierarchical permission system
+- Use role inheritance where possible
+- Regularly audit and update role permissions
+- Implement logging for critical administrative actions

@@ -3,13 +3,13 @@ import React, { useState, useEffect } from "react";
 import SearchableList from "./search_bar";
 
 interface SchoolSelectionProps {
-  onSchoolSelect: (school: Record<string, string | number>) => void;
+  onSchoolSelect: (school: record) => void;
 }
 
 const SchoolSelection: React.FC<SchoolSelectionProps> = ({
   onSchoolSelect,
 }) => {
-  const [schools, setSchools] = useState<Record<string, string | number>[]>([]);
+  const [schools, setSchools] = useState<record[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

@@ -1,16 +1,19 @@
 import React from "react";
+import { record } from "../types/types";
 
-// Enhanced Select Props
+// Select component
+// This component is a select input field that can be used in forms
+// it accepts the following props:
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string;
-  containerClassName?: string;
-  labelClassName?: string;
-  errorClassName?: string;
-  error?: string | null;
-  options: { value: string; label: string }[];
-  placeholder?: string;
+  label?: string; // Label for the select input
+  containerClassName?: string; // Classname for the container div
+  labelClassName?: string; // Classname for the label
+  errorClassName?: string; // Classname for the error message
+  error?: string | null; // Error message
+  options: record[]; // Array of options to be displayed in the select input
+  placeholder?: string; // Placeholder text
 }
-
+// The Select component is a functional component that accepts the props mentioned above
 export const Select: React.FC<SelectProps> = ({
   label,
   containerClassName = "",
@@ -21,9 +24,12 @@ export const Select: React.FC<SelectProps> = ({
   error,
   placeholder,
   required,
+  value, // value of the select input
+  onChange, // what to do when the value changes
   ...props
 }) => {
   return (
+    // The select input field
     <div className={`w-full ${containerClassName}`}>
       {label && (
         <label
@@ -45,11 +51,10 @@ export const Select: React.FC<SelectProps> = ({
           {label}
         </label>
       )}
-
       <div className="relative">
         <select
           className={`
-           w-full
+            w-full
             px-3
             py-2
             border
@@ -64,6 +69,8 @@ export const Select: React.FC<SelectProps> = ({
             }
             ${className}
           `}
+          value={value}
+          onChange={onChange}
           {...props}
         >
           {placeholder && (
@@ -71,13 +78,14 @@ export const Select: React.FC<SelectProps> = ({
               {placeholder}
             </option>
           )}
-          {options.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
+          {options &&
+            options.map((option) => (
+              <option key={option.id} value={option.value as string | number}>
+                {option.label as string}
+              </option>
+            ))}
+          {!options && <>No options available</>}
         </select>
-
         {/* Dropdown icon */}
         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
           <svg
@@ -89,13 +97,12 @@ export const Select: React.FC<SelectProps> = ({
           </svg>
         </div>
       </div>
-
       {error && (
         <p
           id={`${props.id}-error`}
           className={`
-            text-xs 
-            text-red-600 
+            text-xs
+            text-red-600
             mt-1
             ${errorClassName}
           `}

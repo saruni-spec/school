@@ -15,7 +15,7 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   // Parse the request body to extract model-specific data
   const body: {
-    data: Record<string, unknown>;
+    data: record;
     model_name: string;
   } = await request.json();
 

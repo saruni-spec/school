@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 
 interface SearchableListProps {
-  initialData: Record<string, string | number>[];
-  onItemSelect?: (item: Record<string, string | number>) => void;
+  initialData: record[];
+  onItemSelect?: (item: record) => void;
 }
 
 const SearchableList: React.FC<SearchableListProps> = ({
@@ -25,7 +25,7 @@ const SearchableList: React.FC<SearchableListProps> = ({
     return false; // Exclude items where name is not a string
   });
 
-  const handleItemSelect = (item: Record<string, string | number>) => {
+  const handleItemSelect = (item: record) => {
     setSelectedItem(item);
 
     // Type guard: Ensure item.name is a string before assigning it to searchTerm
