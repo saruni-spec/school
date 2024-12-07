@@ -1,7 +1,8 @@
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
-
+import { record } from "@/app/types/types";
+import { hash } from "bcrypt";
 /**
  * Enhanced POST handler with robust unique checking across different models
  *
@@ -23,6 +24,10 @@ export async function POST(request: Request) {
   const data = body.data;
   const model_name = body.model_name;
   //
+  //check if the model is users to hash the password
+  if (model_name === "users") {
+    data.password = await hash(data.password as string, 10);
+  }
   try {
     // Create the record
     const record = await prisma[model_name].create({ data });

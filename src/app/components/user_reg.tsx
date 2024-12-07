@@ -14,20 +14,9 @@ import Validation, {
 import React, { useCallback, useEffect, useState } from "react";
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
 import { Select } from "./select";
-import { record } from "../types/types";
+import { record, UserType, RegistrationStep } from "../types/types";
 import { role_type } from "@prisma/client";
 
-//
-//the possible users that can be registred
-export type UserType = "faculty" | "teacher" | "student" | "school_admin";
-//
-//steps for registration
-export type RegistrationStep =
-  | "user_type_selection"
-  | "user_details"
-  | "additional_details"
-  | "complete"
-  | "school_selection";
 //the main component for user registration
 export const User = ({ set_user }: { set_user: (record: record) => void }) => {
   // these are the variables that will be used to store the user details

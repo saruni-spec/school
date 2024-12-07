@@ -72,6 +72,7 @@ export default function Validation(
     handle_change, // Event handler for input changes
     validate, // Method to manually trigger validation
     set_value, // Method to manually set the input value
+    setError, // Method to manually set the error message
   };
 }
 

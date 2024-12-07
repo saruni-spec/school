@@ -1,3 +1,5 @@
+import { RegistrationStep } from "../types/types";
+
 //component to render the progress indicator
 export const RenderProgressIndicator = ({
   steps,
@@ -6,7 +8,7 @@ export const RenderProgressIndicator = ({
 }: {
   steps: Array<Record<string, string | React.JSX.Element>>;
   currentStep: string;
-  handleStepChange: (step: string) => void;
+  handleStepChange: (step: RegistrationStep) => void;
 }) => {
   return (
     <div className="relative w-full mb-8">
@@ -29,7 +31,9 @@ export const RenderProgressIndicator = ({
                   }
                 `}
               onClick={() =>
-                isClickable ? handleStepChange(step.key as string) : null
+                isClickable
+                  ? handleStepChange(step.key as RegistrationStep)
+                  : null
               }
             >
               <div
