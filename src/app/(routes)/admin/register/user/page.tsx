@@ -42,7 +42,13 @@ const UserRegistration = () => {
   //save the user registered and move to additional details
   const handleUserRegistration = (registeredUser: record) => {
     set_user(registeredUser);
-    setCurrentStep("additional_details");
+    //
+    //if the user is a techer,stdent or faculty,complete the process
+    if (user_type === "SCHOOL_ADMINISTRATOR") {
+      setCurrentStep("additional_details");
+      return;
+    }
+    setCurrentStep("complete");
   };
   //submit the additional details and complete the registration
   const handleAdditionalDetailsSubmit = () => {
@@ -70,7 +76,7 @@ const UserRegistration = () => {
       value: (
         <User
           set_user={handleUserRegistration}
-          role_id={user_type ? roles_id[user_type] : ""}
+          role_id={user_type ? roles_id[user_type] : 26}
           school_id={school?.id}
         />
       ),

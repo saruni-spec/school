@@ -25,7 +25,7 @@ export const User = ({
   school_id,
 }: {
   set_user: (record: record) => void;
-  role_id?: string;
+  role_id?: number;
   school_id?: string;
 }) => {
   // these are the variables that will be used to store the user details
@@ -54,8 +54,8 @@ export const User = ({
             phone: phone.value,
             role_id: role_id,
             current_school: school_id,
-            name: `${first_name}${last_name}`,
-            password: `${first_name}${last_name}@${school_id}`,
+            name: `${first_name.value} ${last_name.value}`,
+            password: `${first_name.value}${last_name.value}@${school_id}`,
           },
           model_name: "users",
         }),
@@ -342,31 +342,14 @@ export const UserTypeComponent = ({
   school,
   handleAdditionalDetailsSubmit,
 }: {
-  user_type: string | undefined;
+  user_type: UserType | undefined;
   user: record | undefined;
   school: record | undefined;
   handleAdditionalDetailsSubmit: () => void;
 }) => {
   return (
     <>
-      {user_type === "faculty" && school && user && (
-        <Staff
-          user_id={user.user_id}
-          department_id=""
-          school_id={school.school_id as string}
-          onSubmit={handleAdditionalDetailsSubmit}
-        />
-      )}
-      {user_type === "teacher" && user && (
-        <TeacherRegistration
-          teacher_id={user.user_id as string}
-          onSubmit={handleAdditionalDetailsSubmit}
-        />
-      )}
-      {user_type === "student" && user && (
-        <Student user={user} onSubmit={handleAdditionalDetailsSubmit} />
-      )}
-      {user_type === "school_admin" && user && school && (
+      {user_type === "SCHOOL_ADMINISTRATOR" && user && school && (
         <SchoolAdmin
           user_id={user.id}
           school_id={school.id}

@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import SearchableList from "./search_bar";
+import { record } from "../types/types";
 
 interface SchoolSelectionProps {
   onSchoolSelect: (school: record) => void;
@@ -55,7 +56,7 @@ const SchoolSelection: React.FC<SchoolSelectionProps> = ({
   }
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-lg">
+    <div className="max-w-md mx-auto pt-1 pb-1 px-4 bg-white shadow-md rounded-lg">
       {schools.length === 0 ? (
         <p className="text-center text-gray-600">No schools available</p>
       ) : (

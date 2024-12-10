@@ -232,3 +232,427 @@
 - Use role inheritance where possible
 - Regularly audit and update role permissions
 - Implement logging for critical administrative actions
+
+
+
+##roles sql
+-- Seed Data for Roles Table
+-- This script populates the roles table with predefined roles
+
+-- Disable foreign key checks to allow seeding
+SET session_replication_role = 'replica';
+
+-- Insert roles with their corresponding types and categories
+INSERT INTO "role" (type, name, description, category)
+VALUES 
+    -- System-Level Roles
+    ('SYSTEM_ADMINISTRATOR', 'System Administrator', 'Absolute system control and management', 'SYSTEM_ADMIN'),
+
+    -- Executive Leadership Roles
+    ('PRINCIPAL', 'Principal', 'Top-level institutional leadership', 'EXECUTIVE'),
+    ('VICE_PRINCIPAL', 'Vice Principal', 'Deputy institutional leadership', 'EXECUTIVE'),
+    ('SCHOOL_ADMINISTRATOR', 'School Administrator', 'Comprehensive school-level administrative management', 'ADMINISTRATIVE'),
+
+    -- Academic Leadership Roles
+    ('HEAD_OF_DEPARTMENT', 'Head of Department', 'Department-level academic leadership', 'ADMINISTRATIVE'),
+    ('ACADEMIC_REGISTRAR', 'Academic Registrar', 'Academic records and registration management', 'ADMINISTRATIVE'),
+    ('EXAM_CONTROLLER', 'Exam Controller', 'Examinations management and coordination', 'OPERATIONAL'),
+    ('CURRICULUM_COORDINATOR', 'Curriculum Coordinator', 'Curriculum development and academic standards', 'ADMINISTRATIVE'),
+
+    -- Teaching Roles
+    ('TEACHER', 'Teacher', 'Standard teaching position', 'OPERATIONAL'),
+    ('CLASS_TEACHER', 'Class Teacher', 'Additional responsibilities for a specific class', 'SUPERVISORY'),
+    ('FACULTY_MEMBER', 'Faculty Member', 'Broader academic staff role', 'OPERATIONAL'),
+
+    -- Administrative Roles
+    ('ADMINISTRATIVE_STAFF', 'Administrative Staff', 'General administrative support', 'OPERATIONAL'),
+    ('SECRETARY', 'Secretary', 'Administrative coordination and support', 'ADMINISTRATIVE'),
+    ('FACILITY_MANAGER', 'Facility Manager', 'Facilities management and maintenance', 'OPERATIONAL'),
+    ('FINANCIAL_OFFICER', 'Financial Officer', 'Financial management and budgeting', 'ADMINISTRATIVE'),
+    ('HUMAN_RESOURCES_MANAGER', 'HR Manager', 'Personnel management and HR operations', 'ADMINISTRATIVE'),
+    ('EVENT_COORDINATOR', 'Event Coordinator', 'Event planning and management', 'OPERATIONAL'),
+
+    -- Support and Specialized Roles
+    ('LIBRARIAN', 'Librarian', 'Library management and resources', 'OPERATIONAL'),
+    ('ASSISTANT_LIBRARIAN', 'Assistant Librarian', 'Support for library operations', 'OPERATIONAL'),
+    ('TECHNOLOGY_SUPPORT', 'IT Support', 'Technical support and IT management', 'OPERATIONAL'),
+    ('SECURITY_PERSONNEL', 'Security Staff', 'Campus security and safety', 'SUPERVISORY'),
+
+    -- Student and Admission Related Roles
+    ('ADMISSIONS_OFFICER', 'Admissions Officer', 'Student admissions management', 'ADMINISTRATIVE'),
+    ('COUNSELOR', 'Counselor', 'Student guidance and psychological support', 'SUPERVISORY'),
+
+    -- Medical and Health Roles
+    ('MEDICAL_STAFF', 'Medical Staff', 'Healthcare professionals', 'OPERATIONAL'),
+
+    -- Non-Academic Roles
+    ('CHEF', 'Chef', 'Food services management', 'OPERATIONAL'),
+
+    -- Student and Parent Roles
+    ('STUDENT', 'Student', 'Current enrolled student', 'PERSONAL'),
+    ('PARENT', 'Parent', 'Student guardian', 'PERSONAL'),
+
+    -- Audit and Compliance
+    ('AUDIT_OFFICER', 'Audit Officer', 'Compliance and internal audit', 'SUPERVISORY');
+
+-- Re-enable foreign key checks
+SET session_replication_role = 'origin';
+
+-- Optional: Add a confirmation message
+SELECT 'Roles have been successfully seeded.' AS status;
+
+
+
+##permissions sql
+-- Insert Permissions for Roles
+
+-- Function to get role ID by type
+CREATE OR REPLACE FUNCTION get_role_id(role_type_param role_type) RETURNS INTEGER AS $$
+DECLARE
+    role_id INTEGER;
+BEGIN
+    SELECT id INTO role_id FROM role WHERE type = role_type_param;
+    RETURN role_id;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Macro for inserting permissions
+INSERT INTO permission (
+    role_id, 
+    resource, 
+    scope, 
+    can_admin, 
+    can_create, 
+    can_read, 
+    can_update, 
+    can_delete
+) VALUES
+-- System Administrator - Full Global Access
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'SYSTEM', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'INSTITUTION', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'USERS', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'STUDENTS', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'STAFF', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'DEPARTMENTS', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'EVENTS', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'EXAMINATIONS', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'FACILITIES', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'FINANCES', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'MEDICAL', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'LIBRARY', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'ACADEMIC_CLASSES', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'ACADEMIC_STREAMS', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'ADMISSIONS', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'CURRICULUM', 'GLOBAL', true, true, true, true, true),
+(get_role_id('SYSTEM_ADMINISTRATOR'), 'COMMUNICATION', 'GLOBAL', true, true, true, true, true),
+
+-- Principal - Institutional Scope
+(get_role_id('PRINCIPAL'), 'INSTITUTION', 'INSTITUTIONAL', false, false, true, true, false),
+(get_role_id('PRINCIPAL'), 'DEPARTMENTS', 'INSTITUTIONAL', false, false, true, true, false),
+(get_role_id('PRINCIPAL'), 'STUDENTS', 'INSTITUTIONAL', false, false, true, true, false),
+(get_role_id('PRINCIPAL'), 'STAFF', 'INSTITUTIONAL', false, false, true, true, false),
+(get_role_id('PRINCIPAL'), 'FINANCES', 'INSTITUTIONAL', false, false, true, true, false),
+(get_role_id('PRINCIPAL'), 'EVENTS', 'INSTITUTIONAL', false, false, true, true, false),
+
+-- Vice Principal - Institutional Scope
+(get_role_id('VICE_PRINCIPAL'), 'INSTITUTION', 'INSTITUTIONAL', false, false, true, true, false),
+(get_role_id('VICE_PRINCIPAL'), 'DEPARTMENTS', 'INSTITUTIONAL', false, false, true, true, false),
+(get_role_id('VICE_PRINCIPAL'), 'EVENTS', 'INSTITUTIONAL', false, false, true, true, false),
+(get_role_id('VICE_PRINCIPAL'), 'EXAMINATIONS', 'INSTITUTIONAL', false, false, true, true, false),
+(get_role_id('VICE_PRINCIPAL'), 'FACILITIES', 'INSTITUTIONAL', false, false, true, true, false),
+
+-- Head of Department - Departmental Scope
+(get_role_id('HEAD_OF_DEPARTMENT'), 'DEPARTMENTS', 'DEPARTMENTAL', false, false, true, true, false),
+(get_role_id('HEAD_OF_DEPARTMENT'), 'CURRICULUM', 'DEPARTMENTAL', false, true, true, true, false),
+(get_role_id('HEAD_OF_DEPARTMENT'), 'STUDENTS', 'DEPARTMENTAL', false, false, true, true, false),
+(get_role_id('HEAD_OF_DEPARTMENT'), 'EXAMINATIONS', 'DEPARTMENTAL', false, false, true, true, false),
+
+-- Exam Controller - Departmental Scope for Examinations
+(get_role_id('EXAM_CONTROLLER'), 'EXAMINATIONS', 'DEPARTMENTAL', false, true, true, true, false),
+
+-- Class Teacher - Class/Stream Scope
+(get_role_id('CLASS_TEACHER'), 'STUDENTS', 'PERSONAL', false, false, true, true, false),
+(get_role_id('CLASS_TEACHER'), 'ACADEMIC_STREAMS', 'DEPARTMENTAL', false, false, true, true, false),
+(get_role_id('CLASS_TEACHER'), 'EVENTS', 'DEPARTMENTAL', false, false, true, false, false),
+(get_role_id('CLASS_TEACHER'), 'EXAMINATIONS', 'DEPARTMENTAL', false, false, true, false, false),
+
+-- Teacher - Departmental Scope
+(get_role_id('TEACHER'), 'ACADEMIC_STREAMS', 'DEPARTMENTAL', false, false, true, true, false),
+(get_role_id('TEACHER'), 'STUDENTS', 'DEPARTMENTAL', false, false, true, false, false),
+(get_role_id('TEACHER'), 'EVENTS', 'DEPARTMENTAL', false, false, true, false, false),
+(get_role_id('TEACHER'), 'EXAMINATIONS', 'DEPARTMENTAL', false, false, true, false, false),
+
+-- Parent - Personal Scope
+(get_role_id('PARENT'), 'STUDENTS', 'PERSONAL', false, false, true, false, false),
+(get_role_id('PARENT'), 'ACADEMIC_STREAMS', 'PERSONAL', false, false, true, false, false),
+(get_role_id('PARENT'), 'EVENTS', 'PERSONAL', false, false, true, false, false),
+(get_role_id('PARENT'), 'EXAMINATIONS', 'PERSONAL', false, false, true, false, false),
+
+-- Student - Personal Scope
+(get_role_id('STUDENT'), 'STUDENTS', 'PERSONAL', false, false, true, true, false),
+(get_role_id('STUDENT'), 'ACADEMIC_STREAMS', 'PERSONAL', false, false, true, false, false),
+(get_role_id('STUDENT'), 'EVENTS', 'PERSONAL', false, false, true, false, false),
+(get_role_id('STUDENT'), 'EXAMINATIONS', 'PERSONAL', false, false, true, false, false),
+
+-- Facility Manager - Institutional Scope
+(get_role_id('FACILITY_MANAGER'), 'FACILITIES', 'INSTITUTIONAL', false, true, true, true, true),
+
+-- Finance Officer - Institutional Scope
+(get_role_id('FINANCIAL_OFFICER'), 'FINANCES', 'INSTITUTIONAL', false, false, true, true, false),
+
+-- Human Resources Manager - Institutional Scope
+(get_role_id('HUMAN_RESOURCES_MANAGER'), 'USERS', 'INSTITUTIONAL', false, true, true, true, false),
+(get_role_id('HUMAN_RESOURCES_MANAGER'), 'STAFF', 'INSTITUTIONAL', false, true, true, true, false),
+
+-- Administrative Staff (Secretary) - Departmental Scope
+(get_role_id('SECRETARY'), 'DEPARTMENTS', 'DEPARTMENTAL', false, false, true, true, false),
+(get_role_id('SECRETARY'), 'FACILITIES', 'DEPARTMENTAL', false, false, true, true, false),
+(get_role_id('SECRETARY'), 'EVENTS', 'DEPARTMENTAL', false, true, true, true, false),
+(get_role_id('SECRETARY'), 'EXAMINATIONS', 'DEPARTMENTAL', false, false, true, false, false),
+(get_role_id('SECRETARY'), 'USERS', 'DEPARTMENTAL', false, false, true, true, false),
+
+-- Event Coordinator - Institutional Scope
+(get_role_id('EVENT_COORDINATOR'), 'EVENTS', 'INSTITUTIONAL', false, true, true, true, false),
+
+-- Librarian - Institutional Scope
+(get_role_id('LIBRARIAN'), 'LIBRARY', 'INSTITUTIONAL', true, true, true, true, true),
+
+-- Assistant Librarian - Departmental Scope
+(get_role_id('ASSISTANT_LIBRARIAN'), 'LIBRARY', 'DEPARTMENTAL', false, false, true, true, false),
+
+-- Admissions Officer - Institutional Scope
+(get_role_id('ADMISSIONS_OFFICER'), 'USERS', 'INSTITUTIONAL', false, true, true, true, false),
+(get_role_id('ADMISSIONS_OFFICER'), 'STUDENTS', 'INSTITUTIONAL', false, true, true, true, false),
+(get_role_id('ADMISSIONS_OFFICER'), 'ADMISSIONS', 'INSTITUTIONAL', false, true, true, true, false),
+
+-- Counselor - Departmental Scope
+(get_role_id('COUNSELOR'), 'STUDENTS', 'DEPARTMENTAL', false, false, true, true, false),
+(get_role_id('COUNSELOR'), 'MEDICAL', 'DEPARTMENTAL', false, false, true, true, false),
+(get_role_id('COUNSELOR'), 'USERS', 'DEPARTMENTAL', false, false, true, false, false),
+
+-- Medical Staff - Departmental Scope
+(get_role_id('MEDICAL_STAFF'), 'MEDICAL', 'DEPARTMENTAL', true, true, true, true, true),
+(get_role_id('MEDICAL_STAFF'), 'USERS', 'DEPARTMENTAL', false, false, true, true, false),
+(get_role_id('MEDICAL_STAFF'), 'STUDENTS', 'DEPARTMENTAL', false, false, true, true, false),
+
+-- School Administrator - Institutional Scope
+(get_role_id('SCHOOL_ADMINISTRATOR'), 'INSTITUTION', 'INSTITUTIONAL', true, true, true, true, true),
+(get_role_id('SCHOOL_ADMINISTRATOR'), 'DEPARTMENTS', 'INSTITUTIONAL', true, true, true, true, true),
+(get_role_id('SCHOOL_ADMINISTRATOR'), 'STUDENTS', 'INSTITUTIONAL', true, true, true, true, true),
+(get_role_id('SCHOOL_ADMINISTRATOR'), 'STAFF', 'INSTITUTIONAL', true, true, true, true, true),
+(get_role_id('SCHOOL_ADMINISTRATOR'), 'EVENTS', 'INSTITUTIONAL', true, true, true, true, true),
+(get_role_id('SCHOOL_ADMINISTRATOR'), 'EXAMINATIONS', 'INSTITUTIONAL', true, true, true, true, true),
+(get_role_id('SCHOOL_ADMINISTRATOR'), 'FACILITIES', 'INSTITUTIONAL', true, true, true, true, true),
+(get_role_id('SCHOOL_ADMINISTRATOR'), 'FINANCES', 'INSTITUTIONAL', true, true, true, true, true),
+
+-- Security Personnel - Institutional Scope
+(get_role_id('SECURITY_PERSONNEL'), 'FACILITIES', 'INSTITUTIONAL', false, false, true, true, false),
+(get_role_id('SECURITY_PERSONNEL'), 'USERS', 'INSTITUTIONAL', false, false, true, false, false);
+
+
+-- Permissions for ACADEMIC_REGISTRAR
+INSERT INTO permission (
+    role_id, 
+    resource, 
+    scope, 
+    can_read, 
+    can_update,
+    can_create
+) 
+SELECT 
+    id, 
+    resource, 
+    'INSTITUTIONAL' as scope,
+    true, 
+    true,
+    true
+FROM 
+    role, 
+    (VALUES 
+        ('STUDENTS'::system_resource),
+        ('ACADEMIC_CLASSES'::system_resource),
+        ('ACADEMIC_STREAMS'::system_resource),
+        ('EXAMINATIONS'::system_resource),
+        ('ADMISSIONS'::system_resource),
+        ('CURRICULUM'::system_resource)
+    ) AS resources(resource)
+WHERE 
+    role.type = 'ACADEMIC_REGISTRAR';
+
+-- Permissions for CURRICULUM_COORDINATOR
+INSERT INTO permission (
+    role_id, 
+    resource, 
+    scope, 
+    can_read, 
+    can_update,
+    can_create
+) 
+SELECT 
+    id, 
+    resource, 
+    'DEPARTMENTAL' as scope,
+    true, 
+    true,
+    true
+FROM 
+    role, 
+    (VALUES 
+        ('CURRICULUM'::system_resource),
+        ('ACADEMIC_CLASSES'::system_resource),
+        ('ACADEMIC_STREAMS'::system_resource),
+        ('DEPARTMENTS'::system_resource)
+    ) AS resources(resource)
+WHERE 
+    role.type = 'CURRICULUM_COORDINATOR';
+
+-- Permissions for FACULTY_MEMBER
+INSERT INTO permission (
+    role_id, 
+    resource, 
+    scope, 
+    can_read, 
+    can_update
+) 
+SELECT 
+    id, 
+    resource, 
+    'DEPARTMENTAL' as scope,
+    true, 
+    true
+FROM 
+    role, 
+    (VALUES 
+        ('ACADEMIC_CLASSES'::system_resource),
+        ('STUDENTS'::system_resource),
+        ('ACADEMIC_STREAMS'::system_resource),
+        ('EXAMINATIONS'::system_resource),
+        ('EVENTS'::system_resource)
+    ) AS resources(resource)
+WHERE 
+    role.type = 'FACULTY_MEMBER';
+
+-- Permissions for SECRETARY
+INSERT INTO permission (
+    role_id, 
+    resource, 
+    scope, 
+    can_read, 
+    can_update,
+    can_create
+) 
+SELECT 
+    id, 
+    resource, 
+    'DEPARTMENTAL' as scope,
+    true, 
+    true,
+    true
+FROM 
+    role, 
+    (VALUES 
+        ('DEPARTMENTS'::system_resource),
+        ('FACILITIES'::system_resource),
+        ('EVENTS'::system_resource),
+        ('EXAMINATIONS'::system_resource),
+        ('USERS'::system_resource)
+    ) AS resources(resource)
+WHERE 
+    role.type = 'SECRETARY';
+
+-- Permissions for ASSISTANT_LIBRARIAN
+INSERT INTO permission (
+    role_id, 
+    resource, 
+    scope, 
+    can_read, 
+    can_update
+) 
+SELECT 
+    id, 
+    resource, 
+    'DEPARTMENTAL' as scope,
+    true, 
+    true
+FROM 
+    role, 
+    (VALUES 
+        ('LIBRARY'::system_resource)
+    ) AS resources(resource)
+WHERE 
+    role.type = 'ASSISTANT_LIBRARIAN';
+
+-- Permissions for TECHNOLOGY_SUPPORT
+INSERT INTO permission (
+    role_id, 
+    resource, 
+    scope, 
+    can_read, 
+    can_update,
+    can_admin
+) 
+SELECT 
+    id, 
+    resource, 
+    'INSTITUTIONAL' as scope,
+    true, 
+    true,
+    true
+FROM 
+    role, 
+    (VALUES 
+        ('SYSTEM'::system_resource),
+        ('FACILITIES'::system_resource),
+        ('COMMUNICATION'::system_resource)
+    ) AS resources(resource)
+WHERE 
+    role.type = 'TECHNOLOGY_SUPPORT';
+
+-- Permissions for CHEF
+INSERT INTO permission (
+    role_id, 
+    resource, 
+    scope, 
+    can_read, 
+    can_update
+) 
+SELECT 
+    id, 
+    resource, 
+    'DEPARTMENTAL' as scope,
+    true, 
+    true
+FROM 
+    role, 
+    (VALUES 
+        ('FACILITIES'::system_resource)
+    ) AS resources(resource)
+WHERE 
+    role.type = 'CHEF';
+
+-- Permissions for AUDIT_OFFICER
+INSERT INTO permission (
+    role_id, 
+    resource, 
+    scope, 
+    can_read,
+    can_admin
+) 
+SELECT 
+    id, 
+    resource, 
+    'GLOBAL' as scope,
+    true,
+    true
+FROM 
+    role, 
+    (VALUES 
+        ('SYSTEM'::system_resource),
+        ('INSTITUTION'::system_resource),
+        ('USERS'::system_resource),
+        ('FINANCES'::system_resource),
+        ('EXAMINATIONS'::system_resource),
+        ('DEPARTMENTS'::system_resource)
+    ) AS resources(resource)
+WHERE 
+    role.type = 'AUDIT_OFFICER';

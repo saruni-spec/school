@@ -11,10 +11,10 @@ import { record } from "../types/types";
  */
 export default function Validation(
   initialValue = "",
-  validators: ((value: string) => string | null)[]
+  validators: ((value: string | number) => string | null)[]
 ) {
   // State to store the current input value
-  const [value, set_value] = useState(initialValue);
+  const [value, set_value] = useState<string | number>(initialValue);
 
   // State to store any validation error messages
   const [error, setError] = useState<string | null>(null);
@@ -26,7 +26,7 @@ export default function Validation(
    * @returns Boolean indicating whether the input passes all validations
    */
   const validate = useCallback(
-    (inputValue: string) => {
+    (inputValue: string | number) => {
       // Iterate through all provided validator functions
       for (const validator of validators) {
         // Run each validator on the input value
@@ -65,6 +65,19 @@ export default function Validation(
     [validate] // Memoize this function to prevent unnecessary re-renders
   );
 
+  //
+  //handle change that is not from the input element
+  const handle_value_change = useCallback(
+    (newValue: string | number) => {
+      // Update the stored value
+      set_value(newValue);
+
+      // Validate the new value
+      validate(newValue);
+    },
+    [validate] // Memoize this function to prevent unnecessary re-renders
+  );
+
   // Return an object with the current state and methods for validation
   return {
     value, // Current input value
@@ -73,12 +86,15 @@ export default function Validation(
     validate, // Method to manually trigger validation
     set_value, // Method to manually set the input value
     setError, // Method to manually set the error message
+    handle_value_change, // Method to get the value from a source other than the input element
   };
 }
 
 // Validators
-export const required = (value: string) =>
-  value.trim() === "" ? "This field is required" : null;
+export const required = (value: string | number) =>
+  //
+  //convert the value to a string if its a number
+  value.toString().trim() === "" ? "This field is required" : null;
 
 // Utility to format enum keys into human-readable labels
 // Conert an enum type key to a string
@@ -110,7 +126,10 @@ export const validateValue = (value: string) => {
 };
 
 //validator for email
-export const validateEmail = (value: string) => {
+export const validateEmail = (value: string | number) => {
+  //
+  //if the value is a number convert it to a string
+  value = typeof value === "number" ? value.toString() : value;
   //check if the email is valid
   if (!value) return "Email is required";
   if (!/\S+@\S+\.\S+/.test(value)) return "Email is invalid";

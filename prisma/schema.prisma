@@ -117,12 +117,31 @@ enum reviewable_entity {
   teacher
 }
 
+enum grade_level_type {
+  PRE_PRIMARY_1
+  PRE_PRIMARY_2
+  GRADE_1
+  GRADE_2
+  GRADE_3
+  GRADE_4
+  GRADE_5
+  GRADE_6
+  GRADE_7
+  GRADE_8
+  GRADE_9
+  GRADE_10
+  GRADE_11
+  GRADE_12
+}
 
 enum school_type {
-  primary
-  secondary
-  combined
+  PRE_PRIMARY
+  LOWER_PRIMARY
+  UPPER_PRIMARY
+  LOWER_SECONDARY
+  UPPER_SECONDARY
 }
+
 
 
 enum severity {
@@ -352,7 +371,7 @@ model class_level {
   id                          Int                       @id @default(autoincrement())
   school_id                   Int
   name                        String                    @db.VarChar(50)
-  grade_level                 school_type
+  grade_level                 grade_level_type
   is_active                   Boolean?                  @default(true)
   created_at                  DateTime?                 @default(now()) @db.Timestamptz(6)
   
@@ -430,7 +449,6 @@ model department {
   school_id                                  Int?
   name                                       String    @db.VarChar(100)
   description                                String?
-  head_of_department                         Int?
   created_at                                 DateTime? @default(now()) @db.Timestamptz(6)
   updated_at                                 DateTime? @default(now()) @db.Timestamptz(6)
   deleted_at                                 DateTime? @db.Timestamptz(6)
@@ -440,8 +458,23 @@ model department {
   staff                                      staff[]  
   subject                                    subject[]
   permission                                 permission[]
+  department_head                            department_head[]
 
   @@unique([school_id,name])
+}
+
+model department_head {
+  staff_id                                   Int
+  department_id                              Int
+
+  created_at                                 DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                                 DateTime? @default(now()) @db.Timestamptz(6)
+  deleted_at                                 DateTime? @db.Timestamptz(6)
+
+  department                                 department?        @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  staff                                      staff?             @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([staff_id,department_id])
 }
 
 
@@ -577,6 +610,7 @@ model staff {
 
   school_facility                                 school_facility[]                                   
   teacher                                         teacher[]
+  department_head                                 department_head[]
   
   @@index([school_id], map: "idx_staff_school_id")
 }

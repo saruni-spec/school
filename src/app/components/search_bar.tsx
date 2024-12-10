@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { record } from "../types/types";
 
 interface SearchableListProps {
   initialData: record[];
@@ -10,10 +11,7 @@ const SearchableList: React.FC<SearchableListProps> = ({
   onItemSelect,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedItem, setSelectedItem] = useState<Record<
-    string,
-    string | number
-  > | null>(null);
+  const [selectedItem, setSelectedItem] = useState<record>();
   const [data] = useState(initialData);
 
   // Filter data based on search term
@@ -40,11 +38,11 @@ const SearchableList: React.FC<SearchableListProps> = ({
   };
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
-    setSelectedItem(null); // Clear selection when user starts typing again
+    setSelectedItem(undefined); // Clear selection when user starts typing again
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 relative">
+    <div className="max-w-md mx-auto p-1 relative">
       <div className="mb-4">
         <input
           type="text"
@@ -59,13 +57,15 @@ const SearchableList: React.FC<SearchableListProps> = ({
           <ul className="max-h-60 overflow-y-auto">
             {filteredData.map((item) => (
               <li
-                key={item.name}
+                key={item.id}
                 onClick={() => handleItemSelect(item)}
                 className="px-4 py-2 border-b last:border-b-0 hover:bg-gray-100 transition-colors cursor-pointer"
               >
                 <div className="flex justify-between">
-                  <span className="font-medium">{item.name}</span>
-                  <span className="text-gray-500 text-sm">{item.category}</span>
+                  <span className="font-medium">{item.name as string}</span>
+                  <span className="text-gray-500 text-sm">
+                    {item.category as string}
+                  </span>
                 </div>
               </li>
             ))}
@@ -74,7 +74,7 @@ const SearchableList: React.FC<SearchableListProps> = ({
       )}
       {selectedItem && (
         <div className="mt-2 text-sm text-gray-600">
-          Selected: {selectedItem.name}
+          Selected: {selectedItem.name as string}
         </div>
       )}
       {searchTerm && filteredData.length === 0 && (

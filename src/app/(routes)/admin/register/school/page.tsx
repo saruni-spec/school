@@ -8,6 +8,7 @@ import validation, {
   validateValue,
 } from "@/app/hooks/validation";
 import { MultiInput } from "@/app/components/multi_input";
+import { SelectList } from "@/app/components/select_list";
 
 // School Registration Component
 const School: React.FC = () => {
@@ -62,7 +63,14 @@ const School: React.FC = () => {
         onChange={name_field.handle_change}
         error={name_field.error}
       />
-      <Input
+      <SelectList
+        options={[
+          "PRE_PRIMARY",
+          "LOWER_PRIMARY",
+          "UPPER_PRIMARY",
+          "LOWER_SECONDARY",
+          "UPPER_SECONDARY",
+        ]}
         label="School Type"
         placeholder="Enter the school type (e.g., Primary, Secondary)"
         required
@@ -70,6 +78,7 @@ const School: React.FC = () => {
         onChange={type_field.handle_change}
         error={type_field.error}
       />
+
       <Input
         label="Address"
         placeholder="Enter the school address"
