@@ -1,3 +1,4 @@
+"use client";
 import { Form } from "@/app/components/form";
 import React from "react";
 import { useCallback } from "react";

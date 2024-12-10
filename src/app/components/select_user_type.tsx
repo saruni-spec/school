@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
-
-type UserType = "student" | "teacher" | "faculty" | "school_admin";
+import { UserType } from "../types/types";
 
 interface UserTypeSelectionProps {
   onUserTypeSelect: (type: UserType) => void;
@@ -17,7 +16,7 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({
     icon: React.ReactNode;
   }[] = [
     {
-      type: "school_admin",
+      type: "SCHOOL_ADMINISTRATOR",
       label: "Administrator",
       description: "System management and oversight",
       icon: (
@@ -44,9 +43,30 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({
       ),
     },
     {
-      type: "student",
-      label: "Student",
-      description: "Enrollment and academic tracking",
+      type: "PRINCIPAL",
+      label: "Principal",
+      description: "Overall school leadership and management",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-12 w-12"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+          />
+        </svg>
+      ),
+    },
+    {
+      type: "VICE_PRINCIPAL",
+      label: "Vice Principal",
+      description: "Assistant to the principal in managing the school",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -71,7 +91,28 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({
       ),
     },
     {
-      type: "teacher",
+      type: "SECRETARY",
+      label: "Secretary",
+      description: "Administrative and clerical support",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-12 w-12"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M8 16l-4-4m0 0l4-4m-4 4h16"
+          />
+        </svg>
+      ),
+    },
+    {
+      type: "TEACHER",
       label: "Teacher",
       description: "Course management and instruction",
       icon: (
@@ -98,7 +139,35 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({
       ),
     },
     {
-      type: "faculty",
+      type: "STUDENT",
+      label: "Student",
+      description: "Enrollment and academic tracking",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-12 w-12"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 14l9-5-9-5-9 5 9 5z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"
+          />
+        </svg>
+      ),
+    },
+
+    {
+      type: "FACULTY_MEMBER",
       label: "Faculty",
       description: "Administrative and academic leadership",
       icon: (

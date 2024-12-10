@@ -9,43 +9,39 @@ import Validation, {
   required,
   ValidateMultipleOptions,
   validateEmail,
-  validatePassword,
 } from "@/app/hooks/validation";
 import React, { useCallback, useEffect, useState } from "react";
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
 import { Select } from "./select";
 import { record, UserType, RegistrationStep } from "../types/types";
 import { role_type } from "@prisma/client";
+import { DetailsDisplay } from "./display";
+import { ArrowRight } from "lucide-react";
 
 //the main component for user registration
-export const User = ({ set_user }: { set_user: (record: record) => void }) => {
+export const User = ({
+  set_user,
+  role_id,
+  school_id,
+}: {
+  set_user: (record: record) => void;
+  role_id?: string;
+  school_id?: string;
+}) => {
   // these are the variables that will be used to store the user details
   const first_name = Validation("", []);
   const last_name = Validation("", []);
   const email = Validation("", [validateEmail]);
   const phone = Validation("", []);
-  const address = Validation("", []);
-  const role = Validation("", []);
-  const password = Validation("", [validatePassword]);
-  const date_of_birth = useDateValidation("", true, undefined, new Date());
-  const [emergency_contacts, set_emergency_contacts] = useState<
-    Record<string, string>
-  >({});
+
   // the function to handle the form submission
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       //check if all the fields are valid
-      const is_form_valid = [
-        first_name,
-        last_name,
-        email,
-        phone,
-        address,
-        role,
-        password,
-        date_of_birth,
-      ].every((field) => field.validate(field.value));
+      const is_form_valid = [first_name, last_name, email, phone].every(
+        (field) => field.validate(field.value)
+      );
       if (!is_form_valid) return;
       //send the data to the backend
       const result = await fetch("http://localhost:3000/api/register", {
@@ -56,10 +52,10 @@ export const User = ({ set_user }: { set_user: (record: record) => void }) => {
             last_name: last_name.value,
             email: email.value,
             phone: phone.value,
-            address: address.value,
-            password: password.value,
-            date_of_birth: date_of_birth.formatted_date,
-            emergency_contacts: emergency_contacts,
+            role_id: role_id,
+            current_school: school_id,
+            name: `${first_name}${last_name}`,
+            password: `${first_name}${last_name}@${school_id}`,
           },
           model_name: "users",
         }),
@@ -68,18 +64,7 @@ export const User = ({ set_user }: { set_user: (record: record) => void }) => {
       const user = await result.json();
       set_user(user);
     },
-    [
-      first_name,
-      last_name,
-      email,
-      phone,
-      address,
-      role,
-      password,
-      date_of_birth,
-      emergency_contacts,
-      set_user,
-    ]
+    [first_name, last_name, email, phone, set_user, role_id, school_id]
   );
   return (
     <Form onSubmit={handleSubmit} submitButtonText="Sign Up">
@@ -107,38 +92,6 @@ export const User = ({ set_user }: { set_user: (record: record) => void }) => {
         onChange={phone.handle_change}
         value={phone.value}
         error={phone.error}
-      />
-      <DatePicker
-        label="Date of Birth"
-        value={date_of_birth.value}
-        onChange={date_of_birth.handle_change}
-        error={date_of_birth.error || ""}
-      />
-      <Input
-        label="Address"
-        onChange={address.handle_change}
-        value={address.value}
-        error={address.error}
-      />
-
-      <Input
-        type="password"
-        label="Password"
-        onChange={password.handle_change}
-        value={password.value}
-        error={password.error}
-      />
-      <MultiInput
-        label="Emergency Contacts"
-        placeholder='Enter contact info (e.g., {"email": "info@example.com", "phone": "1234567890"})'
-        value={emergency_contacts}
-        onChange={set_emergency_contacts}
-        keyPlaceholder="Contact Type (email, phone)"
-        valuePlaceholder="Value"
-        validators={{
-          key: [validateKey],
-          value: [validateValue],
-        }}
       />
     </Form>
   );
@@ -243,64 +196,43 @@ export const Teacher = ({
 
 //component to add details about a student after registration
 export const Student = ({
-  user_id, // the user id of the student/
+  user, // the user id of the student/
   onSubmit,
 }: {
-  user_id: string | unknown;
+  user: record;
   onSubmit?: () => void;
 }) => {
-  //get the birth date od the student
-  //the max possible date is today,and the field is required
-  const date_of_birth = useDateValidation("", true, undefined, new Date());
-  const [medical_info, set_medical_info] = useState<Record<string, string>>({});
+  const handleSubmit = async () => {
+    // Validate inputs
+    const is_form_valid = [date_of_birth].every((field) =>
+      field.validate(field.value)
+    );
+    if (!is_form_valid) return;
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
+    // Submit to backend
+    await fetch("", {
+      method: "POST",
+      body: JSON.stringify({
+        data: { role, school_id },
+        model_name: "student",
+      }),
+    });
 
-      // Validate inputs
-      const is_form_valid = [date_of_birth].every((field) =>
-        field.validate(field.value)
-      );
-      if (!is_form_valid) return;
+    if (onSubmit) {
+      onSubmit();
+    }
+  };
 
-      // Submit to backend
-      await fetch("", {
-        method: "POST",
-        body: JSON.stringify({
-          data: { date_of_birth, medical_info, user_id },
-          model_name: "student",
-        }),
-      });
-
-      if (onSubmit) {
-        onSubmit();
-      }
-    },
-    [date_of_birth, medical_info, user_id, onSubmit]
-  );
   return (
-    <Form title="" onSubmit={handleSubmit} submitButtonText="">
-      <DatePicker
-        label="DOB"
-        value={date_of_birth.value}
-        onChange={date_of_birth.handle_change}
-        error={date_of_birth.error || ""}
-        required
-      />
-      <MultiInput
-        label="Medical Information"
-        placeholder="Enter Medical Information"
-        value={medical_info}
-        onChange={set_medical_info}
-        keyPlaceholder="Contact Type (email, phone)"
-        valuePlaceholder="Value"
-        validators={{
-          key: [validateKey],
-          value: [validateValue],
-        }}
-      />
-    </Form>
+    <DetailsDisplay
+      details={user}
+      actionButton={{
+        label: "Proceed",
+        onClick: handleSubmit,
+        icon: ArrowRight,
+        variant: "primary",
+      }}
+    />
   );
 };
 
@@ -432,10 +364,7 @@ export const UserTypeComponent = ({
         />
       )}
       {user_type === "student" && user && (
-        <Student
-          user_id={user.user_id}
-          onSubmit={handleAdditionalDetailsSubmit}
-        />
+        <Student user={user} onSubmit={handleAdditionalDetailsSubmit} />
       )}
       {user_type === "school_admin" && user && school && (
         <SchoolAdmin

@@ -9,7 +9,13 @@ import React, { useState } from "react";
 import UserTypeSelection from "@/app/components/select_user_type";
 import { RenderProgressIndicator } from "@/app/components/progress_indicator";
 import { RenderContent } from "@/app/components/conditional_render";
-import { record, UserType, RegistrationStep } from "@/app/types/types";
+import {
+  record,
+  UserType,
+  RegistrationStep,
+  roles_id,
+} from "@/app/types/types";
+
 //
 //registration component
 const UserRegistration = () => {
@@ -61,7 +67,13 @@ const UserRegistration = () => {
     {
       key: "user_details",
       label: "User Details",
-      value: <User set_user={handleUserRegistration} />,
+      value: (
+        <User
+          set_user={handleUserRegistration}
+          role_id={user_type ? roles_id[user_type] : ""}
+          school_id={school?.id}
+        />
+      ),
     },
     {
       key: "additional_details",
@@ -109,9 +121,9 @@ const UserRegistration = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <div className="w-full h-screen bg-white shadow-2xl rounded-xl overflow-hidden">
-        <div className="p-6">
+    <div className="flex items-center justify-center p-4 ">
+      <div className="w-full min-h-screen bg-white shadow-2xl rounded-xl ">
+        <div className="p-6 h-full">
           <RenderProgressIndicator
             steps={steps}
             currentStep={currentStep}

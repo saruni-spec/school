@@ -9,7 +9,10 @@ export default function AdminLayout({
 }>) {
   return (
     <SessionProvider>
-      <Admin_Layout>{children}</Admin_Layout>
+      <Admin_Layout>
+        {" "}
+        <div className="ml-64 flex-grow">{children} </div>
+      </Admin_Layout>
     </SessionProvider>
   );
 }

@@ -1,5 +1,4 @@
-//the layouts for diffrent sections of the app
-
+import React from "react";
 import { useRouter } from "next/navigation";
 import { MenuLink } from "../types/types";
 import SideMenu from "./side_menu";
@@ -38,8 +37,9 @@ export const Admin_Layout = ({ children }: { children: React.ReactNode }) => {
       },
     },
   ];
+
   return (
-    <div>
+    <div className="flex">
       <SideMenu links={links} />
       {children}
     </div>
@@ -47,11 +47,11 @@ export const Admin_Layout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const StaffLayout = ({ children }: { children: React.ReactNode }) => {
-  return <div>{children}</div>;
+  return <div className="flex">{children}</div>;
 };
 
 export const StudentLayout = ({ children }: { children: React.ReactNode }) => {
-  return <div>{children}</div>;
+  return <div className="flex">{children}</div>;
 };
 
 export const PrinciPalLayout = ({
@@ -59,5 +59,5 @@ export const PrinciPalLayout = ({
 }: {
   children: React.ReactNode;
 }) => {
-  return <div>{children}</div>;
+  return <div className="flex">{children}</div>;
 };
