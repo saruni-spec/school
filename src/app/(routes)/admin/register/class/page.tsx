@@ -61,7 +61,7 @@ const ClassLevel = () => {
                 name: `${grade_level.value}-${class_year.value}-${school_id}`,
                 grade_level: grade_level.value,
               },
-              model_name: "class_level",
+              model_name: "grade",
             }),
           }
         );

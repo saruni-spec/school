@@ -37,7 +37,7 @@ enum event_role {
 enum event_scope {
   inter_school
   intra_school
-  class_level
+  class_group
   stream_level
 }
 
@@ -242,11 +242,10 @@ enum role_type {
   AUDIT_OFFICER         // Compliance and internal audit
 }
 
-
+//represents a school and detailsrequired for a school
 model school {
   id                          Int                        @id @default(autoincrement())
   name                        String                     @db.VarChar(100)  @unique
-  type                        school_type
   address                     String?
   contact_info                Json?
   license_info                Json?
@@ -265,8 +264,33 @@ model school {
   permission                  permission[]
   users                       users[]
   course_material             course_material[]
+  levels_offered              levels_offered[]
 }
 
+// These are the different school levels,ie. LOWER_PRIMARY,UPPER_PRIMARY....that a spefic school has
+
+model levels_offered{
+  school_id                  Int
+  school_level_id            Int
+ 
+  school                     school?            @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school_level               school_level?      @relation(fields: [school_level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([school_id,school_level_id])
+}
+
+// These are the different school types,ie. PRE_PRIMARY,LOWER_PRIMARY,UPPER_PRIMARY,LOWER_SECONDARY,UPPER_SECONDARY
+// that can be offered by a school
+
+model school_level {
+  id                        Int                     @id   @default(autoincrement())
+  type                      school_type  
+
+  levels_offered            levels_offered[]    
+  grade_level               grade_level[]        
+}
+
+// Represents any facility that a school may have
 
 model facility {
   id                      Int                     @id   @default(autoincrement())
@@ -279,6 +303,7 @@ model facility {
   @@unique([name,type])
 }
 
+// Represents a school facility and the details of the facility
 
 model school_facility {
   id                      Int             @id @default(autoincrement())
@@ -300,6 +325,8 @@ model school_facility {
 
   @@unique([school_id,facility_id])
 }
+
+// Represents a library book and the details of the book
 
 model lib_book {
   id                    Int              @id @default(autoincrement())
@@ -323,6 +350,7 @@ model lib_book {
   subject               subject?        @relation(fields: [subject_id], references: [id])
 }
 
+// Represents the start and end date of an academic year of a specific school
 
 model academic_year {
   id                        Int               @id @default(autoincrement())
@@ -336,16 +364,17 @@ model academic_year {
   school                    school?           @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   semester                  semester[]
-  class_level               class_level[]
+  grade                     grade[]
   
   @@unique([school_id, year])  
 }
 
+// Represents a semester and the details of the semester of a specific academic year
 
 model semester {
   id                     Int                    @id @default(autoincrement())
-  academic_year_id       Int?
-  name                   String                 @db.VarChar(50)
+  academic_year_id       Int? 
+  name                   String                 @db.VarChar(50)  @unique
   start_date             DateTime               @db.Date
   end_date               DateTime               @db.Date
   is_current             Boolean?               @default(false)
@@ -362,43 +391,74 @@ model semester {
   subject_allocation     subject_allocation[]
   stream_assigment       stream_assigment[]
 
-
-  
-
-@@unique([academic_year_id,name])
 }
 
+// Represents the diffrent grades that can be offered by a school
 
-model class_level {
+model grade_level{
+  id                         Int                        @id @default(autoincrement())
+  level                      grade_level_type
+  school_level_id            Int?
+
+  school_level               school_level?              @relation(fields: [school_level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  grade                      grade[]
+}
+
+// Represents the progression of a class through different grades
+// A class can only be in one grade at a time
+// A class can only be in one academic year at a time
+// A class can have a class teacher and a student representative each year
+
+model grade{
+  id                          Int                        @id @default(autoincrement())
+  class_group_id              Int
+  academic_year_id            Int
+  grade_level_id              Int
+  class_teacher               Int?
+  student_rep                 Int?
+
+  academic_year               academic_year?             @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  grade_level                 grade_level?               @relation(fields: [grade_level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  class_group                 class_group?               @relation(fields: [class_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher                     teacher?                   @relation(fields: [class_teacher], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  student                     student?                   @relation(fields: [student_rep], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  @@unique([class_group_id,academic_year_id])
+}
+
+// Represents a class
+// A class can have multiple students
+// A class is a group of students that progress through the grades together
+
+model class_group {
   id                          Int                       @id @default(autoincrement())
-  academic_year_id            Int?
-  name                        String                    @db.VarChar(50)
-  grade_level                 grade_level_type
+  name                        String                    @db.VarChar(50)              
   is_active                   Boolean?                  @default(true)
   created_at                  DateTime?                 @default(now()) @db.Timestamptz(6)
-  
-  academic_year               academic_year?            @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   event_class_participant     event_class_participant[]
   stream                      stream[]
   fee                         fee[]
   permission                  permission[]
   student                     student[]
+  grade                       grade[]
 
   @@map("class")
-  @@unique([academic_year_id,grade_level])
 }
 
+// Represents a stream
+// A stream is a division/part of a larger class group
 
 model stream {
   id                           Int                          @id @default(autoincrement())
-  class_id                     Int?
+  class_group_id               Int?
   name                         String                       @db.VarChar(50)
   capacity                     Int?
   created_at                   DateTime?                    @default(now()) @db.Timestamptz(6)
   deleted_at                   DateTime?                    @db.Timestamptz(6)
 
-  class_level                  class_level?                 @relation(fields: [class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  class_group                  class_group?                 @relation(fields: [class_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   event_stream_participant     event_stream_participant[]
   exam_sitting                 exam_sitting[]
@@ -408,9 +468,13 @@ model stream {
   slot_assignment              slot_assignment[]
   permission                   permission[]
 
-  @@unique([class_id,name])
+  @@unique([class_group_id,name])
 }
 
+// Represents course material and the details of the course material
+// Course material can be published by a user
+// Course material can be assigned to a school
+// Course material can be assigned to a subject
 
 model course_material {
   id                      Int                        @id @default(autoincrement())
@@ -469,6 +533,8 @@ model department {
 
   @@unique([school_id,name])
 }
+
+// Represents the head of a department
 
 model department_head {
   staff_id                                   Int
@@ -569,13 +635,13 @@ model permission {
 
   department_id        Int?
   school_id            Int?
-  class_id             Int?
+  class_group_id             Int?
   school_facility_id   Int?
   stream_id            Int?
 
   department           department?         @relation(fields: [department_id], references: [id], onDelete: SetNull)
   school               school?             @relation(fields: [school_id], references: [id], onDelete: SetNull)
-  class_level          class_level?        @relation(fields: [class_id], references: [id], onDelete: SetNull)          
+  class_group          class_group?        @relation(fields: [class_group_id], references: [id], onDelete: SetNull)          
   school_facility      school_facility?    @relation(fields: [school_facility_id], references: [id], onDelete: SetNull)
   stream               stream?             @relation(fields: [stream_id], references: [id], onDelete: SetNull)
 
@@ -584,7 +650,7 @@ model permission {
   deleted_at           DateTime?
   
   @@unique([role_id, resource,scope,can_admin,can_create,can_delete,can_read,can_update])
-  @@index([resource, department_id, school_id, class_id])
+  @@index([resource, department_id, school_id, class_group_id])
 }
 
 model admin{
@@ -641,6 +707,7 @@ model teacher {
   slot_assignment       slot_assignment[]
   stream_assigment      stream_assigment[]
   assignment            assignment[]
+  grade                 grade[]
 }
 
 
@@ -695,13 +762,15 @@ model student {
   current_class         Int?
 
   users                 users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  class_level           class_level?      @relation(fields: [current_class], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  class_group           class_group?      @relation(fields: [current_class], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   parent_student        parent_student[]
   payment               payment[]
   result                result[]
   student_stream        student_stream[]
   student_ellectives    student_ellectives[]
+  grade                 grade[]
+  stream_assigment      stream_assigment[]
 }
 
 
@@ -737,13 +806,15 @@ model assignment {
 model stream_assigment{
   id                          Int                       @id @default(autoincrement())
   stream_id                   Int
-  teacher_id                  Int
+  teacher_rep                 Int?
+  student_rep                 Int?
   semester_id                 Int
   is_active                   Boolean?                  @default(true)
   created_at                  DateTime?                 @default(now()) @db.Timestamptz(6)
   student_stream              student_stream[]
   semester                    semester?                 @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher                     teacher?                  @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher                     teacher?                  @relation(fields: [teacher_rep], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  student                     student?                  @relation(fields: [student_rep], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 
@@ -863,11 +934,11 @@ model fee {
   amount           Decimal           @db.Decimal(10, 2)
   due_date         DateTime?         @db.Date
   semester_id      Int
-  class_id         Int?
+  class_group_id         Int?
   created_at       DateTime?         @default(now()) @db.Timestamptz(6)
   deleted_at       DateTime?         @db.Timestamptz(6)
   semester         semester?         @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  class_level      class_level?      @relation(fields: [class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  class_group      class_group?      @relation(fields: [class_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   fee_type         fee_type?         @relation(fields: [fee_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   payment          payment[]
 
@@ -948,14 +1019,14 @@ model event {
 
 model event_class_participant {
   event_id          Int
-  class_id          Int
+  class_group_id          Int
   registration_date DateTime?             @default(now()) @db.Timestamptz(6)
   status            participation_status? @default(registered)
   deleted_at        DateTime?             @db.Timestamptz(6)
-  class_level      class_level          @relation(fields: [class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  class_group       class_group           @relation(fields: [class_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([event_id, class_id])
+  @@id([event_id, class_group_id])
 }
 
 

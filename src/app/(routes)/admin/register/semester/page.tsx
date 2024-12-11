@@ -1,15 +1,10 @@
 "use client";
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
-import Validation, { required } from "@/app/hooks/validation";
-import { record } from "@/app/types/types";
-import SchoolSelection from "@/app/components/school_selection";
 import { useUser } from "@/app/context/user_context";
 
 const Semester = () => {
-  const name = Validation("", [required]);
   const start_date = useDateValidation("", true);
   const end_date = useDateValidation(
     "",
@@ -28,7 +23,7 @@ const Semester = () => {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const is_form_valid = [name, start_date, end_date].every((field) =>
+      const is_form_valid = [start_date, end_date].every((field) =>
         field.validate(field.value)
       );
       if (!is_form_valid) return;
@@ -44,12 +39,22 @@ const Semester = () => {
       const data = await response.json();
       const academic_year_id = data.records;
 
+      //
+      //generate a name for the semester
+      // use the start_month and end_month from the start_date and end_date value
+      //use the year from the start_date value
+      //use the school_id from the selected school
+      //use the academic_year_id from the selected academic year
+      const name = `${start_date.value.toString().split("-")[1]}-${
+        end_date.value.toString().split("-")[1]
+      }-${year}-${school_id}`;
+
       await fetch("http://localhost:3000/api/register", {
         method: "POST",
         body: JSON.stringify({
           data: {
             academic_year_id: academic_year_id?.id,
-            name: name.value,
+            name: name,
             start_date: start_date.formatted_date,
             end_date: end_date.formatted_date,
           },
@@ -57,7 +62,7 @@ const Semester = () => {
         }),
       });
     },
-    [name, start_date, end_date, school_id]
+    [start_date, end_date, school_id]
   );
 
   return (
@@ -66,15 +71,6 @@ const Semester = () => {
       onSubmit={handleSubmit}
       submitButtonText="Submit"
     >
-      <SchoolSelection onSchoolSelect={school_selection} />
-      <Input
-        label="Semester Name"
-        placeholder="Enter Semester Name"
-        required
-        value={name.value}
-        onChange={name.handle_change}
-        error={name.error}
-      />
       <DatePicker
         label="Start Date"
         value={start_date.value}

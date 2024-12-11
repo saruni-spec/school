@@ -23,7 +23,7 @@ const ClassLevel = () => {
             name: name.value,
             grade_level: grade_level.value,
           },
-          model_name: "class_level",
+          model_name: "grade",
         }),
       });
     },
