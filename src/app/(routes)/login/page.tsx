@@ -6,13 +6,14 @@ import Validation, {
   validatePassword,
 } from "@/app/hooks/validation";
 import React from "react";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/user_context";
 
 //Login component
 const Login = () => {
   const router = useRouter();
-
+  const { setUser } = useUser();
   //we require the email and password to login
   const email = Validation("", [validateEmail]);
   const password = Validation("", [validatePassword]);
@@ -44,7 +45,12 @@ const Login = () => {
 
       if (result?.ok) {
         // Successful login - redirect to a protected route
-        router.push("/"); // Adjust route as needed
+        const session = await getSession();
+        if (session) {
+          // Update user context with session data
+          setUser(session.user);
+        }
+        router.push("/");
       }
     } catch (error) {
       console.log("Unexpected login error:", error);

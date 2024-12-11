@@ -12,6 +12,7 @@ declare module "next-auth" {
     user: {
       id: string;
       role: string;
+      school: record;
       role_type: string;
       permissions: record[];
     } & DefaultSession["user"];
@@ -19,6 +20,7 @@ declare module "next-auth" {
 
   interface User extends DefaultUser {
     id: string;
+    school: record;
     role: string;
     role_type: string;
     permissions: record[];
@@ -52,6 +54,7 @@ export const authOptions: NextAuthOptions = {
               name: true,
               email: true,
               password: true,
+              school: { select: { name: true, id: true } },
               role: {
                 select: {
                   name: true,
@@ -79,9 +82,9 @@ export const authOptions: NextAuthOptions = {
           // Return user info
           return {
             id: user.id.toString(),
+            school: user.school,
             name: user.name,
             email: user.email,
-            role: user.role?.name ?? "",
             role_type: user.role?.type ?? "",
             permissions: user.role?.permissions ?? [],
           };
@@ -103,6 +106,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.school = user.school;
         token.role = user.role;
         token.role_type = user.role_type;
         token.permissions = user.permissions;
@@ -113,6 +117,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id as string;
         session.user.email = token.email as string;
+        session.user.school = token.school as record;
         session.user.role = token.role as string;
         session.user.role_type = token.role_type as string;
         session.user.permissions = token.permissions as record[];

@@ -4,7 +4,6 @@ import {
   CompleteRegistration,
   UserTypeComponent,
 } from "@/app/components/user_reg";
-import SchoolSelection from "@/app/components/school_selection";
 import React, { useState } from "react";
 import UserTypeSelection from "@/app/components/select_user_type";
 import { RenderProgressIndicator } from "@/app/components/progress_indicator";
@@ -15,25 +14,22 @@ import {
   RegistrationStep,
   roles_id,
 } from "@/app/types/types";
+import { useUser } from "@/app/context/user_context";
 
 //
 //registration component
 const UserRegistration = () => {
   //start with selecting the school
-  const [currentStep, setCurrentStep] =
-    useState<RegistrationStep>("school_selection");
+  const [currentStep, setCurrentStep] = useState<RegistrationStep>(
+    "user_type_selection"
+  );
   //select the user type
   const [user_type, set_user_type] = useState<UserType>();
   //save the user after registration
   const [user, set_user] = useState<record>();
   //save the school selected
-  const [school, set_school] = useState<record>();
+  const { school_id } = useUser();
   //label the steps
-  //save the school selected and move to user selection
-  const handleSchoolSelect = (selectedSchool: record) => {
-    set_school(selectedSchool);
-    setCurrentStep("user_type_selection");
-  };
   //save the user type selected and move to user details
   const handleUserTypeSelect = (selectedUserType: UserType) => {
     set_user_type(selectedUserType);
@@ -61,11 +57,6 @@ const UserRegistration = () => {
     value: React.JSX.Element;
   }[] = [
     {
-      key: "school_selection",
-      label: "Select School",
-      value: <SchoolSelection onSchoolSelect={handleSchoolSelect} />,
-    },
-    {
       key: "user_type_selection",
       label: "Choose User Type",
       value: <UserTypeSelection onUserTypeSelect={handleUserTypeSelect} />,
@@ -77,7 +68,7 @@ const UserRegistration = () => {
         <User
           set_user={handleUserRegistration}
           role_id={user_type ? roles_id[user_type] : 26}
-          school_id={school?.id}
+          school_id={school_id}
         />
       ),
     },
@@ -88,7 +79,7 @@ const UserRegistration = () => {
         <UserTypeComponent
           user_type={user_type}
           user={user}
-          school={school}
+          school_id={school_id}
           handleAdditionalDetailsSubmit={handleAdditionalDetailsSubmit}
         />
       ),
@@ -101,7 +92,6 @@ const UserRegistration = () => {
           user_type={user_type}
           setCurrentStep={setCurrentStep}
           set_user={set_user}
-          set_school={set_school}
           set_user_type={set_user_type}
         />
       ),
@@ -118,9 +108,8 @@ const UserRegistration = () => {
     if (targetStepIndex <= currentStepIndex) {
       // Reset subsequent step data when moving back
       if (targetStepIndex < currentStepIndex) {
-        if (targetStepIndex < 1) set_school(undefined);
-        if (targetStepIndex < 2) set_user_type(undefined);
-        if (targetStepIndex < 3) set_user(undefined);
+        if (targetStepIndex < 1) set_user_type(undefined);
+        if (targetStepIndex < 2) set_user(undefined);
       }
       setCurrentStep(step);
     }

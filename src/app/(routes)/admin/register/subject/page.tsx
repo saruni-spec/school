@@ -6,7 +6,6 @@ import Validation, { required } from "@/app/hooks/validation";
 
 const Subject = () => {
   const name = Validation("", [required]);
-  const code = Validation("", []);
   const description = Validation("", []);
 
   const handleSubmit = useCallback(
@@ -17,20 +16,18 @@ const Subject = () => {
       );
       if (!is_form_valid) return;
 
-      await fetch("", {
+      await fetch("http://localhost:3000/api/register", {
         method: "POST",
         body: JSON.stringify({
           data: {
-            department_id: department_id,
             name: name.value,
-            code: code.value,
             description: description.value,
           },
           model_name: "subject",
         }),
       });
     },
-    [name, code, description]
+    [name, description]
   );
 
   return (
@@ -46,13 +43,6 @@ const Subject = () => {
         value={name.value}
         onChange={name.handle_change}
         error={name.error}
-      />
-      <Input
-        label="Code"
-        placeholder="Enter Subject Code (Optional)"
-        value={code.value}
-        onChange={code.handle_change}
-        error={code.error}
       />
       <Input
         label="Description"

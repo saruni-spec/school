@@ -135,7 +135,10 @@ export const useDateValidation = (
   const [error, setError] = useState<string | null>(null);
 
   const validate = useCallback(
-    (inputValue: string) => {
+    (inputValue: string | number) => {
+      //
+      //convert to string
+      inputValue = inputValue.toString();
       const date = parseDate(inputValue);
 
       // Required validation

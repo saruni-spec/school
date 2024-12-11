@@ -5,8 +5,6 @@ import {
   School,
   Tag,
   Building,
-  BookOpen,
-  Users,
   Calendar,
   BookOpenCheck,
   FileSpreadsheet,

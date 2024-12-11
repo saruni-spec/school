@@ -7,20 +7,33 @@ import {
   LayoutDashboard as Dashboard,
 } from "lucide-react";
 import { MenuLink } from "../types/types";
+import { SchoolSelectionProps } from "./school_selection";
+import { record } from "../types/types";
+import { useUser } from "../context/user_context";
+
 // Define the interface for menu links
 
 interface SideMenuProps {
   links: MenuLink[];
   schoolName?: string;
   logoUrl?: string;
+  SchoolSelect?: React.FC<SchoolSelectionProps>;
 }
 
 const SideMenu: React.FC<SideMenuProps> = ({
   links,
   schoolName = "Multi-School System",
   logoUrl,
+  SchoolSelect,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [school_name, setSchoolName] = useState<string>(schoolName);
+  const { setSchool } = useUser();
+
+  const handleSchoolChange = (school: record) => {
+    setSchoolName(school.name);
+    setSchool(school);
+  };
 
   const toggleMenu = () => {
     setIsCollapsed(!isCollapsed);
@@ -56,7 +69,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
               <School className="w-10 h-10" />
             )}
             <span className="text-lg font-bold truncate max-w-[200px]">
-              {schoolName}
+              {school_name}
             </span>
           </div>
         )}
@@ -72,6 +85,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
 
       {/* Navigation Links */}
       <nav className="flex-grow overflow-y-auto">
+        {SchoolSelect && <SchoolSelect onSchoolSelect={handleSchoolChange} />}
         <ul className="py-2">
           {links.map((link, index) => (
             <li

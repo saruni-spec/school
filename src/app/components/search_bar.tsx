@@ -49,7 +49,7 @@ const SearchableList: React.FC<SearchableListProps> = ({
           placeholder="Search items..."
           value={searchTerm}
           onChange={handleSearchChange}
-          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
         />
       </div>
       {searchTerm && !selectedItem && filteredData.length > 0 && (
@@ -62,7 +62,9 @@ const SearchableList: React.FC<SearchableListProps> = ({
                 className="px-4 py-2 border-b last:border-b-0 hover:bg-gray-100 transition-colors cursor-pointer"
               >
                 <div className="flex justify-between">
-                  <span className="font-medium">{item.name as string}</span>
+                  <span className="font-medium text-black">
+                    {item.name as string}
+                  </span>
                   <span className="text-gray-500 text-sm">
                     {item.category as string}
                   </span>
@@ -72,11 +74,7 @@ const SearchableList: React.FC<SearchableListProps> = ({
           </ul>
         </div>
       )}
-      {selectedItem && (
-        <div className="mt-2 text-sm text-gray-600">
-          Selected: {selectedItem.name as string}
-        </div>
-      )}
+
       {searchTerm && filteredData.length === 0 && (
         <div className="text-center py-4 text-gray-500">No items found</div>
       )}

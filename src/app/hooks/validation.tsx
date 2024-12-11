@@ -137,7 +137,8 @@ export const validateEmail = (value: string | number) => {
 };
 
 //validator for password
-export const validatePassword = (value: string) => {
+export const validatePassword = (value: string | number) => {
+  value = value.toString();
   //check if the password is valid
   if (!value) return "Password is required";
   if (value.length < 6) return "Password must be at least 6 characters";

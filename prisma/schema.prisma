@@ -256,7 +256,6 @@ model school {
 
   academic_year               academic_year[]
   award                       award[]
-  class_level                 class_level[]
   department                  department[]
   event_school_participant    event_school_participant[]
   fee_type                    fee_type[]
@@ -265,6 +264,7 @@ model school {
   staff                       staff[]
   permission                  permission[]
   users                       users[]
+  course_material             course_material[]
 }
 
 
@@ -327,7 +327,7 @@ model lib_book {
 model academic_year {
   id                        Int               @id @default(autoincrement())
   school_id                 Int?
-  name                      String            @db.VarChar(50)
+  year                      String            @db.VarChar(50)
   start_date                DateTime          @db.Date
   end_date                  DateTime          @db.Date
   is_current                Boolean?          @default(false)
@@ -336,10 +336,9 @@ model academic_year {
   school                    school?           @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   semester                  semester[]
-  subject_allocation        subject_allocation[]
-  stream_assigment          stream_assigment[]
-
-  @@unique([school_id, name])  
+  class_level               class_level[]
+  
+  @@unique([school_id, year])  
 }
 
 
@@ -360,6 +359,9 @@ model semester {
   fee                    fee[]
   event                  event[]
   exam                   exam[]
+  subject_allocation     subject_allocation[]
+  stream_assigment       stream_assigment[]
+
 
   
 
@@ -369,22 +371,22 @@ model semester {
 
 model class_level {
   id                          Int                       @id @default(autoincrement())
-  school_id                   Int
+  academic_year_id            Int?
   name                        String                    @db.VarChar(50)
   grade_level                 grade_level_type
   is_active                   Boolean?                  @default(true)
   created_at                  DateTime?                 @default(now()) @db.Timestamptz(6)
   
-  school                      school?                   @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  academic_year               academic_year?            @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
-  subject                     subject[]
   event_class_participant     event_class_participant[]
   stream                      stream[]
   fee                         fee[]
   permission                  permission[]
   student                     student[]
+
   @@map("class")
-  @@unique([school_id,name])
+  @@unique([academic_year_id,grade_level])
 }
 
 
@@ -413,10 +415,15 @@ model stream {
 model course_material {
   id                      Int                        @id @default(autoincrement())
   name                    String                     @db.VarChar(50)
-  subject_id              Int?                
+  published_by            Int?
+  school_id               Int?
+  subject_id              Int?
+  grade_level             grade_level_type               
   description             String                     @db.VarChar(100)
 
   subject                 subject?                   @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school                  school?                    @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                   users?                     @relation(fields: [published_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model gallery {
@@ -456,7 +463,7 @@ model department {
   school                                     school?   @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   staff                                      staff[]  
-  subject                                    subject[]
+  subject_allocation                         subject_allocation[]
   permission                                 permission[]
   department_head                            department_head[]
 
@@ -508,6 +515,7 @@ model users {
   admin                              admin[]
   picture                            picture[]
   medical                            medical[]
+  course_material                    course_material[]
 }
 
 model medical {
@@ -638,44 +646,42 @@ model teacher {
 
 model subject {
   id                    Int               @id @default(autoincrement())
-  department_id         Int?
-  name                  String            @db.VarChar(100)
-  class_id              Int?
-  code                  String?           @unique @db.VarChar(20)
+  name                  String            @db.VarChar(100) @unique
   description           String?
-  is_active             Boolean?          @default(true)
   created_at            DateTime?         @default(now()) @db.Timestamptz(6)
   deleted_at            DateTime?         @db.Timestamptz(6)
 
-  class_level           class_level?      @relation(fields: [class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  department            department?       @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  student_ellectives    student_ellectives[]
-  exam_sitting          exam_sitting[]
+  
   subject_allocation    subject_allocation[]
-  slot_assignment       slot_assignment[]
-  course_material        course_material[]
-  assignment            assignment[]
+  course_material       course_material[]
   lib_book              lib_book[]
 
-  @@unique([class_id,name])
 }
 
 
 model subject_allocation {
   id                        Int                       @id @default(autoincrement())
+  code                      String?                   @unique @db.VarChar(20)
+  department_id             Int?
   teacher_id                Int?
   subject_id                Int
   stream_id                 Int
-  academic_year_id          Int
+  semester_id               Int
   assigned_date             DateTime?                 @default(dbgenerated("CURRENT_DATE")) @db.Date
   deleted_at                DateTime?                 @db.Timestamptz(6)
 
   stream                    stream                    @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  academic_year             academic_year             @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  semester                  semester                  @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   subject                   subject                   @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   teacher                   teacher?                  @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
+  department                department?               @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  
+  student_ellectives    student_ellectives[]
+  exam_sitting          exam_sitting[]
+  slot_assignment       slot_assignment[]
+  assignment            assignment[]
+  
   @@unique([teacher_id, subject_id])
 }
 
@@ -715,16 +721,16 @@ model student_stream {
 
 
 model assignment {
-  id                      Int                   @id @default(autoincrement())
-  description             String                @db.VarChar(100)
+  id                      Int                    @id @default(autoincrement())
+  description             String                 @db.VarChar(100)
   teacher_id              Int
-  subject_id              Int?
+  subject_allocation_id   Int?
   stream_id               Int?
   due_date                DateTime?              @db.Date
 
-  teacher     teacher?       @relation(fields: [teacher_id], references: [id])
-  subject     subject?       @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  stream      stream?       @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher                 teacher?               @relation(fields: [teacher_id], references: [id])
+  subject_allocation      subject_allocation?    @relation(fields: [subject_allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  stream                  stream?                @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 
@@ -732,27 +738,27 @@ model stream_assigment{
   id                          Int                       @id @default(autoincrement())
   stream_id                   Int
   teacher_id                  Int
-  academic_year_id            Int
+  semester_id                 Int
   is_active                   Boolean?                  @default(true)
   created_at                  DateTime?                 @default(now()) @db.Timestamptz(6)
   student_stream              student_stream[]
-  academic_year               academic_year?            @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  semester                    semester?                 @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   teacher                     teacher?                  @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 
 model student_ellectives {
   student_id                  Int
-  subject_id                  Int
+  subject_allocation_id       Int
   semester_id                 Int
   enrollment_date             DateTime?                 @default(dbgenerated("CURRENT_DATE")) @db.Date
   deleted_at                  DateTime?                 @db.Timestamptz(6)
 
   semester                    semester                  @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subject                     subject                   @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subject_allocation          subject_allocation        @relation(fields: [subject_allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   student                     student                   @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
-  @@id([student_id, subject_id])
+  @@id([student_id, subject_allocation_id])
 }
 
 
@@ -795,18 +801,18 @@ model slot {
 
 
 model slot_assignment {
-  id                  Int               @id @default(autoincrement())
-  slot_id             Int
-  stream_id           Int
-  teacher_id          Int
-  subject_id          Int
-  created_at          DateTime?         @default(now()) @db.Timestamptz(6)
-  deleted_at          DateTime?         @db.Timestamptz(6)
+  id                             Int                          @id @default(autoincrement())
+  slot_id                        Int
+  stream_id                      Int
+  teacher_id                     Int
+  subject_allocation_id          Int
+  created_at                     DateTime?                    @default(now()) @db.Timestamptz(6)
+  deleted_at                     DateTime?                    @db.Timestamptz(6)
 
-  slot                slot              @relation(fields: [slot_id], references: [id])
-  teacher             teacher           @relation(fields: [teacher_id], references: [id])
-  subject             subject           @relation(fields: [subject_id], references: [id])
-  stream              stream?           @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  slot                           slot                         @relation(fields: [slot_id], references: [id])
+  teacher                        teacher                      @relation(fields: [teacher_id], references: [id])
+  subject_allocation             subject_allocation           @relation(fields: [subject_allocation_id], references: [id])
+  stream                         stream?                      @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   @@unique([slot_id, teacher_id,stream_id])
 }
@@ -832,21 +838,21 @@ model exam_sitting {
   id                    Int             @id @default(autoincrement())
   exam_id               Int?
   supervisor            Int?
-  subject_id            Int?
+  subject_allocation_id Int?
   stream_id             Int?
-  out_of                Decimal?        @db.Decimal(5, 2)
+  out_of                Decimal?                   @db.Decimal(5, 2)
   remarks               String?
-  sitting_date          DateTime        @db.Date
-  created_at            DateTime?       @default(now()) @db.Timestamptz(6)
+  sitting_date          DateTime                   @db.Date
+  created_at            DateTime?                  @default(now()) @db.Timestamptz(6)
   total_marks           Int
-  deleted_at            DateTime?       @db.Timestamptz(6)
-  exam                  exam?           @relation(fields: [exam_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  stream                stream?         @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subject               subject?        @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher               teacher?        @relation(fields: [supervisor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  deleted_at            DateTime?                  @db.Timestamptz(6)
+  exam                  exam?                      @relation(fields: [exam_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  stream                stream?                    @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subject_allocation    subject_allocation?        @relation(fields: [subject_allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher               teacher?                   @relation(fields: [supervisor], references: [id], onDelete: NoAction, onUpdate: NoAction)
   result                result[]
 
-  @@unique([stream_id, subject_id, exam_id, sitting_date])
+  @@unique([stream_id, subject_allocation_id, exam_id, sitting_date])
 }
 
 

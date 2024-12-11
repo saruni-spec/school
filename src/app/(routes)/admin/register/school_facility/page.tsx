@@ -2,15 +2,18 @@ import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
 import Validation, { required } from "@/app/hooks/validation";
+import { useUser } from "@/app/context/user_context";
 
 const SchoolFacility = () => {
   const description = Validation("", []);
 
+  const { school_id } = useUser();
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const is_form_valid = [school_id, facility_id, description].every(
-        (field) => field.validate(field.value)
+      const is_form_valid = [facility_id, description].every((field) =>
+        field.validate(field.value)
       );
       if (!is_form_valid) return;
 
@@ -22,7 +25,7 @@ const SchoolFacility = () => {
         }),
       });
     },
-    [description]
+    [description, school_id]
   );
 
   return (

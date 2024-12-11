@@ -1,16 +1,34 @@
 "use client";
-import React, { useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
 import Validation, { required } from "@/app/hooks/validation";
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
+import { useUser } from "@/app/context/user_context";
+import { Select } from "@/app/components/select";
 
 const Fee = () => {
   const fee_type_id = Validation("", []);
   const amount = Validation("", [required]);
-  const due_date = useDateValidation("", { minDate: new Date() });
+  const due_date = useDateValidation("", true, new Date());
   const semester_id = Validation("", [required]);
-  const class_id = Validation("", []);
+  const [feeTypes, setFeeTypes] = useState();
+  const { school_id } = useUser();
+
+  //
+  //get the fee types
+  const getFeeTypes = useCallback(async () => {
+    const response = await fetch(
+      `http://localhost:3000/api/fetch_record?table_name=fee_type&school_id=${school_id}`
+    );
+    const results = await response.json();
+    console.log(results);
+    setFeeTypes(results.records);
+  }, [school_id]);
+
+  useEffect(() => {
+    getFeeTypes();
+  }, [getFeeTypes]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -24,17 +42,16 @@ const Fee = () => {
         method: "POST",
         body: JSON.stringify({
           data: {
-            fee_type_id: fee_type_id.value ? parseInt(fee_type_id.value) : null,
-            amount: parseFloat(amount.value),
-            due_date: due_date.value || null,
-            semester_id: parseInt(semester_id.value),
-            class_id: class_id.value ? parseInt(class_id.value) : null,
+            fee_type_id: fee_type_id.value,
+            amount: amount.value,
+            due_date: due_date.value,
+            semester_id: semester_id.value,
           },
           model_name: "fee",
         }),
       });
     },
-    [fee_type_id, amount, due_date, semester_id, class_id]
+    [fee_type_id, amount, due_date, semester_id]
   );
 
   return (
@@ -43,13 +60,6 @@ const Fee = () => {
       onSubmit={handleSubmit}
       submitButtonText="Submit"
     >
-      <Input
-        label="Fee Type ID"
-        placeholder="Enter Fee Type ID (Optional)"
-        value={fee_type_id.value}
-        onChange={fee_type_id.handle_change}
-        error={fee_type_id.error}
-      />
       <Input
         label="Amount"
         placeholder="Enter Fee Amount"
@@ -63,7 +73,6 @@ const Fee = () => {
         label="Due Date"
         placeholder="Enter Due Date (Optional)"
         type="date"
-        minDate={new Date()}
         value={due_date.value}
         onChange={due_date.handle_change}
         error={due_date.error}
@@ -76,13 +85,15 @@ const Fee = () => {
         onChange={semester_id.handle_change}
         error={semester_id.error}
       />
-      <Input
-        label="Class ID"
-        placeholder="Enter Class ID (Optional)"
-        value={class_id.value}
-        onChange={class_id.handle_change}
-        error={class_id.error}
-      />
+      {feeTypes && (
+        <Select
+          options={feeTypes}
+          value={fee_type_id.value}
+          onChange={fee_type_id.handle_change}
+          error={fee_type_id.error}
+          label="Fee Type"
+        />
+      )}
     </Form>
   );
 };

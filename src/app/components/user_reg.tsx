@@ -67,33 +67,38 @@ export const User = ({
     [first_name, last_name, email, phone, set_user, role_id, school_id]
   );
   return (
-    <Form onSubmit={handleSubmit} submitButtonText="Sign Up">
-      <Input
-        label="First Name"
-        onChange={first_name.handle_change}
-        value={first_name.value}
-        error={first_name.error}
-      />
-      <Input
-        label="Last Name"
-        onChange={last_name.handle_change}
-        value={last_name.value}
-        error={last_name.error}
-      />
-      <Input
-        type="email"
-        label="Email"
-        onChange={email.handle_change}
-        value={email.value}
-        error={email.error}
-      />
-      <Input
-        label="Phone Number"
-        onChange={phone.handle_change}
-        value={phone.value}
-        error={phone.error}
-      />
-    </Form>
+    <>
+      {school_id && (
+        <Form onSubmit={handleSubmit} submitButtonText="Sign Up">
+          <Input
+            label="First Name"
+            onChange={first_name.handle_change}
+            value={first_name.value}
+            error={first_name.error}
+          />
+          <Input
+            label="Last Name"
+            onChange={last_name.handle_change}
+            value={last_name.value}
+            error={last_name.error}
+          />
+          <Input
+            type="email"
+            label="Email"
+            onChange={email.handle_change}
+            value={email.value}
+            error={email.error}
+          />
+          <Input
+            label="Phone Number"
+            onChange={phone.handle_change}
+            value={phone.value}
+            error={phone.error}
+          />
+        </Form>
+      )}
+      {!school_id && <>Please select a school</>}
+    </>
   );
 };
 
@@ -339,20 +344,20 @@ export const Staff = ({
 export const UserTypeComponent = ({
   user_type,
   user,
-  school,
+  school_id,
   handleAdditionalDetailsSubmit,
 }: {
   user_type: UserType | undefined;
   user: record | undefined;
-  school: record | undefined;
+  school_id: string | undefined;
   handleAdditionalDetailsSubmit: () => void;
 }) => {
   return (
     <>
-      {user_type === "SCHOOL_ADMINISTRATOR" && user && school && (
+      {user_type === "SCHOOL_ADMINISTRATOR" && user && school_id && (
         <SchoolAdmin
           user_id={user.id}
-          school_id={school.id}
+          school_id={school_id}
           onSubmit={handleAdditionalDetailsSubmit}
         />
       )}
@@ -364,13 +369,11 @@ export const CompleteRegistration = ({
   user_type,
   setCurrentStep,
   set_user,
-  set_school,
   set_user_type,
 }: {
   user_type: string | undefined;
   setCurrentStep: (step: RegistrationStep) => void;
   set_user: (user: record | undefined) => void;
-  set_school?: (school: record | undefined) => void;
   set_user_type: (user_type: UserType | undefined) => void;
 }) => {
   return (
@@ -386,9 +389,6 @@ export const CompleteRegistration = ({
           // Reset to initial state or redirect
           setCurrentStep("user_details");
           set_user(undefined);
-          if (set_school) {
-            set_school(undefined);
-          }
           set_user_type(undefined);
         }}
         className="

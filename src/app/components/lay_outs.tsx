@@ -2,6 +2,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { MenuLink } from "../types/types";
 import SideMenu from "./side_menu";
+import SchoolSelection from "./school_selection";
 
 export const Admin_Layout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
@@ -40,7 +41,7 @@ export const Admin_Layout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <div className="flex">
-      <SideMenu links={links} />
+      <SideMenu links={links} SchoolSelect={SchoolSelection} />
       {children}
     </div>
   );

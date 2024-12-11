@@ -52,8 +52,7 @@ export type RegistrationStep =
   | "user_type_selection"
   | "user_details"
   | "additional_details"
-  | "complete"
-  | "school_selection";
+  | "complete";
 
 export interface MenuLink {
   label: string;

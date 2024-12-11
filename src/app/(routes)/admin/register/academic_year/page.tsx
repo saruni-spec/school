@@ -4,8 +4,7 @@ import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
 import Validation, { required } from "@/app/hooks/validation";
-import SchoolSelection from "@/app/components/school_selection";
-import { record } from "@/app/types/types";
+import { useUser } from "@/app/context/user_context";
 
 const AcademicYear = () => {
   const name = Validation("", [required]);
@@ -15,21 +14,14 @@ const AcademicYear = () => {
     false,
     start_date.formatted_date ? start_date.formatted_date : undefined
   );
-  const school_id = Validation("", [required]);
-  //
-  //get the school id of the selcted school
-  const school_selection = useCallback(
-    (selectedSchool: record) => {
-      school_id.handle_value_change(selectedSchool.id);
-    },
-    [school_id]
-  );
+  const { school_id } = useUser();
+
   //
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const is_form_valid = [name, start_date, end_date, school_id].every(
-        (field) => field.validate(field.value.toString())
+      const is_form_valid = [name, start_date, end_date].every((field) =>
+        field.validate(field.value.toString())
       );
       if (!is_form_valid) return;
 
@@ -37,10 +29,10 @@ const AcademicYear = () => {
         method: "POST",
         body: JSON.stringify({
           data: {
-            school_id: school_id.value,
-            name: name.value,
-            start_date: start_date.value,
-            end_date: end_date.value,
+            school_id: school_id,
+            year: name.value,
+            start_date: start_date.formatted_date,
+            end_date: end_date.formatted_date,
           },
           model_name: "academic_year",
         }),
@@ -55,10 +47,9 @@ const AcademicYear = () => {
       onSubmit={handleSubmit}
       submitButtonText="Register"
     >
-      <SchoolSelection onSchoolSelect={school_selection} />
       <Input
-        label="Academic Year Name"
-        placeholder="Enter Name"
+        label="Academic Year"
+        placeholder="Enter Academic Year eg 2025..."
         required
         value={name.value}
         onChange={name.handle_change}
