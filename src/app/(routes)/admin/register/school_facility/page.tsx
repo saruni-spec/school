@@ -29,8 +29,6 @@ const SchoolFacility = () => {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-
-      console.log(facility_id.value);
       const is_form_valid = [facility_id, description].every((field) =>
         field.validate(field.value)
       );
@@ -40,8 +38,8 @@ const SchoolFacility = () => {
         method: "POST",
         body: JSON.stringify({
           data: {
-            school_id,
-            facility_id: parseInt(facility_id.value as string),
+            current_school: school_id,
+            is_facility: parseInt(facility_id.value as string),
             description: description.value,
           },
           model_name: "school_facility",

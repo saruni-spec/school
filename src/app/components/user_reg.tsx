@@ -17,16 +17,20 @@ import { record, UserType, RegistrationStep } from "../types/types";
 import { role_type } from "@prisma/client";
 import { DetailsDisplay } from "./display";
 import { ArrowRight } from "lucide-react";
+import { SelectList } from "./select_list";
+import { useUser } from "../context/user_context";
 
 //the main component for user registration
 export const User = ({
   set_user,
   role_id,
   school_id,
+  user_type,
 }: {
   set_user: (record: record) => void;
   role_id?: number;
-  school_id?: string;
+  school_id?: number;
+  user_type?: UserType;
 }) => {
   // these are the variables that will be used to store the user details
   const first_name = Validation("", []);
@@ -62,9 +66,48 @@ export const User = ({
       });
 
       const user = await result.json();
-      set_user(user);
+      let response;
+      //
+      //save the user in the user specific table
+      if (user_type === "STUDENT") {
+        response = await fetch("http://localhost:3000/api/register", {
+          method: "POST",
+          body: JSON.stringify({
+            data: {
+              user_id: user.id,
+            },
+            model_name: "student",
+          }),
+        });
+      } else {
+        response = await fetch("http://localhost:3000/api/register", {
+          method: "POST",
+          body: JSON.stringify({
+            data: {
+              user_id: user.id,
+            },
+            model_name: "staff",
+          }),
+        });
+      }
+
+      if (!response.ok) {
+        alert("Registration failed");
+        return;
+      }
+      const user_details = await response.json();
+      set_user(user_details);
     },
-    [first_name, last_name, email, phone, set_user, role_id, school_id]
+    [
+      first_name,
+      last_name,
+      email,
+      phone,
+      set_user,
+      role_id,
+      school_id,
+      user_type,
+    ]
   );
   return (
     <>
@@ -108,9 +151,9 @@ export const SchoolAdmin = ({
   user_id, // the id of the user
   school_id, // the id of the school
 }: {
-  user_id: string;
+  user_id: number;
   onSubmit: () => void;
-  school_id: string;
+  school_id: number;
 }) => {
   // for a school admin, im registering a staff member with the role as school admin
   // role is stores in the user table,so i need to get the role id for school admin
@@ -159,20 +202,52 @@ export const Teacher = ({
   staff_id, // the staff id of the teacher
   onSubmit,
 }: {
-  staff_id: string | unknown;
+  staff_id: number;
   onSubmit?: () => void;
 }) => {
-  const specializations = Validation("", []);
+  const department_table = "department";
+  const department_id = Validation("", []);
+
+  const role = Validation("MEMBER", []);
+  const { school_id } = useUser();
+
+  //
+  //get the departments in the school
+  const [departments, setDepartments] = useState<record[]>([]);
+
+  useEffect(() => {
+    const getDepartments = async () => {
+      const response = await fetch(
+        `http://localhost:3000/api/fetch_record?table_name=${department_table}&school_id=${school_id}`
+      );
+      const departments = await response.json();
+      setDepartments(departments);
+    };
+
+    getDepartments();
+  }, [school_id]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!specializations.validate(specializations.value)) return;
-      await fetch("", {
+      const if_form_valid = [department_id, role].every((field) =>
+        field.validate(field.value)
+      );
+
+      if (!if_form_valid) return;
+
+      const staff_code = `STF-${school_id}-${department_id.value}-${staff_id}`;
+
+      await fetch("http://localhost:3000/api/register", {
         method: "POST",
         body: JSON.stringify({
-          data: { staff_id, specializations },
-          model_name: "teacher",
+          data: {
+            staff_id: staff_id,
+            department_id: parseInt(department_id.value as string),
+            current_role: role.value as role_type,
+            staff_code,
+          },
+          model_name: "department_staff",
         }),
       });
 
@@ -180,7 +255,7 @@ export const Teacher = ({
         onSubmit();
       }
     },
-    [specializations, staff_id, onSubmit]
+    [staff_id, onSubmit, school_id, department_id, role]
   );
   return (
     <Form
@@ -188,12 +263,26 @@ export const Teacher = ({
       onSubmit={handleSubmit}
       submitButtonText="Sign Up"
     >
-      <Input
-        label="Specializations"
-        placeholder="Enter any specializations"
-        value={specializations.value}
-        onChange={specializations.handle_change}
-        error={specializations.error}
+      <Select
+        label="Department"
+        value={department_id.value}
+        onChange={department_id.handle_change}
+        error={department_id.error}
+        placeholder="Select Department"
+        options={departments}
+      />
+      <SelectList
+        label="Role"
+        value={role.value}
+        onChange={role.handle_change}
+        error={role.error}
+        placeholder="Select Role"
+        options={[
+          "MEMBER",
+          "REPRESENTATIVE",
+          "HEAD_OF_DEPARTMENT",
+          "ASSISTANT_REPRESENTATIVE",
+        ]}
       />
     </Form>
   );
@@ -349,7 +438,7 @@ export const UserTypeComponent = ({
 }: {
   user_type: UserType | undefined;
   user: record | undefined;
-  school_id: string | undefined;
+  school_id: number | undefined;
   handleAdditionalDetailsSubmit: () => void;
 }) => {
   return (
@@ -360,6 +449,9 @@ export const UserTypeComponent = ({
           school_id={school_id}
           onSubmit={handleAdditionalDetailsSubmit}
         />
+      )}
+      {user_type === "TEACHER" && user && (
+        <Teacher staff_id={user.id} onSubmit={handleAdditionalDetailsSubmit} />
       )}
     </>
   );

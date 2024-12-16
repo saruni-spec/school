@@ -8,12 +8,7 @@ import React, { useState } from "react";
 import UserTypeSelection from "@/app/components/select_user_type";
 import { RenderProgressIndicator } from "@/app/components/progress_indicator";
 import { RenderContent } from "@/app/components/conditional_render";
-import {
-  record,
-  UserType,
-  RegistrationStep,
-  roles_id,
-} from "@/app/types/types";
+import { record, UserType, RegistrationStep } from "@/app/types/types";
 import { useUser } from "@/app/context/user_context";
 
 //
@@ -29,6 +24,9 @@ const UserRegistration = () => {
   const [user, set_user] = useState<record>();
   //save the school selected
   const { school_id } = useUser();
+  //
+  //get the roles from the db
+
   //label the steps
   //save the user type selected and move to user details
   const handleUserTypeSelect = (selectedUserType: UserType) => {
@@ -40,11 +38,8 @@ const UserRegistration = () => {
     set_user(registeredUser);
     //
     //if the user is a techer,stdent or faculty,complete the process
-    if (user_type === "SCHOOL_ADMINISTRATOR") {
-      setCurrentStep("additional_details");
-      return;
-    }
-    setCurrentStep("complete");
+
+    setCurrentStep("additional_details");
   };
   //submit the additional details and complete the registration
   const handleAdditionalDetailsSubmit = () => {
@@ -58,23 +53,23 @@ const UserRegistration = () => {
   }[] = [
     {
       key: "user_type_selection",
-      label: "Choose User Type",
+      label: user_type ?? "Choose User Type",
       value: <UserTypeSelection onUserTypeSelect={handleUserTypeSelect} />,
     },
     {
       key: "user_details",
-      label: "User Details",
+      label: `ENTER ${user_type || "USER"} DETAILS`,
       value: (
         <User
           set_user={handleUserRegistration}
-          role_id={user_type ? roles_id[user_type] : 26}
+          role_id={user_type ? roles[user_type] : 26}
           school_id={school_id}
         />
       ),
     },
     {
       key: "additional_details",
-      label: "Additional Info",
+      label: "ADDITIONAL INFO",
       value: (
         <UserTypeComponent
           user_type={user_type}
@@ -86,7 +81,7 @@ const UserRegistration = () => {
     },
     {
       key: "complete",
-      label: "Complete",
+      label: "COMPLETE",
       value: (
         <CompleteRegistration
           user_type={user_type}
@@ -100,7 +95,6 @@ const UserRegistration = () => {
   //**** */
   //handle the change of steps
   const handleStepChange = (step: RegistrationStep) => {
-    console.log("step", step);
     const currentStepIndex = steps.findIndex((s) => s.key === currentStep);
     const targetStepIndex = steps.findIndex((s) => s.key === step);
 

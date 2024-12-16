@@ -10,7 +10,6 @@ import {
   CreditCard,
   Clock,
   MapPin,
-  GraduationCap,
   Newspaper,
   Image,
   ShieldCheck,
@@ -21,18 +20,23 @@ import { Screen } from "@/app/components/screen";
 const RegisterPage = () => {
   const registerItems = [
     {
-      label: "User",
-      icon: UserPlus,
-      route: "/admin/register/user",
-      description: "Register new users with specific roles",
-    },
-    {
       label: "School",
       icon: School,
       route: "/admin/register/school",
       description: "Add new schools to the system",
     },
-
+    {
+      label: "Academic Year",
+      icon: Calendar,
+      route: "/admin/register/academic_year",
+      description: "Define academic years",
+    },
+    {
+      label: "Semester",
+      icon: Clock,
+      route: "/admin/register/semester",
+      description: "Set up semester periods",
+    },
     {
       label: "Department",
       icon: Building,
@@ -41,22 +45,10 @@ const RegisterPage = () => {
     },
 
     {
-      label: "Academic Year",
-      icon: Calendar,
-      route: "/admin/register/academic_year",
-      description: "Define academic years",
-    },
-    {
-      label: "Class",
-      icon: GraduationCap,
-      route: "/admin/register/class",
-      description: "Create and manage classes",
-    },
-    {
-      label: "Semester",
-      icon: Clock,
-      route: "/admin/register/semester",
-      description: "Set up semester periods",
+      label: "User",
+      icon: UserPlus,
+      route: "/admin/register/user",
+      description: "Register new users with specific roles",
     },
     {
       label: "Stream",

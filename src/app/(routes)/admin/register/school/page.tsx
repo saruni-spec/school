@@ -120,6 +120,19 @@ const School: React.FC = () => {
             }),
           });
         });
+        //
+        //register a default department for the school
+        await fetch("http://localhost:3000/api/register", {
+          method: "POST",
+          body: JSON.stringify({
+            data: {
+              school_id: data.id,
+              name: "Default Department",
+              description: "Default Department",
+            },
+            model_name: "department",
+          }),
+        });
 
         //
         alert("School registered successfully!");

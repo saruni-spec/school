@@ -262,6 +262,13 @@ enum role_type {
   STUDENT               // Current students
   PARENT                // Student guardians
 
+  //
+  // Specific roles in domains
+  REPRESENTATIVE
+  ASSISTANT_REPRESENTATIVE
+  MEMBER
+  
+
   // Audit and Compliance
   AUDIT_OFFICER         // Compliance and internal audit
 }
@@ -284,7 +291,7 @@ model school {
   event_school_participant    event_school_participant[]
   fee                         fee[]
   review                      review[]
-  school_facility             school_facility[]          @ignore
+  school_facility             school_facility[]         
   permission                  permission[]
   users                       users[]
   course_material             course_material[]
@@ -326,7 +333,7 @@ model facility {
   updated_at              DateTime?               @default(now()) @db.Timestamptz(6)
   deleted_at              DateTime?               @db.Timestamptz(6)
 
-  school_facility         school_facility[]       @ignore
+  school_facility         school_facility[]       
 
   @@unique([name,type])
 
@@ -335,26 +342,45 @@ model facility {
 // Represents a school facility and the details of the facility
 
 model school_facility {
-  id                      Int             @id @default(autoincrement())
-  school_id               Int
-  facility_id             Int
-  description             String?         @db.VarChar(100)
-  created_at              DateTime?       @default(now()) @db.Timestamptz(6)
-  updated_at              DateTime?       @default(now()) @db.Timestamptz(6)
-  deleted_at              DateTime?       @db.Timestamptz(6)
+  id                      Int                     @id @default(autoincrement())
+  current_school          Int?
+  is_facility             Int?
+  description             String?                 @db.VarChar(100)
+  justification           String?                 @db.VarChar(100)
+
+  created_at              DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime?               @default(now()) @db.Timestamptz(6)
+  deleted_at              DateTime?               @db.Timestamptz(6)
+
   capacity                Int?
   opening_hours           DateTime?
   closing_hours           DateTime?
-  overseer                Int
 
-  facility                facility?    @relation(fields: [facility_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school                  school?      @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  staff                   staff?       @relation(fields: [overseer], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  facility                facility?               @relation(fields: [is_facility], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school                  school?                 @relation(fields: [current_school], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
 
   lib_books               lib_book[]
   permission              permission[]
+  facility_staff          facility_staff[]
 
-  @@unique([school_id,facility_id])
+  @@unique([current_school,is_facility])
+}
+
+model facility_staff {
+  staff_id                  Int
+  school_facility_id        Int
+
+  role                      role_type?
+
+  created_at                DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime?               @default(now()) @db.Timestamptz(6)
+  deleted_at                DateTime?               @db.Timestamptz(6)
+
+  department_staff          department_staff?       @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school_facility           school_facility?        @relation(fields: [school_facility_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([staff_id,school_facility_id])
 }
 
 
@@ -368,8 +394,8 @@ model academic_year {
   end_date                  DateTime          @db.Date
   is_current                Boolean?          @default(false)
   created_at                DateTime?         @default(now()) @db.Timestamptz(6)
-  updated_at                DateTime?       @default(now()) @db.Timestamptz(6)
-  deleted_at                DateTime?       @db.Timestamptz(6)
+  updated_at                DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at                DateTime?         @db.Timestamptz(6)
   school                    school?           @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   semester                  semester[]
@@ -415,10 +441,9 @@ model department {
 
   school                                     school?   @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
-  staff                                      staff[]  
+  department_staff                           department_staff[]  
   subject_allocation                         subject_allocation[]
   permission                                 permission[]
-  department_head                            department_head[]
   fee                                        fee[]
   award                                      award[]
   event_department_participant               event_department_participant[]
@@ -428,11 +453,37 @@ model department {
 }
 
 
+model department_staff {
+  id                                   Int                     @id @default(autoincrement()) 
+  staff_id                             Int?                    
+  staff_code                           String?
+  department_id                        Int?
+  employment_status                    employment_status?      @default(FULL_TIME)
+  qualifications                       Json?
+  join_date                            DateTime?               @default(now())  @db.Date
+
+  current_role                         role_type?              @default(MEMBER)
+
+  created_at                           DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at                           DateTime?               @default(now()) @db.Timestamptz(6)
+  deleted_at                           DateTime?               @db.Timestamptz(6)
+
+  department                           department?             @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  staff                                staff?                  @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  facility_staff                       facility_staff[]                                   
+  teacher                              teacher[]
+  
+
+  @@unique([department_id,staff_id])
+
+}
+
 // Represents the diffrent grades that are currently being offered in a school
 
 model grade_level{
   id                         Int                        @id @default(autoincrement())
-  level                      grade_level_type
+  level                      grade_level_type           @unique
   school_level_id            Int?
 
   created_at                 DateTime?                  @default(now()) @db.Timestamptz(6)
@@ -443,6 +494,8 @@ model grade_level{
   
   stream                     stream[]
   fee                        fee[]
+
+
 }
 
 // Represents a stream
@@ -488,7 +541,6 @@ model class_progression {
   academic_year_id            Int?
   stream_id                   Int
   class_teacher               Int?
-  student_rep                 Int?
 
   created_at                  DateTime?                  @default(now()) @db.Timestamptz(6)
   updated_at                  DateTime?                  @default(now()) @db.Timestamptz(6)
@@ -498,7 +550,6 @@ model class_progression {
   academic_year               academic_year?             @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   stream                      stream?                    @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   teacher                     teacher?                   @relation(fields: [class_teacher], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student                     student?                   @relation(fields: [student_rep], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   event_class_participant     event_class_participant[]
   fee                         fee[]
@@ -518,11 +569,13 @@ model class_progression {
 
 model student_class {
   student_id                 Int
-  current_class              Int
-  is_current                 Boolean
+  class_progress             Int
   admission_number           String?            @unique @db.VarChar(20)
-  admission_date             DateTime           @db.Date
-  start_date                 DateTime           @db.Date
+
+  student_role               role_type?         @default(MEMBER)
+
+  admission_date             DateTime?          @db.Date
+  start_date                 DateTime?          @db.Date
   end_date                   DateTime?          @db.Date
 
   created_at                 DateTime?          @default(now()) @db.Timestamptz(6)
@@ -530,10 +583,11 @@ model student_class {
   deleted_at                 DateTime?          @db.Timestamptz(6)
 
 
-  class_progression          class_progression  @relation(fields: [current_class], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student                    student            @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  class_progression          class_progression?  @relation(fields: [class_progress], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  student                    student?            @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([student_id, admission_date])
+  @@id([student_id, class_progress])
+  @@index([student_id,class_progress])
 }
 
 
@@ -650,32 +704,22 @@ model admin{
 
 model staff {
   id                                              Int                 @id @default(autoincrement())
-  staff_code                                      String?
-  department_id                                   Int?
   user_id                                         Int                 @unique
-  employment_status                               employment_status?  @default(FULL_TIME)
-  qualifications                                  Json?
-  join_date                                       DateTime?           @default(now())  @db.Date
-
+  
   created_at                                      DateTime?           @default(now()) @db.Timestamptz(6)
   updated_at                                      DateTime?           @default(now()) @db.Timestamptz(6)
   deleted_at                                      DateTime?           @db.Timestamptz(6)
   
-  department                                      department?         @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users                                           users?              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  school_facility                                 school_facility[]                                   
-  teacher                                         teacher[]
-  department_head                                 department_head[]
   
-  @@index([department_id,user_id])
+  department_staff                                department_staff[]
+  @@index([user_id])
 }
 
 
 model teacher {
   id                    Int               @id @default(autoincrement())
   staff_id              Int?              @unique
-  specialization        String?           @db.VarChar(100)
   is_active             Boolean?          @default(true)
 
   created_at            DateTime?         @default(now()) @db.Timestamptz(6)
@@ -683,7 +727,7 @@ model teacher {
   deleted_at            DateTime?         @db.Timestamptz(6)
 
 
-  staff                 staff?            @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  department_staff      department_staff? @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   exam_sitting          exam_sitting[]
   result                result[]
@@ -694,24 +738,6 @@ model teacher {
   class_progression     class_progression[]
 
   @@index([staff_id])
-}
-
-
-// Represents the head of a department
-// allows changing of department heads dynamically while keeping track of previous heads
-
-model department_head {
-  staff_id                                   Int
-  department_id                              Int
-
-  created_at                                 DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at                                 DateTime? @default(now()) @db.Timestamptz(6)
-  deleted_at                                 DateTime? @db.Timestamptz(6)
-
-  department                                 department?        @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  staff                                      staff?             @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@unique([staff_id,department_id])
 }
 
 
@@ -730,9 +756,7 @@ model student {
   result                result[]
   student_class         student_class[]
   student_ellectives    student_ellectives[]
-  //
-  //for student representatives
-  class_progression     class_progression[]
+  
 
 }
 

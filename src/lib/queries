@@ -1,9 +1,30 @@
-INSERT INTO school_level (type, created_at)
-VALUES ('PRE_PRIMARY', NOW()),
-    ('LOWER_PRIMARY', NOW()),
-    ('UPPER_PRIMARY', NOW()),
-    ('LOWER_SECONDARY', NOW()),
-    ('UPPER_SECONDARY', NOW()) ON CONFLICT (type) DO NOTHING;
+INSERT INTO school_level (type)
+VALUES ('PRE_PRIMARY'),
+    ('LOWER_PRIMARY'),
+    ('UPPER_PRIMARY'),
+    ('LOWER_SECONDARY'),
+    ('UPPER_SECONDARY') ON CONFLICT (type) DO NOTHING;
+-- Insert grade levels into the grade_level table
+INSERT INTO grade_level (level, school_level_id)
+VALUES -- Pre-Primary Levels
+    ('PRE_PRIMARY_1', 1),
+    ('PRE_PRIMARY_2', 1),
+    -- Lower Primary Levels
+    ('GRADE_1', 2),
+    ('GRADE_2', 2),
+    ('GRADE_3', 2),
+    -- Upper Primary Levels
+    ('GRADE_4', 3),
+    ('GRADE_5', 3),
+    ('GRADE_6', 3),
+    -- Lower Secondary Levels
+    ('GRADE_7', 5),
+    ('GRADE_8', 5),
+    ('GRADE_9', 5),
+    -- Upper Secondary Levels
+    ('GRADE_10', 4),
+    ('GRADE_11', 4),
+    ('GRADE_12', 4);
 ##roles sql
 -- Seed Data for Roles Table
 -- This script populates the roles table with predefined roles
@@ -194,9 +215,11 @@ VALUES -- System-Level Roles
 SET session_replication_role = 'origin';
 -- Optional: Add a confirmation message
 SELECT 'Roles have been successfully seeded.' AS status;
+-- Stop here
 ##permissions sql
 -- Insert Permissions for Roles
 -- Function to get role ID by type
+-- Start here
 CREATE OR REPLACE FUNCTION get_role_id(role_type_param role_type) RETURNS INTEGER AS $$
 DECLARE role_id INTEGER;
 BEGIN
@@ -1038,7 +1061,9 @@ VALUES -- System Administrator - Full Global Access
         false,
         false
     );
+-- Stop here
 -- Permissions for ACADEMIC_REGISTRAR
+-- Start here
 INSERT INTO permission (
         role_id,
         resource,

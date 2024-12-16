@@ -48,20 +48,20 @@ export const roles_id = {
 };
 
 export const grade_levels = {
-  PRE_PRIMARY_1: 15,
-  PRE_PRIMARY_2: 16,
-  GRADE_1: 17,
-  GRADE_2: 18,
-  GRADE_3: 19,
-  GRADE_4: 20,
-  GRADE_5: 21,
-  GRADE_6: 22,
-  GRADE_7: 23,
-  GRADE_8: 24,
-  GRADE_9: 25,
-  GRADE_10: 26,
-  GRADE_11: 27,
-  GRADE_12: 28,
+  PRE_PRIMARY_1: 1,
+  PRE_PRIMARY_2: 2,
+  GRADE_1: 3,
+  GRADE_2: 4,
+  GRADE_3: 5,
+  GRADE_4: 6,
+  GRADE_5: 7,
+  GRADE_6: 8,
+  GRADE_7: 9,
+  GRADE_8: 10,
+  GRADE_9: 11,
+  GRADE_10: 12,
+  GRADE_11: 13,
+  GRADE_12: 14,
 };
 
 export const gradesInEachLevel = {

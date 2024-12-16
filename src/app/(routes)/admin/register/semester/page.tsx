@@ -36,8 +36,7 @@ const Semester = () => {
       const response = await fetch(
         `http://localhost:3000/api/fetch_record?table_name=${table_name}&school_id=${school_id}&year=${year}`
       );
-      const data = await response.json();
-      const academic_year_id = data.records;
+      const academic_year_id = await response.json();
 
       //
       //generate a name for the semester
@@ -53,7 +52,7 @@ const Semester = () => {
         method: "POST",
         body: JSON.stringify({
           data: {
-            academic_year_id: academic_year_id?.id,
+            academic_year_id: academic_year_id[0]?.id,
             name: name,
             start_date: start_date.formatted_date,
             end_date: end_date.formatted_date,
