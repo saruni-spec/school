@@ -1238,3 +1238,177 @@ FROM role,
             ('DEPARTMENTS'::system_resource)
     ) AS resources(resource)
 WHERE role.type = 'AUDIT_OFFICER';
+-- Insert subjects for the Kenyan Competency-Based Curriculum (CBC)
+-- Core Academic Languages
+INSERT INTO subject (name, description)
+VALUES (
+        'English',
+        'Primary language of instruction and communication, focusing on reading, writing, speaking, and listening skills'
+    ),
+    (
+        'Kiswahili',
+        'National language of Kenya, emphasizing linguistic and cultural competence'
+    ),
+    (
+        'Kenyan Sign Language',
+        'Language for deaf and hard of hearing students, promoting inclusive communication'
+    );
+-- Mathematics and Quantitative Subjects
+INSERT INTO subject (name, description)
+VALUES (
+        'Mathematics',
+        'Core subject developing numerical literacy, logical reasoning, and problem-solving skills'
+    ),
+    (
+        'Business Mathematics',
+        'Applied mathematics with a focus on financial literacy and business calculations'
+    );
+-- Science Subjects
+INSERT INTO subject (name, description)
+VALUES (
+        'Integrated Science',
+        'Comprehensive science education covering biology, chemistry, and physics fundamentals'
+    ),
+    (
+        'Biology',
+        'Study of living organisms, their structure, function, growth, evolution, and distribution'
+    ),
+    (
+        'Chemistry',
+        'Exploration of matter, its properties, composition, structure, and chemical reactions'
+    ),
+    (
+        'Physics',
+        'Understanding of matter, energy, forces, and their interactions in the natural world'
+    ),
+    (
+        'Agriculture',
+        'Scientific study of farming, crop production, animal husbandry, and agricultural technologies'
+    ),
+    (
+        'Environmental Activities',
+        'Learning about ecological systems, conservation, and environmental sustainability'
+    ),
+    (
+        'Health Science',
+        'Study of human health, medical principles, and healthcare practices'
+    );
+-- Social Sciences
+INSERT INTO subject (name, description)
+VALUES (
+        'Social Studies',
+        'Integrated study of history, geography, and civics to understand human society'
+    ),
+    (
+        'History',
+        'Exploration of past events, civilizations, and their impact on current social structures'
+    ),
+    (
+        'Geography',
+        'Study of earth''s landscapes, peoples, places, and environments'
+    ),
+    (
+        'Civics',
+        'Understanding of government, citizenship, rights, and civic responsibilities'
+    ),
+    (
+        'Religious Education',
+        'Exploration of religious principles, values, and cultural understanding'
+    ),
+    (
+        'Business Studies',
+        'Introduction to business principles, entrepreneurship, and economic concepts'
+    );
+-- Creative and Performing Arts
+INSERT INTO subject (name, description)
+VALUES (
+        'Creative Arts',
+        'Broad category encompassing artistic expression through various mediums'
+    ),
+    (
+        'Visual Arts',
+        'Study of artistic creation including painting, sculpture, design, and visual communication'
+    ),
+    (
+        'Performing Arts',
+        'Artistic expression through drama, dance, and music'
+    ),
+    (
+        'Art',
+        'Visual art techniques, media exploration, and creative expression'
+    ),
+    (
+        'Craft',
+        'Skill-based artistic creation and traditional handicraft techniques'
+    ),
+    (
+        'Music',
+        'Understanding and creation of musical compositions and performances'
+    ),
+    (
+        'Drama',
+        'Theatrical arts, performance skills, and storytelling through acting'
+    ),
+    (
+        'Dance',
+        'Physical expression, movement techniques, and choreographic skills'
+    );
+-- Physical and Health Education
+INSERT INTO subject (name, description)
+VALUES (
+        'Physical Education',
+        'Physical fitness, sports skills, and understanding of bodily health'
+    ),
+    (
+        'Sports Science',
+        'Scientific study of sports, athletic performance, and human movement'
+    ),
+    (
+        'Health Education',
+        'Comprehensive understanding of personal and community health'
+    ),
+    (
+        'Hygiene and Nutrition',
+        'Learning about personal cleanliness and balanced dietary practices'
+    );
+-- Technology and Modern Skills
+INSERT INTO subject (name, description)
+VALUES (
+        'Computer Science',
+        'Study of computation, information processing, and computer systems'
+    ),
+    (
+        'Technology and Engineering',
+        'Introduction to technological principles and engineering concepts'
+    ),
+    (
+        'Media Studies',
+        'Understanding of media, communication technologies, and digital literacy'
+    );
+-- Language Diversity Subjects
+INSERT INTO subject (name, description)
+VALUES (
+        'Home Science',
+        'Practical skills in household management, cooking, and family economics'
+    ),
+    (
+        'Indigenous Languages',
+        'Preservation and study of local linguistic and cultural heritage'
+    ),
+    (
+        'Foreign Languages',
+        'Study of international languages including French, German, Chinese, and Arabic'
+    );
+-- Specialized Pathways
+INSERT INTO subject (name, description)
+VALUES (
+        'Sports Science',
+        'Advanced study of athletic performance, training, and human movement'
+    ),
+    (
+        'Sports and Performing Arts',
+        'Integrated approach to physical and artistic performance'
+    );
+-- Print confirmation
+SELECT COUNT(*) AS total_subjects
+FROM subject;

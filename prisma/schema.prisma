@@ -297,6 +297,7 @@ model school {
   course_material             course_material[]
   levels_offered              levels_offered[]
   stream                      stream[]
+  school_leader               school_leader[]
 }
 
 // These are the different school levels,ie. LOWER_PRIMARY,UPPER_PRIMARY....that a spefic school has
@@ -400,6 +401,7 @@ model academic_year {
   
   semester                  semester[]
   class_progression         class_progression[]
+  school_leader             school_leader[]
   
   @@unique([school_id, year])  
 }
@@ -493,6 +495,7 @@ model grade_level{
   school_level               school_level?              @relation(fields: [school_level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   stream                     stream[]
+  subject_grade              subject_grade[]
   fee                        fee[]
 
 
@@ -687,15 +690,38 @@ model role {
   @@unique([type, category])
 }
 
-
-model admin{
+model school_leader {
   id                                 Int                @id @default(autoincrement())
-  user_id                            Int                @unique
+  school_id                          Int?
+  staff_id                           Int?
+  leader_code                        String?            @db.VarChar(15)
+  current_role                       role_type?
+
+  academic_year_id                   Int?
+  date_removed                       DateTime?          @db.Date
+  reason_removed                     String?            @db.VarChar(50)
 
   created_at                         DateTime?          @default(now()) @db.Timestamptz(6)
   updated_at                         DateTime?          @default(now()) @db.Timestamptz(6)
   deleted_at                         DateTime?          @db.Timestamptz(6)
 
+  school                             school?            @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  staff                              staff?             @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  academic_year                      academic_year?     @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([staff_id,academic_year_id,school_id])
+  @@index([staff_id,academic_year_id])
+}
+
+
+model admin{
+  id                                 Int                @id @default(autoincrement())
+  user_id                            Int                @unique
+  
+  created_at                         DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at                         DateTime?          @default(now()) @db.Timestamptz(6)
+  deleted_at                         DateTime?          @db.Timestamptz(6)
+ 
   users                              users?             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
  
 
@@ -713,6 +739,7 @@ model staff {
   users                                           users?              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   department_staff                                department_staff[]
+  school_leader                                   school_leader[]
   @@index([user_id])
 }
 
@@ -772,19 +799,33 @@ model subject {
 
 
   
-  subject_allocation    subject_allocation[]
+  subject_grade         subject_grade[]
   course_material       course_material[]
   lib_book              lib_book[]
 
 }
 
+model subject_grade { 
+  id                    Int                     @id @default(autoincrement())
+  subject_id            Int?
+  grade_level_id        Int?
+  name                  String?           
+  description           String?
+  created_at            DateTime?               @default(now())
+  updated_at            DateTime?               @default(now())
+  
+  subject               subject?                @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  grade_level           grade_level?            @relation(fields: [grade_level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subject_allocation    subject_allocation[]
+
+  @@unique([grade_level_id,subject_id])
+}
 
 model subject_allocation {
   id                        Int                       @id @default(autoincrement())
-  code                      String?                   @unique @db.VarChar(20)
   department_id             Int?
   teacher_id                Int?
-  subject_id                Int
+  subject_grade_id          Int?
   stream_id                 Int
   semester_id               Int
   assigned_date             DateTime?                 @default(dbgenerated("CURRENT_DATE")) @db.Date
@@ -796,7 +837,7 @@ model subject_allocation {
 
   stream                    stream                    @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   semester                  semester                  @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subject                   subject                   @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subject_grade             subject_grade?            @relation(fields: [subject_grade_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   teacher                   teacher?                  @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   department                department?               @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
@@ -806,7 +847,7 @@ model subject_allocation {
   slot_assignment       slot_assignment[]
   assignment            assignment[]
   
-  @@unique([teacher_id, subject_id])
+  @@unique([teacher_id, subject_grade_id])
 }
 
 model medical {

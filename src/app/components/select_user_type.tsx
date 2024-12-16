@@ -91,27 +91,6 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({
       ),
     },
     {
-      type: "SECRETARY",
-      label: "Secretary",
-      description: "Administrative and clerical support",
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-12 w-12"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M8 16l-4-4m0 0l4-4m-4 4h16"
-          />
-        </svg>
-      ),
-    },
-    {
       type: "TEACHER",
       label: "Teacher",
       description: "Course management and instruction",
@@ -168,8 +147,8 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({
 
     {
       type: "FACULTY_MEMBER",
-      label: "Faculty",
-      description: "Administrative and academic leadership",
+      label: "Staff",
+      description: "Member of the school faculty or staff",
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"

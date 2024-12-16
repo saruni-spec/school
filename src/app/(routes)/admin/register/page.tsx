@@ -14,6 +14,7 @@ import {
   Image,
   ShieldCheck,
   Award,
+  ClipboardCheck,
 } from "lucide-react";
 import { Screen } from "@/app/components/screen";
 
@@ -61,6 +62,12 @@ const RegisterPage = () => {
       icon: FileSpreadsheet,
       route: "/admin/register/subject",
       description: "Register academic subjects",
+    },
+    {
+      label: "Subject Allocation",
+      icon: ClipboardCheck,
+      route: "/admin/register/subject_allocation",
+      description: "Allocate subjects to grades",
     },
     {
       label: "Fee",

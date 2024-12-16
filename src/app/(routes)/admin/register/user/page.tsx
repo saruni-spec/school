@@ -8,7 +8,12 @@ import React, { useState } from "react";
 import UserTypeSelection from "@/app/components/select_user_type";
 import { RenderProgressIndicator } from "@/app/components/progress_indicator";
 import { RenderContent } from "@/app/components/conditional_render";
-import { record, UserType, RegistrationStep } from "@/app/types/types";
+import {
+  record,
+  UserType,
+  RegistrationStep,
+  roles_id,
+} from "@/app/types/types";
 import { useUser } from "@/app/context/user_context";
 
 //
@@ -24,9 +29,6 @@ const UserRegistration = () => {
   const [user, set_user] = useState<record>();
   //save the school selected
   const { school_id } = useUser();
-  //
-  //get the roles from the db
-
   //label the steps
   //save the user type selected and move to user details
   const handleUserTypeSelect = (selectedUserType: UserType) => {
@@ -36,9 +38,13 @@ const UserRegistration = () => {
   //save the user registered and move to additional details
   const handleUserRegistration = (registeredUser: record) => {
     set_user(registeredUser);
-    //
-    //if the user is a techer,stdent or faculty,complete the process
 
+    //
+    //if the user is a principal or vice principal, move to complete registration
+    if (user_type === "PRINCIPAL" || user_type === "VICE_PRINCIPAL") {
+      setCurrentStep("complete");
+      return;
+    }
     setCurrentStep("additional_details");
   };
   //submit the additional details and complete the registration
@@ -62,8 +68,9 @@ const UserRegistration = () => {
       value: (
         <User
           set_user={handleUserRegistration}
-          role_id={user_type ? roles[user_type] : 26}
+          role_id={user_type ? roles_id[user_type] : 26}
           school_id={school_id}
+          user_type={user_type}
         />
       ),
     },
@@ -74,7 +81,6 @@ const UserRegistration = () => {
         <UserTypeComponent
           user_type={user_type}
           user={user}
-          school_id={school_id}
           handleAdditionalDetailsSubmit={handleAdditionalDetailsSubmit}
         />
       ),

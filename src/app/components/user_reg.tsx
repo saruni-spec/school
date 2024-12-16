@@ -19,6 +19,7 @@ import { DetailsDisplay } from "./display";
 import { ArrowRight } from "lucide-react";
 import { SelectList } from "./select_list";
 import { useUser } from "../context/user_context";
+import { SelectObject } from "./selectobejctitem";
 
 //the main component for user registration
 export const User = ({
@@ -69,6 +70,7 @@ export const User = ({
       let response;
       //
       //save the user in the user specific table
+      console.log("user type", user_type);
       if (user_type === "STUDENT") {
         response = await fetch("http://localhost:3000/api/register", {
           method: "POST",
@@ -90,11 +92,28 @@ export const User = ({
           }),
         });
       }
-
+      console.log("sttaf reg", response);
       if (!response.ok) {
         alert("Registration failed");
         return;
       }
+
+      if (user_type === "PRINCIPAL" || user_type === "VICE_PRINCIPAL") {
+        const staff_code_prefix = user_type === "PRINCIPAL" ? "PRN" : "VPRN";
+        response = await fetch("http://localhost:3000/api/register", {
+          method: "POST",
+          body: JSON.stringify({
+            data: {
+              staff_id: user.id,
+              school_id: school_id,
+              leader_code: `${staff_code_prefix}-${school_id}-${user.id}`,
+              current_role: user_type,
+            },
+            model_name: "school_leader",
+          }),
+        });
+      }
+
       const user_details = await response.json();
       set_user(user_details);
     },
@@ -149,17 +168,18 @@ export const User = ({
 export const SchoolAdmin = ({
   onSubmit, // the function to handle the form submission
   user_id, // the id of the user
-  school_id, // the id of the school
 }: {
   user_id: number;
   onSubmit: () => void;
-  school_id: number;
 }) => {
   // for a school admin, im registering a staff member with the role as school admin
   // role is stores in the user table,so i need to get the role id for school admin
   // then update the user table with the role id
   // then register the staff member
   const role_type: role_type = "SCHOOL_ADMINISTRATOR";
+
+  const { school_id } = useUser();
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
@@ -198,7 +218,7 @@ export const SchoolAdmin = ({
 };
 
 //component to to add details about a teacher after registration
-export const Teacher = ({
+export const Staff = ({
   staff_id, // the staff id of the teacher
   onSubmit,
 }: {
@@ -208,8 +228,11 @@ export const Teacher = ({
   const department_table = "department";
   const department_id = Validation("", []);
 
-  const role = Validation("MEMBER", []);
+  const role = Validation("", []);
   const { school_id } = useUser();
+
+  //
+  //get all the roles
 
   //
   //get the departments in the school
@@ -259,9 +282,9 @@ export const Teacher = ({
   );
   return (
     <Form
-      title="Teacher Registration"
+      title="Staff Registration"
       onSubmit={handleSubmit}
-      submitButtonText="Sign Up"
+      submitButtonText="Complete registration"
     >
       <Select
         label="Department"
@@ -271,18 +294,13 @@ export const Teacher = ({
         placeholder="Select Department"
         options={departments}
       />
-      <SelectList
+      <SelectObject
         label="Role"
         value={role.value}
         onChange={role.handle_change}
         error={role.error}
         placeholder="Select Role"
-        options={[
-          "MEMBER",
-          "REPRESENTATIVE",
-          "HEAD_OF_DEPARTMENT",
-          "ASSISTANT_REPRESENTATIVE",
-        ]}
+        options={role_type}
       />
     </Form>
   );
@@ -330,128 +348,46 @@ export const Student = ({
   );
 };
 
-//component to add details about a staff member after registration
-export const Staff = ({
-  school_id, // the id of the school
-  department_id, // the id of the department
-  user_id, // the user id of the user
-  onSubmit,
-}: {
-  school_id: string;
-  department_id: string;
-  user_id: string | unknown;
-  onSubmit?: () => void;
-}) => {
-  //get the employment status of the staff
-  const employment_status = Validation("", [required]);
-  //get the date of joining
-  const join_date = useDateValidation(
-    `${new Date()}`,
-    false,
-    undefined,
-    new Date()
-  );
-  ///get the qualifications of the staff
-  const [qualifications, set_qualifications] = useState<Record<string, string>>(
-    {}
-  );
-
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-
-      // Validate inputs
-      const is_form_valid = [employment_status, join_date].every((field) =>
-        field.validate(field.value)
-      );
-      if (!is_form_valid) return;
-
-      // Submit to backend
-      await fetch("", {
-        method: "POST",
-        body: JSON.stringify({
-          data: {
-            school_id,
-            department_id,
-            user_id,
-            employment_status,
-            qualifications,
-            join_date,
-          },
-          model_name: "staff",
-        }),
-      });
-      if (onSubmit) {
-        onSubmit();
-      }
-    },
-    [
-      employment_status,
-      qualifications,
-      join_date,
-      school_id,
-      department_id,
-      user_id,
-      onSubmit,
-    ]
-  );
-  return (
-    <Form title="" onSubmit={handleSubmit} submitButtonText="">
-      <Input
-        label="Current School Name"
-        placeholder="Your Current School"
-        required
-        value={employment_status.value}
-        onChange={employment_status.handle_change}
-        error={employment_status.error}
-      />
-      <DatePicker
-        label="Date Joining"
-        value={join_date.value}
-        onChange={join_date.handle_change}
-        error={join_date.error || ""}
-        required
-      />
-      <MultiInput
-        label="Professional Qualifications"
-        placeholder='Enter contact info (e.g., {"email": "info@example.com", "phone": "1234567890"})'
-        value={qualifications}
-        onChange={set_qualifications}
-        keyPlaceholder="Contact Type (email, phone)"
-        valuePlaceholder="Value"
-        validators={{
-          key: [validateKey],
-          value: [validateValue],
-        }}
-      />
-    </Form>
-  );
-};
-
 //
 //component to render the form for additional details based on user type
 export const UserTypeComponent = ({
   user_type,
   user,
-  school_id,
+
   handleAdditionalDetailsSubmit,
 }: {
   user_type: UserType | undefined;
   user: record | undefined;
-  school_id: number | undefined;
+
   handleAdditionalDetailsSubmit: () => void;
 }) => {
+  const excludedRoles = [
+    "SYSTEM_ADMINISTRATOR",
+    "PRINCIPAL",
+    "VICE_PRINCIPAL",
+    "SCHOOL_ADMINISTRATOR",
+    "STUDENT",
+    "PARENT",
+    "AUDIT_OFFICER",
+  ];
   return (
     <>
-      {user_type === "SCHOOL_ADMINISTRATOR" && user && school_id && (
-        <SchoolAdmin
-          user_id={user.id}
-          school_id={school_id}
-          onSubmit={handleAdditionalDetailsSubmit}
-        />
-      )}
-      {user_type === "TEACHER" && user && (
-        <Teacher staff_id={user.id} onSubmit={handleAdditionalDetailsSubmit} />
+      {user && (
+        <>
+          {user_type === "SCHOOL_ADMINISTRATOR" && (
+            <SchoolAdmin
+              user_id={user.id}
+              onSubmit={handleAdditionalDetailsSubmit}
+            />
+          )}
+
+          {user_type && !excludedRoles.includes(user_type) && (
+            <Staff
+              staff_id={user.id}
+              onSubmit={handleAdditionalDetailsSubmit}
+            />
+          )}
+        </>
       )}
     </>
   );
