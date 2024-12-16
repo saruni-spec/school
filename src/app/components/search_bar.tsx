@@ -3,11 +3,13 @@ import { record } from "../types/types";
 
 interface SearchableListProps {
   initialData: record[];
+  id_field: string | number;
   onItemSelect?: (item: record) => void;
 }
 
 const SearchableList: React.FC<SearchableListProps> = ({
   initialData,
+  id_field = "id",
   onItemSelect,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -57,7 +59,7 @@ const SearchableList: React.FC<SearchableListProps> = ({
           <ul className="max-h-60 overflow-y-auto">
             {filteredData.map((item) => (
               <li
-                key={item.id}
+                key={item[id_field] as string | number}
                 onClick={() => handleItemSelect(item)}
                 className="px-4 py-2 border-b last:border-b-0 hover:bg-gray-100 transition-colors cursor-pointer"
               >

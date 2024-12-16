@@ -3,7 +3,6 @@ import React from "react";
 import {
   UserPlus,
   School,
-  Tag,
   Building,
   Calendar,
   BookOpenCheck,
@@ -77,12 +76,7 @@ const RegisterPage = () => {
       route: "/admin/register/fee",
       description: "Manage fee structures",
     },
-    {
-      label: "Fee Type",
-      icon: Tag,
-      route: "/admin/register/fee_type",
-      description: "Define types of fees",
-    },
+
     {
       label: "Payment",
       icon: Award,

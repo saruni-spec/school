@@ -1,25 +1,24 @@
 "use client";
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
-import validation, {
-  getEnumSelectOptions,
-  required,
-} from "@/app/hooks/validation";
+import validation, { required } from "@/app/hooks/validation";
 import React, { useCallback } from "react";
 import { facility_type as my_facilities } from "@prisma/client";
-import { Select } from "@/app/components/select";
+
+import { SelectObject } from "@/app/components/selectobejctitem";
 
 const Facility = () => {
   //add the validation functions for each input
-  const facility_name = validation("", [required]);
+  const description = validation("", []);
+  const name = validation("", [required]);
   const type = validation("", [required]);
-  const options = getEnumSelectOptions(my_facilities);
+  const options = my_facilities;
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       //check if the fields are valid
-      const is_form_valid = [facility_name, type].every((field) =>
+      const is_form_valid = [type, name].every((field) =>
         field.validate(field.value)
       );
 
@@ -29,12 +28,16 @@ const Facility = () => {
       await fetch("http://localhost:3000/api/register", {
         method: "POST",
         body: JSON.stringify({
-          data: { facility_name: facility_name.value, type: type.value },
+          data: {
+            name: name.value,
+            type: type.value,
+            description: description.value,
+          },
           model_name: "facility",
         }),
       });
     },
-    [facility_name, type]
+    [description, name, type]
   );
   return (
     <Form
@@ -43,14 +46,14 @@ const Facility = () => {
       submitButtonText="Add Facility"
     >
       <Input
-        label="facility name"
-        placeholder="Enter a new facility"
-        value={facility_name.value}
-        onChange={facility_name.handle_change}
-        error={facility_name.error}
-        required
+        label="Facility Name"
+        placeholder="Enter the name of the facility"
+        value={name.value}
+        onChange={name.handle_change}
+        error={name.error}
       />
-      <Select
+
+      <SelectObject
         label="facility_type"
         placeholder="Enter what type of facility this is"
         value={type.value}
@@ -58,6 +61,13 @@ const Facility = () => {
         error={type.error}
         options={options}
         required
+      />
+      <Input
+        label="Describe the facility"
+        placeholder="This facility is used for..."
+        value={description.value}
+        onChange={description.handle_change}
+        error={description.error}
       />
     </Form>
   );

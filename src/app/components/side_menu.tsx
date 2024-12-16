@@ -27,11 +27,9 @@ const SideMenu: React.FC<SideMenuProps> = ({
   SchoolSelect,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [school_name, setSchoolName] = useState<string>(schoolName);
-  const { setSchool } = useUser();
+  const { setSchool, school } = useUser();
 
   const handleSchoolChange = (school: record) => {
-    setSchoolName(school.name);
     setSchool(school);
   };
 
@@ -69,7 +67,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
               <School className="w-10 h-10" />
             )}
             <span className="text-lg font-bold truncate max-w-[200px]">
-              {school_name}
+              {school ? (school.name as string) : schoolName}
             </span>
           </div>
         )}

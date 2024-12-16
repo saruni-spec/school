@@ -1,0 +1,235 @@
+# Role Permissions Mapping
+
+## Key Observations
+1. We'll align the permissions with the `system_resource` and CRUD operations
+2. We'll use privilege scopes to define the extent of each permission
+3. We'll categorize roles using the `role_type` and `privilege_category`
+
+## Detailed Role Permissions Mapping
+
+### System Administrator
+- **Role Type**: SYSTEM_ADMINISTRATOR
+- **Privilege Category**: SYSTEM_ADMIN
+- **Permissions**:
+  - All resources (SYSTEM, INSTITUTION, USERS, etc.)
+  - Global scope
+  - Full CRUD (admin) access
+
+### Principal
+- **Role Type**: PRINCIPAL
+- **Privilege Category**: EXECUTIVE
+- **Permissions**:
+  - Primary resources: INSTITUTION, DEPARTMENTS, STUDENTS, STAFF
+  - Institutional scope
+  - Full read and update access
+  - Selective admin access for critical systems
+
+### Vice Principal
+- **Role Type**: VICE_PRINCIPAL
+- **Privilege Category**: EXECUTIVE
+- **Permissions**:
+  - Resources: INSTITUTION, DEPARTMENTS, EVENTS, EXAMINATIONS, FACILITIES
+  - Institutional scope
+  - Comprehensive read and update access
+  - Limited admin access for academic and administrative systems
+
+### Head of Department
+- **Role Type**: HEAD_OF_DEPARTMENT
+- **Privilege Category**: ADMINISTRATIVE
+- **Permissions**:
+  - Primary resources: DEPARTMENTS, CURRICULUM, STUDENTS, EXAMINATIONS
+  - Departmental scope
+  - Full read and update access
+  - Limited create and delete permissions
+
+### Exam Officer
+- **Role Type**: EXAM_CONTROLLER
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resource: EXAMINATIONS
+  - Departmental scope
+  - Full read and update access
+  - Limited create permissions
+
+### Class Teacher
+- **Role Type**: CLASS_TEACHER
+- **Privilege Category**: SUPERVISORY
+- **Permissions**:
+  - Resources: STUDENTS, STREAM, EVENTS, EXAMINATIONS
+  - Class/Stream scope
+  - Read and update access for student and class-related information
+  - Review capabilities for events and exams
+
+### Teacher
+- **Role Type**: TEACHER
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resources: STREAM, STUDENTS, EVENTS, EXAMINATIONS
+  - Departmental/Stream scope
+  - Read access
+  - Limited update for personal teaching activities
+
+### Parent
+- **Role Type**: PARENT
+- **Privilege Category**: PERSONAL
+- **Permissions**:
+  - Resources: STREAM, STUDENTS, EVENTS, EXAMINATIONS
+  - Personal scope
+  - Read-only access to child's information
+  - Event and examination review
+
+### Student
+- **Role Type**: STUDENT
+- **Privilege Category**: PERSONAL
+- **Permissions**:
+  - Resources: STREAM, PERSONAL_INFORMATION, EVENTS, EXAMINATIONS
+  - Personal scope
+  - Read and update self-information
+  - Review events and examinations
+
+### Facility Manager
+- **Role Type**: FACILITY_MANAGER
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resource: FACILITIES
+  - Institutional scope
+  - Full CRUD access for facilities
+
+### Finance Officer
+- **Role Type**: FINANCIAL_OFFICER
+- **Privilege Category**: ADMINISTRATIVE
+- **Permissions**:
+  - Resource: FINANCES
+  - Institutional scope
+  - Full read and update access
+  - Limited admin capabilities
+
+### Human Resource
+- **Role Type**: HUMAN_RESOURCES_MANAGER
+- **Privilege Category**: ADMINISTRATIVE
+- **Permissions**:
+  - Resources: USERS, STAFF
+  - Institutional scope
+  - User management (create, read, update)
+  - Review access to various institutional resources
+
+### Secretary
+- **Role Type**: ADMINISTRATIVE_STAFF
+- **Privilege Category**: ADMINISTRATIVE
+- **Permissions**:
+  - Resources: DEPARTMENTS, FACILITIES, EVENTS, EXAMINATIONS, USERS
+  - Departmental scope
+  - Comprehensive review access
+  - Limited create and update permissions for department, events, and user-related information
+
+### Non-Faculty Staff
+- **Role Type**: ADMINISTRATIVE_STAFF
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resources: DEPARTMENTS, FACILITIES, EVENTS
+  - Departmental scope
+  - Review-only access
+  - Limited to operational information
+
+### Event Manager
+- **Role Type**: EVENT_COORDINATOR
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resource: EVENTS
+  - Institutional scope
+  - Full read and update access
+  - Create and manage event-related information
+
+### Librarian
+- **Role Type**: LIBRARIAN
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resource: LIBRARY
+  - Institutional scope
+  - Full administrative access to library resources
+  - Manage library-related user interactions
+
+### Assistant Librarian
+- **Role Type**: LIBRARIAN
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resource: LIBRARY
+  - Departmental scope
+  - Review and update library resources
+  - Support primary librarian's activities
+
+### Admissions Officer
+- **Role Type**: ADMISSIONS_OFFICER
+- **Privilege Category**: ADMINISTRATIVE
+- **Permissions**:
+  - Resources: USERS, STUDENTS, ADMISSIONS
+  - Institutional scope
+  - Full create, read, and update access for admission-related processes
+  - Review user and student information
+
+### Counselor
+- **Role Type**: COUNSELOR
+- **Privilege Category**: SUPERVISORY
+- **Permissions**:
+  - Resources: STUDENTS, MEDICAL, USERS
+  - Departmental scope
+  - Review and update medical information
+  - Limited access to student and parent records
+  - Focus on student well-being and support
+
+### Doctor/Medical Staff
+- **Role Type**: MEDICAL_STAFF
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resources: MEDICAL, USERS, STUDENTS
+  - Departmental scope
+  - Full administrative access to medical records
+  - Review and update medical information
+
+### Chef
+- **Role Type**: ADMINISTRATIVE_STAFF
+- **Privilege Category**: OPERATIONAL
+- **Permissions**:
+  - Resources: FACILITIES
+  - Departmental scope
+  - Review and update facility-related information
+  - Focus on food service and related facilities
+
+### School Administrator
+- **Role Type**: SCHOOL_ADMINISTRATOR
+- **Privilege Category**: ADMINISTRATIVE
+- **Permissions**:
+  - Resources: INSTITUTION, DEPARTMENTS, STUDENTS, STAFF, EVENTS, EXAMINATIONS, FACILITIES, FINANCES
+  - School/Institutional scope
+  - Comprehensive administrative access
+  - Full CRUD (Create, Read, Update, Delete) permissions for most institutional resources
+  - Key responsibilities include:
+    * Overseeing school-wide operations
+    * Managing departmental structures
+    * Coordinating institutional events
+    * Supervising financial resources
+    * Managing staff and student information
+  - Selective global access within the school's context
+  - Ability to create and modify school-level configurations
+  - Limited by the broader institutional policies defined by system or executive administrators
+
+### Security Personnel
+- **Role Type**: SECURITY_PERSONNEL
+- **Privilege Category**: SUPERVISORY
+- **Permissions**:
+  - Resources: FACILITIES, USERS
+  - Institutional scope
+  - Review and limited update capabilities
+
+## Implementation Notes
+1. Use the `permission` model to granularly define each role's access
+2. Leverage `scope` to control the extent of permissions
+3. Use boolean flags (`can_admin`, `can_create`, etc.) for fine-grained access control
+4. Consider using department, school, or facility IDs to further restrict permissions
+
+## Recommendations
+- Implement a hierarchical permission system
+- Use role inheritance where possible
+- Regularly audit and update role permissions
+- Implement logging for critical administrative actions
+

@@ -5,30 +5,89 @@ import { Input } from "@/app/components/input";
 import Validation, { required } from "@/app/hooks/validation";
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
 import { useUser } from "@/app/context/user_context";
-import { Select } from "@/app/components/select";
+import { SelectList } from "@/app/components/select_list";
+import { fee_type_enum, installment_types } from "@prisma/client";
+import DynamicSelection from "@/app/components/dynamic_selection";
 
 const Fee = () => {
-  const fee_type_id = Validation("", []);
-  const amount = Validation("", [required]);
-  const due_date = useDateValidation("", true, new Date());
-  const semester_id = Validation("", [required]);
-  const [feeTypes, setFeeTypes] = useState();
-  const { school_id } = useUser();
-
+  const stream_table = "stream";
+  const grade_table = "grade";
+  const department_table = "department";
   //
-  //get the fee types
-  const getFeeTypes = useCallback(async () => {
-    const response = await fetch(
-      `http://localhost:3000/api/fetch_record?table_name=fee_type&school_id=${school_id}`
-    );
-    const results = await response.json();
-    console.log(results);
-    setFeeTypes(results.records);
-  }, [school_id]);
 
-  useEffect(() => {
-    getFeeTypes();
-  }, [getFeeTypes]);
+  const amount = Validation("", [required]);
+  const fee_for = Validation("", [required]);
+  const description = Validation("", []);
+  const due_date = useDateValidation("", true, new Date());
+  const installment_type = Validation("", [required]);
+  const to_be_paid_by = useDateValidation("", true, new Date());
+  const semester_id = Validation("", [required]);
+
+  const fee_types: string[] = Object.keys(fee_type_enum);
+  const installment_options = Object.keys(installment_types);
+  const { school_id } = useUser();
+  //
+  //fees an be for individuals,streams,classes,department or the entire school
+  const possibe_payees = [
+    { id: 1, name: "Individuals" },
+    { id: 2, name: "Streams" },
+    { id: 3, name: "Classes" },
+    { id: 4, name: "Department" },
+    { id: 5, name: "School" },
+  ];
+  //
+  //fetch the table data needed for different payee types
+  const fetchPayeeData = useCallback(async (payee_type: record) => {
+    let response;
+    switch (payee_type.id) {
+      case 2: {
+        //
+        //get all the streams in the school
+        response = await fetch(
+          `http://localhost:3000/api/fetch_record?table_name=${stream_table}&school_id=${school_id}`
+        );
+      }
+      case 3: {
+        //
+        //get all the classes in the school
+        response = await fetch(
+          `http://localhost:3000/api/fetch_record?table_name=${grade_table}&school_id=${school_id}`
+        );
+      }
+      case 4: {
+        //
+        //get all the departments in the school
+        response = await fetch(
+          `http://localhost:3000/api/fetch_record?table_name=${department_table}&school_id=${school_id}`
+        );
+      }
+    }
+  }, []);
+  //
+  //get the possible payees for the selected payee
+  const getPayeeOptions = (selectedPayee: record) => {
+    switch (selectedPayee.id) {
+      case 1:
+        return "search";
+      //
+      //get all the students in the school
+      case 2: {
+        //
+        //get all the streams in the school
+      }
+      case 3:
+      //
+      //get all the classes in the school
+      case 4:
+      //
+      //get all the departments in the school
+      case 5:
+      //
+      //get the school
+      default:
+        return [];
+    }
+  };
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -51,7 +110,7 @@ const Fee = () => {
         }),
       });
     },
-    [fee_type_id, amount, due_date, semester_id]
+    [amount, due_date, semester_id]
   );
 
   return (
@@ -60,6 +119,20 @@ const Fee = () => {
       onSubmit={handleSubmit}
       submitButtonText="Submit"
     >
+      <SelectList
+        label="Fee Type"
+        options={fee_types}
+        value={fee_for.value}
+        onChange={fee_for.handle_change}
+        error={fee_for.error}
+      />
+      <Input
+        label="Description"
+        placeholder="Enter Fee Description"
+        value={description.value}
+        onChange={description.handle_change}
+        error={description.error}
+      />
       <Input
         label="Amount"
         placeholder="Enter Fee Amount"
@@ -77,23 +150,18 @@ const Fee = () => {
         onChange={due_date.handle_change}
         error={due_date.error}
       />
-      <Input
-        label="Semester ID"
-        placeholder="Enter Semester ID"
-        required
-        value={semester_id.value}
-        onChange={semester_id.handle_change}
-        error={semester_id.error}
+      <SelectList
+        label="Installment Type"
+        options={installment_options}
+        value={installment_type.value}
+        onChange={installment_type.handle_change}
+        error={installment_type.error}
       />
-      {feeTypes && (
-        <Select
-          options={feeTypes}
-          value={fee_type_id.value}
-          onChange={fee_type_id.handle_change}
-          error={fee_type_id.error}
-          label="Fee Type"
-        />
-      )}
+      <DynamicSelection
+        radioOptions={possibe_payees}
+        getCheckboxOptions={}
+        onSubmit={}
+      />
     </Form>
   );
 };

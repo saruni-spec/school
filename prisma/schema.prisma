@@ -10,111 +10,135 @@ datasource db {
 
 
 enum attendance_status {
-  present
-  absent
-  late
-  excused
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
 }
 
-
+enum installment_types{
+  SINGLE_PAYMENT
+  WEEKLY
+  MONTHLY
+  SEMESTER
+  ANNUAL
+  EMERGENCY
+}
 enum employment_status {
-  full_time
-  part_time
-  contract
-  intern
-  temporary
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERN
+  TEMPORARY
+  NONE
 }
 
 
 enum event_role {
-  participant
-  organizer
-  judge
-  supervisor
+  PARTICIPANT
+  ORGANIZER
+  JUDGE
+  SUPERVISOR
 }
 
 
 enum event_scope {
-  inter_school
-  intra_school
-  class_group
-  stream_level
+  INTER_SCHOOL
+  INTRA_SCHOOL
+  class_progression
+  GRADE
+  DEPARTMENT
+  STREAM_LEVEL
+  INDIVIDUAL
 }
 
 
 enum exam_type {
-  quiz
-  mid_term
-  final
-  assignment
+  QUIZ
+  MID_TERM
+  FINAL
+  ASSIGNMENT
 }
 
 
 enum facility_type {
-  Educational
-  Recreational
-  Dining
-  Sports
-  Transportation
+  EDUCATIONAL
+  RECREATIONAL
+  DINING
+  SPORTS
+  TRANSPORTATION
+  MEDICAL
 }
 
 
 enum fee_type_enum {
-  tuition
-  library
-  sports
-  transport
-  miscellaneous
+  TUITION
+  LIBRARY
+  SPORTS
+  TRANSPORT
+  FACILITY
+  DEVELOPMENT
+  COURSE_MATERIAL
+  STATIONERY
+  UNIFORM
+  MEDICAL
+  CULINARY
+  LAB
+  EVENT_PARTIPATION
+  DAMAGE
+  FINE
+  MISCELLANEOUS
 }
 
 
 enum participant_type {
-  student
-  teacher
-  staff
-  guest
+  STUDENT
+  TEACHER
+  STAFF
+  GUEST
+  GUARDIAN
 }
 
 
 enum participation_status {
-  registered
-  attended
-  absent
-  withdrawn
-  disqualified
+  REGISTERED
+  ATTENDED
+  ABSENT
+  WITHDRAWN
+  DISQUALIFIED
 }
 
 
 enum payment_method {
-  cash
-  bank_transfer
-  credit_card
-  mobile_money
-  cheque
+  CASH
+  BANK_TRANSFER
+  CREDIT_CARD
+  MOBILE_MONEY
+  CHEQUE
 }
 
 
 enum payment_status {
-  pending
-  completed
-  failed
-  refunded
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
 }
 
 
 enum relationship_type {
-  father
-  mother
-  guardian
-  other
+  FATHER
+  MOTHER
+  GUARDIAN
+  OTHER
 }
 
 
 enum reviewable_entity {
-  school
-  school_facility
-  event
-  teacher
+  SCHOOL
+  SCHOOL_FACILITY
+  EVENT
+  TEACHER
 }
 
 enum grade_level_type {
@@ -145,11 +169,11 @@ enum school_type {
 
 
 enum severity {
-  emergency
-  urgent
-  priotity
-  inquiry
-  low
+  EMERGENCY
+  URGENT
+  PRIOTITY
+  INQUIRY
+  LOW
 }
 
 // Enum for defining broad privilege categories
@@ -242,7 +266,8 @@ enum role_type {
   AUDIT_OFFICER         // Compliance and internal audit
 }
 
-//represents a school and detailsrequired for a school
+//represents a school and details required for a school
+
 model school {
   id                          Int                        @id @default(autoincrement())
   name                        String                     @db.VarChar(100)  @unique
@@ -257,14 +282,14 @@ model school {
   award                       award[]
   department                  department[]
   event_school_participant    event_school_participant[]
-  fee_type                    fee_type[]
+  fee                         fee[]
   review                      review[]
   school_facility             school_facility[]          @ignore
-  staff                       staff[]
   permission                  permission[]
   users                       users[]
   course_material             course_material[]
   levels_offered              levels_offered[]
+  stream                      stream[]
 }
 
 // These are the different school levels,ie. LOWER_PRIMARY,UPPER_PRIMARY....that a spefic school has
@@ -284,7 +309,7 @@ model levels_offered{
 
 model school_level {
   id                        Int                     @id   @default(autoincrement())
-  type                      school_type  
+  type                      school_type             @unique
 
   levels_offered            levels_offered[]    
   grade_level               grade_level[]        
@@ -294,13 +319,17 @@ model school_level {
 
 model facility {
   id                      Int                     @id   @default(autoincrement())
-  name                    String?                 @db.VarChar(50)
-  type                    facility_type?
+  name                    String                  @db.VarChar(20)
+  type                    facility_type         
+  description             String?                 @db.VarChar(100)
+  created_at              DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime?               @default(now()) @db.Timestamptz(6)
   deleted_at              DateTime?               @db.Timestamptz(6)
 
   school_facility         school_facility[]       @ignore
 
   @@unique([name,type])
+
 }
 
 // Represents a school facility and the details of the facility
@@ -310,6 +339,8 @@ model school_facility {
   school_id               Int
   facility_id             Int
   description             String?         @db.VarChar(100)
+  created_at              DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime?       @default(now()) @db.Timestamptz(6)
   deleted_at              DateTime?       @db.Timestamptz(6)
   capacity                Int?
   opening_hours           DateTime?
@@ -326,29 +357,6 @@ model school_facility {
   @@unique([school_id,facility_id])
 }
 
-// Represents a library book and the details of the book
-
-model lib_book {
-  id                    Int              @id @default(autoincrement())
-  school_facility_id    Int
-  book_name             String
-  reference_number      String
-  parental_advisory     Boolean?
-  subject_id            Int?
-  borrowed_by           Int?
-  borrowed_on           DateTime?
-  due_by                DateTime?
-  returned_on           DateTime?
-  damaged_by            Int?
-  created_at            DateTime?       @default(now()) @db.Timestamptz(6)
-  updated_at            DateTime?       @default(now()) @db.Timestamptz(6)
-  deleted_at            DateTime?       @db.Timestamptz(6)
-
-  school_facility       school_facility @relation(fields: [school_facility_id], references: [id])
-  
-
-  subject               subject?        @relation(fields: [subject_id], references: [id])
-}
 
 // Represents the start and end date of an academic year of a specific school
 
@@ -360,11 +368,12 @@ model academic_year {
   end_date                  DateTime          @db.Date
   is_current                Boolean?          @default(false)
   created_at                DateTime?         @default(now()) @db.Timestamptz(6)
-
+  updated_at                DateTime?       @default(now()) @db.Timestamptz(6)
+  deleted_at                DateTime?       @db.Timestamptz(6)
   school                    school?           @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   semester                  semester[]
-  grade                     grade[]
+  class_progression         class_progression[]
   
   @@unique([school_id, year])  
 }
@@ -379,97 +388,816 @@ model semester {
   end_date               DateTime               @db.Date
   is_current             Boolean?               @default(false)
   created_at             DateTime?              @default(now()) @db.Timestamptz(6)
+  updated_at             DateTime?              @default(now()) @db.Timestamptz(6)
+  deleted_at             DateTime?              @db.Timestamptz(6)
 
   academic_year          academic_year?         @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   student_ellectives     student_ellectives[]
   announcement           announcement[]
   award                  award[]
-  fee                    fee[]
   event                  event[]
   exam                   exam[]
   subject_allocation     subject_allocation[]
-  stream_assigment       stream_assigment[]
 
 }
 
-// Represents the diffrent grades that can be offered by a school
+
+model department {
+  id                                         Int       @id @default(autoincrement())
+  school_id                                  Int?
+  name                                       String    @db.VarChar(100)
+  description                                String?
+
+  created_at                                 DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                                 DateTime? @default(now()) @db.Timestamptz(6)
+  deleted_at                                 DateTime? @db.Timestamptz(6)
+
+  school                                     school?   @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  staff                                      staff[]  
+  subject_allocation                         subject_allocation[]
+  permission                                 permission[]
+  department_head                            department_head[]
+  fee                                        fee[]
+  award                                      award[]
+  event_department_participant               event_department_participant[]
+
+  @@unique([school_id,name])
+  @@index([school_id])
+}
+
+
+// Represents the diffrent grades that are currently being offered in a school
 
 model grade_level{
   id                         Int                        @id @default(autoincrement())
   level                      grade_level_type
   school_level_id            Int?
 
+  created_at                 DateTime?                  @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime?                  @default(now()) @db.Timestamptz(6)
+  deleted_at                 DateTime?                  @db.Timestamptz(6)
+
   school_level               school_level?              @relation(fields: [school_level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  grade                      grade[]
-}
-
-// Represents the progression of a class through different grades
-// A class can only be in one grade at a time
-// A class can only be in one academic year at a time
-// A class can have a class teacher and a student representative each year
-
-model grade{
-  id                          Int                        @id @default(autoincrement())
-  class_group_id              Int
-  academic_year_id            Int
-  grade_level_id              Int
-  class_teacher               Int?
-  student_rep                 Int?
-
-  academic_year               academic_year?             @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  grade_level                 grade_level?               @relation(fields: [grade_level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  class_group                 class_group?               @relation(fields: [class_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher                     teacher?                   @relation(fields: [class_teacher], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student                     student?                   @relation(fields: [student_rep], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
-  @@unique([class_group_id,academic_year_id])
-}
-
-// Represents a class
-// A class can have multiple students
-// A class is a group of students that progress through the grades together
-
-model class_group {
-  id                          Int                       @id @default(autoincrement())
-  name                        String                    @db.VarChar(50)              
-  is_active                   Boolean?                  @default(true)
-  created_at                  DateTime?                 @default(now()) @db.Timestamptz(6)
-  
-  event_class_participant     event_class_participant[]
-  stream                      stream[]
-  fee                         fee[]
-  permission                  permission[]
-  student                     student[]
-  grade                       grade[]
-
-  @@map("class")
+  stream                     stream[]
+  fee                        fee[]
 }
 
 // Represents a stream
-// A stream is a division/part of a larger class group
+// A stream is a division/part of a grade level
 
 model stream {
   id                           Int                          @id @default(autoincrement())
-  class_group_id               Int?
+  grade_level_id               Int?
+  school_id                    Int?
   name                         String                       @db.VarChar(50)
   capacity                     Int?
+
   created_at                   DateTime?                    @default(now()) @db.Timestamptz(6)
+  updated_at                   DateTime?                    @default(now()) @db.Timestamptz(6)
   deleted_at                   DateTime?                    @db.Timestamptz(6)
 
-  class_group                  class_group?                 @relation(fields: [class_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  grade_level                  grade_level?                 @relation(fields: [grade_level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school                       school?                      @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  event_stream_participant     event_stream_participant[]
   exam_sitting                 exam_sitting[]
   
   subject_allocation           subject_allocation[]
-  assignment                   assignment[]
+  
   slot_assignment              slot_assignment[]
   permission                   permission[]
+  fee                          fee[]
+  class_progression            class_progression[]
 
-  @@unique([class_group_id,name])
+  @@unique([grade_level_id,name])
 }
+
+// Represents a colletion of students in the same class
+// eg,class of 2024
+// and their progression of a class through different grades
+// eg.class of 2024 would be in a different grade each year
+
+
+model class_progression {
+  id                          Int                       @id @default(autoincrement())
+  name                        String                    @db.VarChar(50)              
+  is_current                  Boolean?  
+
+  academic_year_id            Int?
+  stream_id                   Int
+  class_teacher               Int?
+  student_rep                 Int?
+
+  created_at                  DateTime?                  @default(now()) @db.Timestamptz(6)
+  updated_at                  DateTime?                  @default(now()) @db.Timestamptz(6)
+  deleted_at                  DateTime?                  @db.Timestamptz(6)
+
+
+  academic_year               academic_year?             @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  stream                      stream?                    @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher                     teacher?                   @relation(fields: [class_teacher], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  student                     student?                   @relation(fields: [student_rep], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  event_class_participant     event_class_participant[]
+  fee                         fee[]
+  permission                  permission[]
+  student_class               student_class[]
+  assignment                  assignment[]
+  award                       award[]
+
+  @@unique([stream_id,academic_year_id])
+  @@map("class")
+}
+
+
+//
+//assining a student to a class group
+//Will be used when a student changes schools,then they can be placed in a different class group
+
+model student_class {
+  student_id                 Int
+  current_class              Int
+  is_current                 Boolean
+  admission_number           String?            @unique @db.VarChar(20)
+  admission_date             DateTime           @db.Date
+  start_date                 DateTime           @db.Date
+  end_date                   DateTime?          @db.Date
+
+  created_at                 DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime?          @default(now()) @db.Timestamptz(6)
+  deleted_at                 DateTime?          @db.Timestamptz(6)
+
+
+  class_progression          class_progression  @relation(fields: [current_class], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  student                    student            @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([student_id, admission_date])
+}
+
+
+model permission {
+  id                   Int                 @id @default(autoincrement())
+
+  role_id              Int
+  role                 role                @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  resource             system_resource
+  scope                privilege_scope     @default(DEPARTMENTAL)
+ 
+  can_admin            Boolean             @default(false)
+  can_create           Boolean             @default(false)
+  can_read             Boolean             @default(false)
+  can_update           Boolean             @default(false)
+  can_delete           Boolean             @default(false)
+
+  department_id        Int?
+  school_id            Int?
+  class_progression_id             Int?
+  school_facility_id   Int?
+  stream_id            Int?
+
+  department           department?         @relation(fields: [department_id], references: [id], onDelete: SetNull)
+  school               school?             @relation(fields: [school_id], references: [id], onDelete: SetNull)
+  class_progression    class_progression?  @relation(fields: [class_progression_id], references: [id], onDelete: SetNull)          
+  school_facility      school_facility?    @relation(fields: [school_facility_id], references: [id], onDelete: SetNull)
+  stream               stream?             @relation(fields: [stream_id], references: [id], onDelete: SetNull)
+
+  created_at           DateTime            @default(now())
+  updated_at           DateTime            @default(now())
+  deleted_at           DateTime?
+  
+  @@unique([role_id, resource,scope,can_admin,can_create,can_delete,can_read,can_update])
+  @@index([resource, department_id, school_id, class_progression_id,role_id])
+}
+
+model users {
+  id                                 Int                      @id @default(autoincrement())
+  name                               String?                  @db.VarChar(50)
+  first_name                         String                   @db.VarChar(50)
+  last_name                          String                   @db.VarChar(50)
+  email                              String                   @unique @db.VarChar(100)
+  phone                              String?                  @db.VarChar(20)
+  date_of_birth                      DateTime?                @db.Date
+  address                            String?
+  password                           String
+  emergency_contacts                 Json?
+  role_id                            Int?
+  
+  created_at                         DateTime?                @default(now()) @db.Timestamptz(6)
+  updated_at                         DateTime?                @default(now()) @db.Timestamptz(6)
+  deleted_at                         DateTime?                @db.Timestamptz(6)
+
+
+  current_school                     Int? 
+
+  role                               role?                    @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school                             school?                  @relation(fields: [current_school], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  announcement                       announcement[]
+  event                              event[]
+  event_user_participant             event_user_participant[]
+  messages_messages_recepientTousers messages[]               @relation("messages_recepientTousers")
+  messages_messages_senderTousers    messages[]               @relation("messages_senderTousers")
+  parent                             parent[]
+  review                             review[]
+  staff                              staff[]
+  student                            student[]
+  admin                              admin[]
+  picture                            picture[]
+  medical                            medical[]
+  course_material                    course_material[]
+  fee                                fee[]
+  award                              award[]
+
+  @@index([current_school,role_id])
+}
+
+
+model role {
+  id                        Int                  @id @default(autoincrement())
+  type                      role_type            @unique
+  name                      String
+  description               String?
+  category                  privilege_category?
+  
+  created_at                DateTime             @default(now())
+  updated_at                DateTime             @default(now())
+  deleted_at                DateTime?
+  
+
+  permissions               permission[]
+  users                     users[]
+ 
+  @@unique([type, category])
+}
+
+
+model admin{
+  id                                 Int                @id @default(autoincrement())
+  user_id                            Int                @unique
+
+  created_at                         DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at                         DateTime?          @default(now()) @db.Timestamptz(6)
+  deleted_at                         DateTime?          @db.Timestamptz(6)
+
+  users                              users?             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+ 
+
+}
+
+
+model staff {
+  id                                              Int                 @id @default(autoincrement())
+  staff_code                                      String?
+  department_id                                   Int?
+  user_id                                         Int                 @unique
+  employment_status                               employment_status?  @default(FULL_TIME)
+  qualifications                                  Json?
+  join_date                                       DateTime?           @default(now())  @db.Date
+
+  created_at                                      DateTime?           @default(now()) @db.Timestamptz(6)
+  updated_at                                      DateTime?           @default(now()) @db.Timestamptz(6)
+  deleted_at                                      DateTime?           @db.Timestamptz(6)
+  
+  department                                      department?         @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                                           users?              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  school_facility                                 school_facility[]                                   
+  teacher                                         teacher[]
+  department_head                                 department_head[]
+  
+  @@index([department_id,user_id])
+}
+
+
+model teacher {
+  id                    Int               @id @default(autoincrement())
+  staff_id              Int?              @unique
+  specialization        String?           @db.VarChar(100)
+  is_active             Boolean?          @default(true)
+
+  created_at            DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at            DateTime?         @db.Timestamptz(6)
+
+
+  staff                 staff?            @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  exam_sitting          exam_sitting[]
+  result                result[]
+  review                review[]
+  subject_allocation    subject_allocation[]
+  slot_assignment       slot_assignment[]
+  assignment            assignment[]
+  class_progression     class_progression[]
+
+  @@index([staff_id])
+}
+
+
+// Represents the head of a department
+// allows changing of department heads dynamically while keeping track of previous heads
+
+model department_head {
+  staff_id                                   Int
+  department_id                              Int
+
+  created_at                                 DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at                                 DateTime? @default(now()) @db.Timestamptz(6)
+  deleted_at                                 DateTime? @db.Timestamptz(6)
+
+  department                                 department?        @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  staff                                      staff?             @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([staff_id,department_id])
+}
+
+
+model student {
+  id                    Int               @id @default(autoincrement())
+  user_id               Int               @unique
+
+  created_at            DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at            DateTime?         @db.Timestamptz(6)
+          
+  users                 users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  parent_student        parent_student[]
+  payment               payment[]
+  result                result[]
+  student_class         student_class[]
+  student_ellectives    student_ellectives[]
+  //
+  //for student representatives
+  class_progression     class_progression[]
+
+}
+
+
+model subject {
+  id                    Int               @id @default(autoincrement())
+  name                  String            @db.VarChar(100) @unique
+  description           String?
+
+  created_at            DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at            DateTime?         @db.Timestamptz(6)
+
+
+  
+  subject_allocation    subject_allocation[]
+  course_material       course_material[]
+  lib_book              lib_book[]
+
+}
+
+
+model subject_allocation {
+  id                        Int                       @id @default(autoincrement())
+  code                      String?                   @unique @db.VarChar(20)
+  department_id             Int?
+  teacher_id                Int?
+  subject_id                Int
+  stream_id                 Int
+  semester_id               Int
+  assigned_date             DateTime?                 @default(dbgenerated("CURRENT_DATE")) @db.Date
+
+  created_at                DateTime?                 @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime?                 @default(now()) @db.Timestamptz(6)
+  deleted_at                DateTime?                 @db.Timestamptz(6)
+
+
+  stream                    stream                    @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  semester                  semester                  @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subject                   subject                   @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher                   teacher?                  @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  department                department?               @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  
+  student_ellectives    student_ellectives[]
+  exam_sitting          exam_sitting[]
+  slot_assignment       slot_assignment[]
+  assignment            assignment[]
+  
+  @@unique([teacher_id, subject_id])
+}
+
+model medical {
+  id                                Int                      @id @default(autoincrement())
+  user_id                           Int
+  description                       String                   @unique @db.VarChar(100)                              
+  notes                             String                   @unique @db.VarChar(100)
+  medic_id                          Int?
+
+  created_at                        DateTime?                @default(now()) @db.Timestamptz(6)
+  updated_at                        DateTime?                @default(now()) @db.Timestamptz(6)
+  deleted_at                        DateTime?                @db.Timestamptz(6)
+
+  users                             users?                   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([user_id])
+}
+
+
+model assignment {
+  id                      Int                    @id @default(autoincrement())
+  description             String                 @db.VarChar(100)
+  teacher_id              Int
+  subject_allocation_id   Int?
+  class_progression_id    Int?
+  due_date                DateTime?              @db.Date
+
+  created_at              DateTime?              @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime?              @default(now()) @db.Timestamptz(6)
+  deleted_at              DateTime?              @db.Timestamptz(6)
+
+
+  teacher                 teacher?               @relation(fields: [teacher_id], references: [id])
+  subject_allocation      subject_allocation?    @relation(fields: [subject_allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  class_progression       class_progression?     @relation(fields: [class_progression_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+
+model student_ellectives {
+  student_id                  Int
+  subject_allocation_id       Int
+  semester_id                 Int
+  enrollment_date             DateTime?                 @default(dbgenerated("CURRENT_DATE")) @db.Date
+
+  created_at                  DateTime?                 @default(now()) @db.Timestamptz(6)
+  updated_at                  DateTime?                 @default(now()) @db.Timestamptz(6)
+  deleted_at                  DateTime?                 @db.Timestamptz(6)
+
+
+  semester                    semester                  @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subject_allocation          subject_allocation        @relation(fields: [subject_allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  student                     student                   @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  @@id([student_id, subject_allocation_id])
+}
+
+
+model parent {
+  id                Int               @id @default(autoincrement())
+  user_id           Int?              @unique
+  relationship_type relationship_type
+
+  created_at        DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime?         @db.Timestamptz(6)
+
+  users             users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parent_student    parent_student[]
+
+}
+
+
+model parent_student {
+  parent_id         Int
+  student_id        Int
+
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime? @db.Timestamptz(6)
+
+  parent            parent    @relation(fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  student           student   @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([parent_id, student_id])
+}
+
+
+model slot {
+  id                Int           @id @default(autoincrement())
+  name              String?           @db.VarChar(50)
+  day_of_week       Int
+  start_time        DateTime      @db.Time(6)
+  end_time          DateTime      @db.Time(6)
+  room_number       String?       @db.VarChar(20)
+
+  created_at        DateTime?     @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?     @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime?     @db.Timestamptz(6)
+
+  slot_assignments  slot_assignment[]
+
+  @@unique([day_of_week,start_time,end_time,room_number])
+}
+
+
+model slot_assignment {
+  id                             Int                          @id @default(autoincrement())
+  slot_id                        Int
+  stream_id                      Int
+  teacher_id                     Int
+  subject_allocation_id          Int
+  created_at                     DateTime?                    @default(now()) @db.Timestamptz(6)
+  updated_at                     DateTime?                    @default(now()) @db.Timestamptz(6)
+  deleted_at                     DateTime?                    @db.Timestamptz(6)
+
+  slot                           slot                         @relation(fields: [slot_id], references: [id])
+  teacher                        teacher                      @relation(fields: [teacher_id], references: [id])
+  subject_allocation             subject_allocation           @relation(fields: [subject_allocation_id], references: [id])
+  stream                         stream?                      @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  @@unique([slot_id, teacher_id,stream_id])
+}
+
+
+model exam {
+  id                  Int            @id @default(autoincrement())
+  semester_id         Int?
+  name                String         @db.VarChar(30)
+  exam_providers      String?        @db.VarChar(30)
+  start_date          DateTime?      @db.Date
+  end_date            DateTime?      @db.Date
+  type                exam_type
+
+  created_at          DateTime?      @default(now()) @db.Timestamptz(6)
+  updated_at          DateTime?      @default(now()) @db.Timestamptz(6)
+  deleted_at          DateTime?      @db.Timestamptz(6)
+
+  semester            semester?      @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  exam_sitting        exam_sitting[]
+
+  @@unique([semester_id, name, type, start_date])
+}
+
+
+model exam_sitting {
+  id                    Int                        @id @default(autoincrement())
+  exam_id               Int?
+  supervisor            Int?
+  subject_allocation_id Int?
+  stream_id             Int?
+  out_of                Decimal?                   @db.Decimal(5, 2)
+  remarks               String?
+  sitting_date          DateTime                   @db.Date
+
+  created_at            DateTime?                  @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?                  @default(now()) @db.Timestamptz(6)
+  deleted_at            DateTime?                  @db.Timestamptz(6)
+
+  total_marks           Int
+  exam                  exam?                      @relation(fields: [exam_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  stream                stream?                    @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subject_allocation    subject_allocation?        @relation(fields: [subject_allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher               teacher?                   @relation(fields: [supervisor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  result                result[]
+
+  @@unique([stream_id, subject_allocation_id, exam_id, sitting_date])
+}
+
+
+model fee {
+  id                        Int               @id @default(autoincrement())
+  code                      String            @db.VarChar(10)
+  fee_for                   fee_type_enum
+  description               String?           @db.VarChar(50)
+  approved_by               Int?
+  amount                    Decimal           @db.Decimal(10, 2)
+  installments              installment_types
+  due_date                  DateTime?         @db.Date
+  for_individual            Int?
+  for_stream                Int?
+  for_grade                 Int?
+  for_class                 Int?
+  for_department            Int?
+  for_school                Int?
+
+  created_at                DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at                DateTime?         @db.Timestamptz(6)
+
+
+  users                     users?            @relation(fields: [for_individual], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  grade_level               grade_level?      @relation(fields: [for_grade], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  stream                    stream?           @relation(fields: [for_stream], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  class_progression         class_progression? @relation(fields: [for_class], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  department                department?       @relation(fields: [for_department], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school                    school?           @relation(fields: [for_school], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  payment                   payment[]
+
+  @@unique([fee_for,amount,due_date])
+  @@index([due_date,for_class,for_department,for_individual,for_school,for_grade,for_stream])
+}
+
+
+
+model announcement {
+  id              Int         @id @default(autoincrement())
+  announcement    String?     @db.VarChar(500)
+  semester_id     Int?
+ 
+  date_for        DateTime    @db.Date
+  valid_upto      DateTime    @db.Date
+  scope           event_scope
+  made_by         Int?
+
+  created_at      DateTime?   @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime?   @default(now()) @db.Timestamptz(6)
+  deleted_at      DateTime?   @db.Timestamptz(6)
+
+  users           users?      @relation(fields: [made_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  semester        semester?   @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+ @@unique([semester_id, date_for, made_by, scope])
+}
+
+
+model award {
+  id                        Int               @id @default(autoincrement())
+  name                      String?           @db.VarChar(20)
+  semester_id               Int?
+  awarded_by                String?           @db.VarChar(20)
+  awared_for                String?           @db.VarChar(100)
+  for_individual            Int?
+  for_class                 Int?
+  for_department            Int?
+  for_school                Int?
+
+  created_at                DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at                DateTime?         @db.Timestamptz(6)
+
+  users                     users?            @relation(fields: [for_individual], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  class_progression         class_progression? @relation(fields: [for_class], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  department                department?       @relation(fields: [for_department], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school                    school?           @relation(fields: [for_school], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  semester                  semester?         @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+@@unique([semester_id,name])
+}
+
+
+model event {
+  id                       Int                        @id @default(autoincrement())
+  name                     String                     @db.VarChar(100)
+  description              String?
+  location                 String?                    @db.VarChar(200)
+  start_date               DateTime                   @db.Timestamptz(6)
+  end_date                 DateTime                   @db.Timestamptz(6)
+  scope                    event_scope
+  semester_id              Int?
+  created_by               Int?
+
+  created_at               DateTime?                  @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime?                  @default(now()) @db.Timestamptz(6)
+  deleted_at               DateTime?                  @db.Timestamptz(6)
+
+  users                    users?                     @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  semester                 semester?                  @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  event_class_participant  event_class_participant[]
+  event_school_participant event_school_participant[]
+  event_department_participant event_department_participant[]
+  event_user_participant   event_user_participant[]
+  review                   review[]
+
+  @@index([start_date, end_date], map: "idx_event_date")
+  @@index([scope], map: "idx_event_scope")
+  @@unique([semester_id,name])
+}
+
+
+model event_class_participant {
+  event_id          Int
+  class_progression_id          Int
+  registration_date DateTime?             @default(now()) @db.Timestamptz(6)
+  status            participation_status? @default(REGISTERED)
+  deleted_at        DateTime?             @db.Timestamptz(6)
+  class_progression class_progression     @relation(fields: [class_progression_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([event_id, class_progression_id])
+}
+
+
+model event_school_participant {
+  event_id          Int
+  school_id         Int
+  registration_date DateTime?             @default(now()) @db.Timestamptz(6)
+  status            participation_status? @default(REGISTERED)
+  deleted_at        DateTime?             @db.Timestamptz(6)
+  event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school            school                @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([event_id, school_id])
+  @@index([event_id, school_id], map: "idx_event_school_participant")
+}
+
+
+model event_department_participant {
+  event_id          Int
+  department_id     Int
+  registration_date DateTime?             @default(now()) @db.Timestamptz(6)
+  status            participation_status? @default(REGISTERED)
+  deleted_at        DateTime?             @db.Timestamptz(6)
+  event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  department        department            @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([event_id, department_id])
+}
+
+
+model event_user_participant {
+  event_id          Int
+  user_id           Int
+  participant_type  participant_type
+  registration_date DateTime?             @default(now()) @db.Timestamptz(6)
+  attendance_status participation_status? @default(REGISTERED)
+  role              event_role?
+  deleted_at        DateTime?             @db.Timestamptz(6)
+  event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users             users                 @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([event_id, user_id])
+  @@index([event_id, user_id], map: "idx_event_user_participant")
+}
+
+
+model messages {
+  id                              Int       @id @default(autoincrement())
+  message_details                 String?   @db.VarChar(200)
+  topic                           String?   @db.VarChar(30)
+  severity                        severity?
+  sender                          Int?
+  recepient                       Int?
+  deleted_at                      DateTime? @db.Timestamptz(6)
+  users_messages_recepientTousers users?    @relation("messages_recepientTousers", fields: [recepient], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_messages_senderTousers    users?    @relation("messages_senderTousers", fields: [sender], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+
+}
+
+
+model payment {
+  id               Int             @id @default(autoincrement())
+  student_id       Int?
+  fee_id           Int?
+  amount           Decimal         @db.Decimal(10, 2)
+  payment_date     DateTime?       @default(now()) @db.Timestamptz(6)
+  payment_method   payment_method
+  status           payment_status? @default(PENDING)
+  reference_number String          @unique @db.VarChar(100)
+
+  created_at       DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime?       @default(now()) @db.Timestamptz(6)
+  deleted_at       DateTime?       @db.Timestamptz(6)
+
+  fee              fee?            @relation(fields: [fee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  student          student?        @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([student_id], map: "idx_payment_student_id")
+}
+
+
+model result {
+  student_id      Int
+  marked_by       Int?
+  marks_obtained  Decimal?     @db.Decimal(5, 2)
+  exam_sitting_id Int
+
+  created_at      DateTime?    @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime?    @default(now()) @db.Timestamptz(6)
+  deleted_at      DateTime?    @db.Timestamptz(6)
+
+  exam_sitting    exam_sitting @relation(fields: [exam_sitting_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher         teacher?     @relation(fields: [marked_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  student         student      @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([student_id, exam_sitting_id])
+}
+
+
+model review {
+  id                 Int               @id @default(autoincrement())
+  reviewer_id        Int
+  entity_type        reviewable_entity
+  school_id          Int?
+  school_facility_id Int?
+  event_id           Int?
+  teacher_id         Int?
+  rating             Int
+  title              String?           @db.VarChar(100)
+  content            String
+
+  created_at         DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at         DateTime?         @db.Timestamptz(6)
+
+  event              event?            @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users              users             @relation(fields: [reviewer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school             school?           @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher            teacher?          @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([entity_type], map: "idx_review_entity_type")
+  @@unique([reviewer_id,entity_type,title])
+}
+
+
 
 // Represents course material and the details of the course material
 // Course material can be published by a user
@@ -513,633 +1241,26 @@ model picture {
   gallery                                    gallery?     @relation(fields:[gallery_id],references :[id], onDelete: NoAction, onUpdate: NoAction)
   users                                      users       @relation(fields:[taken_by],references :[id], onDelete: NoAction, onUpdate: NoAction)
 }
+// Represents a library book and the details of the book
 
+model lib_book {
+  id                    Int              @id @default(autoincrement())
+  school_facility_id    Int
+  book_name             String
+  reference_number      String
+  parental_advisory     Boolean?
+  subject_id            Int?
+  borrowed_by           Int?
+  borrowed_on           DateTime?
+  due_by                DateTime?
+  returned_on           DateTime?
+  damaged_by            Int?
+  created_at            DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?       @default(now()) @db.Timestamptz(6)
+  deleted_at            DateTime?       @db.Timestamptz(6)
 
-model department {
-  id                                         Int       @id @default(autoincrement())
-  school_id                                  Int?
-  name                                       String    @db.VarChar(100)
-  description                                String?
-  created_at                                 DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at                                 DateTime? @default(now()) @db.Timestamptz(6)
-  deleted_at                                 DateTime? @db.Timestamptz(6)
-
-  school                                     school?   @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  
-  staff                                      staff[]  
-  subject_allocation                         subject_allocation[]
-  permission                                 permission[]
-  department_head                            department_head[]
-
-  @@unique([school_id,name])
-}
-
-// Represents the head of a department
-
-model department_head {
-  staff_id                                   Int
-  department_id                              Int
-
-  created_at                                 DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at                                 DateTime? @default(now()) @db.Timestamptz(6)
-  deleted_at                                 DateTime? @db.Timestamptz(6)
-
-  department                                 department?        @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  staff                                      staff?             @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@unique([staff_id,department_id])
-}
-
-
-model users {
-  id                                 Int                      @id @default(autoincrement())
-  name                               String?                  @db.VarChar(50)
-  first_name                         String                   @db.VarChar(50)
-  last_name                          String                   @db.VarChar(50)
-  email                              String                   @unique @db.VarChar(100)
-  phone                              String?                  @db.VarChar(20)
-  date_of_birth                      DateTime?                @db.Date
-  address                            String?
-  password                           String
-  emergency_contacts                 Json?
-  role_id                            Int?
-  deleted_at                         DateTime?                @db.Timestamptz(6)
-  current_school                     Int? 
-
-  role                               role?                    @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school                             school?                  @relation(fields: [current_school], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  announcement                       announcement[]
-  event                              event[]
-  event_user_participant             event_user_participant[]
-  messages_messages_recepientTousers messages[]               @relation("messages_recepientTousers")
-  messages_messages_senderTousers    messages[]               @relation("messages_senderTousers")
-  parent                             parent[]
-  review                             review[]
-  staff                              staff[]
-  student                            student[]
-  admin                              admin[]
-  picture                            picture[]
-  medical                            medical[]
-  course_material                    course_material[]
-}
-
-model medical {
-  id                                              Int                      @id @default(autoincrement())
-  user_id                                         Int
-  description                                     String                   @unique @db.VarChar(100)                              
-  notes                                           String                   @unique @db.VarChar(100)
-  medic_id                                        Int?
-  created_at                                      DateTime?                @default(now()) @db.Timestamptz(6)
-  updated_at                                      DateTime?                @default(now()) @db.Timestamptz(6)
-  deleted_at                                      DateTime?                @db.Timestamptz(6)
-
-  users                                           users?                   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-}
-
-model role {
-  id                        Int                  @id @default(autoincrement())
-  type                      role_type            @unique
-  name                      String
-  description               String?
-  category                  privilege_category?
-  
-  // Timestamp tracking
-  created_at                DateTime             @default(now())
-  updated_at                DateTime             @default(now())
-  deleted_at                DateTime?
+  school_facility       school_facility @relation(fields: [school_facility_id], references: [id])
   
 
-  permissions               permission[]
-  users                     users[]
- 
-  @@unique([type, category])
+  subject               subject?        @relation(fields: [subject_id], references: [id])
 }
-
-
-model permission {
-  id                   Int                 @id @default(autoincrement())
-
-  role_id              Int
-  role                 role                @relation(fields: [role_id], references: [id], onDelete: Cascade)
-
-  resource             system_resource
-  scope                privilege_scope      @default(DEPARTMENTAL)
- 
-  can_admin            Boolean             @default(false)
-  can_create           Boolean             @default(false)
-  can_read             Boolean             @default(false)
-  can_update           Boolean             @default(false)
-  can_delete           Boolean             @default(false)
-
-  department_id        Int?
-  school_id            Int?
-  class_group_id             Int?
-  school_facility_id   Int?
-  stream_id            Int?
-
-  department           department?         @relation(fields: [department_id], references: [id], onDelete: SetNull)
-  school               school?             @relation(fields: [school_id], references: [id], onDelete: SetNull)
-  class_group          class_group?        @relation(fields: [class_group_id], references: [id], onDelete: SetNull)          
-  school_facility      school_facility?    @relation(fields: [school_facility_id], references: [id], onDelete: SetNull)
-  stream               stream?             @relation(fields: [stream_id], references: [id], onDelete: SetNull)
-
-  created_at           DateTime            @default(now())
-  updated_at           DateTime            @default(now())
-  deleted_at           DateTime?
-  
-  @@unique([role_id, resource,scope,can_admin,can_create,can_delete,can_read,can_update])
-  @@index([resource, department_id, school_id, class_group_id])
-}
-
-model admin{
-  id                                 Int                @id @default(autoincrement())
-  user_id                            Int                @unique
-  created_at                         DateTime?          @default(now()) @db.Timestamptz(6)
-  updated_at                         DateTime?          @default(now()) @db.Timestamptz(6)
-  deleted_at                         DateTime?          @db.Timestamptz(6)
-
-  users                              users?             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
- 
-
-}
-
-
-model staff {
-  id                                              Int                @id @default(autoincrement())
-  school_id                                       Int?
-  department_id                                   Int?
-  user_id                                         Int                @unique
-  employment_status                               employment_status?
-  qualifications                                  Json?
-  join_date                                       DateTime?          @default(now())  @db.Date
-  created_at                                      DateTime?          @default(now()) @db.Timestamptz(6)
-  updated_at                                      DateTime?          @default(now()) @db.Timestamptz(6)
-  deleted_at                                      DateTime?          @db.Timestamptz(6)
-  
-  department                                      department?        @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school                                          school?            @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users                                           users?             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  school_facility                                 school_facility[]                                   
-  teacher                                         teacher[]
-  department_head                                 department_head[]
-  
-  @@index([school_id], map: "idx_staff_school_id")
-}
-
-
-model teacher {
-  id                    Int               @id @default(autoincrement())
-  staff_id              Int?              @unique
-  specialization        String?           @db.VarChar(100)
-  is_active             Boolean?          @default(true)
-  created_at            DateTime?         @default(now()) @db.Timestamptz(6)
-  deleted_at            DateTime?         @db.Timestamptz(6)
-
-  staff                 staff?            @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  exam_sitting          exam_sitting[]
-  result                result[]
-  review                review[]
-  subject_allocation    subject_allocation[]
-  slot_assignment       slot_assignment[]
-  stream_assigment      stream_assigment[]
-  assignment            assignment[]
-  grade                 grade[]
-}
-
-
-model subject {
-  id                    Int               @id @default(autoincrement())
-  name                  String            @db.VarChar(100) @unique
-  description           String?
-  created_at            DateTime?         @default(now()) @db.Timestamptz(6)
-  deleted_at            DateTime?         @db.Timestamptz(6)
-
-  
-  subject_allocation    subject_allocation[]
-  course_material       course_material[]
-  lib_book              lib_book[]
-
-}
-
-
-model subject_allocation {
-  id                        Int                       @id @default(autoincrement())
-  code                      String?                   @unique @db.VarChar(20)
-  department_id             Int?
-  teacher_id                Int?
-  subject_id                Int
-  stream_id                 Int
-  semester_id               Int
-  assigned_date             DateTime?                 @default(dbgenerated("CURRENT_DATE")) @db.Date
-  deleted_at                DateTime?                 @db.Timestamptz(6)
-
-  stream                    stream                    @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  semester                  semester                  @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subject                   subject                   @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher                   teacher?                  @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  department                department?               @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  
-  
-  student_ellectives    student_ellectives[]
-  exam_sitting          exam_sitting[]
-  slot_assignment       slot_assignment[]
-  assignment            assignment[]
-  
-  @@unique([teacher_id, subject_id])
-}
-
-model student {
-  id                    Int               @id @default(autoincrement())
-  user_id               Int               @unique
-  created_at            DateTime?         @default(now()) @db.Timestamptz(6)
-  updated_at            DateTime?         @default(now()) @db.Timestamptz(6)
-  deleted_at            DateTime?         @db.Timestamptz(6)
-          
-  current_class         Int?
-
-  users                 users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  class_group           class_group?      @relation(fields: [current_class], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  parent_student        parent_student[]
-  payment               payment[]
-  result                result[]
-  student_stream        student_stream[]
-  student_ellectives    student_ellectives[]
-  grade                 grade[]
-  stream_assigment      stream_assigment[]
-}
-
-
-model student_stream {
-  student_id                 Int
-  stream_assigment_id        Int
-  admission_number           String?            @unique @db.VarChar(20)
-  admission_date             DateTime           @db.Date
-  start_date                 DateTime           @db.Date
-  end_date                   DateTime?          @db.Date
-  deleted_at                 DateTime?          @db.Timestamptz(6)
-  stream_assigment           stream_assigment   @relation(fields: [stream_assigment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student                    student            @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([student_id, stream_assigment_id])
-}
-
-
-model assignment {
-  id                      Int                    @id @default(autoincrement())
-  description             String                 @db.VarChar(100)
-  teacher_id              Int
-  subject_allocation_id   Int?
-  stream_id               Int?
-  due_date                DateTime?              @db.Date
-
-  teacher                 teacher?               @relation(fields: [teacher_id], references: [id])
-  subject_allocation      subject_allocation?    @relation(fields: [subject_allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  stream                  stream?                @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-
-model stream_assigment{
-  id                          Int                       @id @default(autoincrement())
-  stream_id                   Int
-  teacher_rep                 Int?
-  student_rep                 Int?
-  semester_id                 Int
-  is_active                   Boolean?                  @default(true)
-  created_at                  DateTime?                 @default(now()) @db.Timestamptz(6)
-  student_stream              student_stream[]
-  semester                    semester?                 @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher                     teacher?                  @relation(fields: [teacher_rep], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student                     student?                  @relation(fields: [student_rep], references: [id], onDelete: NoAction, onUpdate: NoAction)
-}
-
-
-model student_ellectives {
-  student_id                  Int
-  subject_allocation_id       Int
-  semester_id                 Int
-  enrollment_date             DateTime?                 @default(dbgenerated("CURRENT_DATE")) @db.Date
-  deleted_at                  DateTime?                 @db.Timestamptz(6)
-
-  semester                    semester                  @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subject_allocation          subject_allocation        @relation(fields: [subject_allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student                     student                   @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  
-  @@id([student_id, subject_allocation_id])
-}
-
-
-model parent {
-  id                Int               @id @default(autoincrement())
-  user_id           Int?              @unique
-  relationship_type relationship_type
-  created_at        DateTime?         @default(now()) @db.Timestamptz(6)
-  deleted_at        DateTime?         @db.Timestamptz(6)
-  users             users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  parent_student    parent_student[]
-
-}
-
-
-model parent_student {
-  parent_id         Int
-  student_id        Int
-  deleted_at        DateTime? @db.Timestamptz(6)
-  parent            parent    @relation(fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student           student   @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([parent_id, student_id])
-}
-
-
-model slot {
-  id                Int           @id @default(autoincrement())
-  name              String?           @db.VarChar(50)
-  day_of_week       Int
-  start_time        DateTime      @db.Time(6)
-  end_time          DateTime      @db.Time(6)
-  room_number       String?       @db.VarChar(20)
-  created_at        DateTime?     @default(now()) @db.Timestamptz(6)
-  deleted_at        DateTime?     @db.Timestamptz(6)
-  slot_assignments  slot_assignment[]
-
-  @@unique([day_of_week,start_time,end_time])
-}
-
-
-model slot_assignment {
-  id                             Int                          @id @default(autoincrement())
-  slot_id                        Int
-  stream_id                      Int
-  teacher_id                     Int
-  subject_allocation_id          Int
-  created_at                     DateTime?                    @default(now()) @db.Timestamptz(6)
-  deleted_at                     DateTime?                    @db.Timestamptz(6)
-
-  slot                           slot                         @relation(fields: [slot_id], references: [id])
-  teacher                        teacher                      @relation(fields: [teacher_id], references: [id])
-  subject_allocation             subject_allocation           @relation(fields: [subject_allocation_id], references: [id])
-  stream                         stream?                      @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  
-  @@unique([slot_id, teacher_id,stream_id])
-}
-
-
-model exam {
-  id                  Int            @id @default(autoincrement())
-  semester_id         Int?
-  name                String         @db.VarChar(100)
-  start_date          DateTime?      @db.Date
-  end_date            DateTime?      @db.Date
-  type                exam_type
-  created_at          DateTime?      @default(now()) @db.Timestamptz(6)
-  deleted_at          DateTime?      @db.Timestamptz(6)
-  semester            semester?      @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  exam_sitting        exam_sitting[]
-
-  @@unique([semester_id, name, type, start_date])
-}
-
-
-model exam_sitting {
-  id                    Int             @id @default(autoincrement())
-  exam_id               Int?
-  supervisor            Int?
-  subject_allocation_id Int?
-  stream_id             Int?
-  out_of                Decimal?                   @db.Decimal(5, 2)
-  remarks               String?
-  sitting_date          DateTime                   @db.Date
-  created_at            DateTime?                  @default(now()) @db.Timestamptz(6)
-  total_marks           Int
-  deleted_at            DateTime?                  @db.Timestamptz(6)
-  exam                  exam?                      @relation(fields: [exam_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  stream                stream?                    @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subject_allocation    subject_allocation?        @relation(fields: [subject_allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher               teacher?                   @relation(fields: [supervisor], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  result                result[]
-
-  @@unique([stream_id, subject_allocation_id, exam_id, sitting_date])
-}
-
-
-model fee {
-  id               Int               @id @default(autoincrement())
-  fee_type_id      Int?
-  name             String?           @db.VarChar(50)
-  amount           Decimal           @db.Decimal(10, 2)
-  due_date         DateTime?         @db.Date
-  semester_id      Int
-  class_group_id         Int?
-  created_at       DateTime?         @default(now()) @db.Timestamptz(6)
-  deleted_at       DateTime?         @db.Timestamptz(6)
-  semester         semester?         @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  class_group      class_group?      @relation(fields: [class_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  fee_type         fee_type?         @relation(fields: [fee_type_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  payment          payment[]
-
-  @@unique([fee_type_id,amount,semester_id])
-}
-
-
-model fee_type {
-  id                Int             @id @default(autoincrement())
-  school_id         Int?
-  name              fee_type_enum
-  description       String?
-  created_at        DateTime?       @default(now()) @db.Timestamptz(6)
-  deleted_at        DateTime?       @db.Timestamptz(6)
-  fee               fee[]
-  school            school?         @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-@@unique([school_id,name])
-}
-
-
-model announcement {
-  id              Int         @id @default(autoincrement())
-  announcement    String?     @db.VarChar(500)
-  semester_id     Int?
-  created_at      DateTime?   @default(now()) @db.Timestamptz(6)
-  date_for        DateTime    @db.Date
-  valid_upto      DateTime    @db.Date
-  scope           event_scope
-  made_by         Int?
-  deleted_at      DateTime?   @db.Timestamptz(6)
-  users           users?      @relation(fields: [made_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  semester        semester?   @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
- @@unique([semester_id, date_for, made_by, scope])
-}
-
-
-model award {
-  id          Int       @id @default(autoincrement())
-  name        String?   @db.VarChar(100)
-  semester_id Int?
-  awarded_by  String?   @db.VarChar(100)
-  awared_for  String?   @db.VarChar(100)
-  school_id   Int?
-  school      school?   @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  semester    semester? @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-@@unique([semester_id,name])
-}
-
-
-model event {
-  id                       Int                        @id @default(autoincrement())
-  name                     String                     @db.VarChar(100)
-  description              String?
-  location                 String?                    @db.VarChar(200)
-  start_date               DateTime                   @db.Timestamptz(6)
-  end_date                 DateTime                   @db.Timestamptz(6)
-  scope                    event_scope
-  semester_id              Int?
-  created_at               DateTime?                  @default(now()) @db.Timestamptz(6)
-  created_by               Int?
-  deleted_at               DateTime?                  @db.Timestamptz(6)
-  users                    users?                     @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  semester                 semester?                  @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  event_class_participant  event_class_participant[]
-  event_school_participant event_school_participant[]
-  event_stream_participant event_stream_participant[]
-  event_user_participant   event_user_participant[]
-  review                   review[]
-
-  @@index([start_date, end_date], map: "idx_event_date")
-  @@index([scope], map: "idx_event_scope")
-  @@unique([semester_id,name])
-}
-
-
-model event_class_participant {
-  event_id          Int
-  class_group_id          Int
-  registration_date DateTime?             @default(now()) @db.Timestamptz(6)
-  status            participation_status? @default(registered)
-  deleted_at        DateTime?             @db.Timestamptz(6)
-  class_group       class_group           @relation(fields: [class_group_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([event_id, class_group_id])
-}
-
-
-model event_school_participant {
-  event_id          Int
-  school_id         Int
-  registration_date DateTime?             @default(now()) @db.Timestamptz(6)
-  status            participation_status? @default(registered)
-  deleted_at        DateTime?             @db.Timestamptz(6)
-  event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school            school                @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([event_id, school_id])
-  @@index([event_id, school_id], map: "idx_event_school_participant")
-}
-
-
-model event_stream_participant {
-  event_id          Int
-  stream_id         Int
-  registration_date DateTime?             @default(now()) @db.Timestamptz(6)
-  status            participation_status? @default(registered)
-  deleted_at        DateTime?             @db.Timestamptz(6)
-  event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  stream            stream                @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([event_id, stream_id])
-}
-
-
-model event_user_participant {
-  event_id          Int
-  user_id           Int
-  participant_type  participant_type
-  registration_date DateTime?             @default(now()) @db.Timestamptz(6)
-  attendance_status participation_status? @default(registered)
-  role              event_role?
-  deleted_at        DateTime?             @db.Timestamptz(6)
-  event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users             users                 @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([event_id, user_id])
-  @@index([event_id, user_id], map: "idx_event_user_participant")
-}
-
-
-model messages {
-  id                              Int       @id @default(autoincrement())
-  message_details                 String?   @db.VarChar(200)
-  topic                           String?   @db.VarChar(30)
-  severity                        severity?
-  sender                          Int?
-  recepient                       Int?
-  deleted_at                      DateTime? @db.Timestamptz(6)
-  users_messages_recepientTousers users?    @relation("messages_recepientTousers", fields: [recepient], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users_messages_senderTousers    users?    @relation("messages_senderTousers", fields: [sender], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-
-}
-
-
-model payment {
-  id               Int             @id @default(autoincrement())
-  student_id       Int?
-  fee_id           Int?
-  amount           Decimal         @db.Decimal(10, 2)
-  payment_date     DateTime?       @default(now()) @db.Timestamptz(6)
-  payment_method   payment_method
-  status           payment_status? @default(pending)
-  reference_number String          @unique @db.VarChar(100)
-  created_at       DateTime?       @default(now()) @db.Timestamptz(6)
-  deleted_at       DateTime?       @db.Timestamptz(6)
-  fee              fee?            @relation(fields: [fee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student          student?        @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@index([student_id], map: "idx_payment_student_id")
-}
-
-
-model result {
-  student_id      Int
-  marked_by       Int?
-  marks_obtained  Decimal?     @db.Decimal(5, 2)
-  exam_sitting_id Int
-  deleted_at      DateTime?    @db.Timestamptz(6)
-  exam_sitting    exam_sitting @relation(fields: [exam_sitting_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher         teacher?     @relation(fields: [marked_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student         student      @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([student_id, exam_sitting_id])
-}
-
-
-model review {
-  id                 Int               @id @default(autoincrement())
-  reviewer_id        Int
-  entity_type        reviewable_entity
-  school_id          Int?
-  school_facility_id Int?
-  event_id           Int?
-  teacher_id         Int?
-  rating             Int
-  title              String?           @db.VarChar(100)
-  content            String
-  created_at         DateTime?         @default(now()) @db.Timestamptz(6)
-  updated_at         DateTime?         @default(now()) @db.Timestamptz(6)
-  deleted_at         DateTime?         @db.Timestamptz(6)
-  event              event?            @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users              users             @relation(fields: [reviewer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school             school?           @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher            teacher?          @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@index([entity_type], map: "idx_review_entity_type")
-  @@unique([reviewer_id,entity_type,title])
-}
-

@@ -1,25 +1,23 @@
+//
+///componnt to allow to select one key value pair from an object
 import React from "react";
-import { record } from "../types/types";
 
-// Select component
-// This component is a select input field that can be used in forms
-// it accepts the following props:
-interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+// Interface for the SelectObject component props
+interface SelectObjectProps
+  extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, "onChange"> {
   label?: string; // Label for the select input
-  id_field?: string | number; // Field to use as the id for the options
-  show_field?: string | number; // Field to use as the display value for the options
   containerClassName?: string; // Classname for the container div
   labelClassName?: string; // Classname for the label
   errorClassName?: string; // Classname for the error message
   error?: string | null; // Error message
-  options: record[]; // Array of options to be displayed in the select input
+  options: Record<string, string | number>; // Object of key-value pairs to be displayed in the select input
   placeholder?: string; // Placeholder text
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void; // Changed onChange to explicitly handle string value
 }
-// The Select component is a functional component that accepts the props mentioned above
-export const Select: React.FC<SelectProps> = ({
+
+// The SelectObject component is a functional component that accepts the props mentioned above
+export const SelectObject: React.FC<SelectObjectProps> = ({
   label,
-  id_field = "id",
-  show_field = "name",
   containerClassName = "",
   labelClassName = "",
   errorClassName = "",
@@ -28,12 +26,18 @@ export const Select: React.FC<SelectProps> = ({
   error,
   placeholder,
   required,
-  value, // value of the select input
-  onChange, // what to do when the value changes
+  value,
+  onChange,
   ...props
 }) => {
+  // Handler to convert native event to string value
+  const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    if (onChange) {
+      onChange(e);
+    }
+  };
+
   return (
-    // The select input field
     <div className={`w-full ${containerClassName}`}>
       {label && (
         <label
@@ -74,23 +78,22 @@ export const Select: React.FC<SelectProps> = ({
             ${className}
           `}
           value={value}
-          onChange={onChange}
+          onChange={handleChange}
           {...props}
         >
-          <option value="" disabled>
-            {placeholder || "Select an option"}
-          </option>
-
-          {options &&
-            options.map((option) => (
-              <option
-                key={option[id_field] as string | number}
-                value={option[id_field] as string | number}
-              >
-                {option[show_field] as string}
-              </option>
-            ))}
-          {!options && <>No options available</>}
+          {placeholder && (
+            <option value="" disabled>
+              {placeholder}
+            </option>
+          )}
+          {Object.entries(options).map(([key, value]) => (
+            <option key={key} value={value as string | number}>
+              {key}
+            </option>
+          ))}
+          {Object.keys(options).length === 0 && (
+            <option disabled>No options available</option>
+          )}
         </select>
         {/* Dropdown icon */}
         <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
