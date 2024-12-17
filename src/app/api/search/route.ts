@@ -1,4 +1,3 @@
-import { record } from "@/app/types/types";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -11,46 +10,32 @@ import { NextResponse } from "next/server";
 export async function POST(request: Request) {
   // Parse the request body to extract model-specific data
   const body: {
-    table_name: string;
-    search_term?: string;
-    search_field: string;
+    user_name: string;
     display_fields: string[];
-    relation?: { field: string; item: string };
   } = await request.json();
 
-  const search_term = body.search_term;
-  const search_field = body.search_field;
-  const model_name = body.table_name;
+  const user_name = body.user_name;
   const display_fields = body.display_fields;
-  const related_field = body.relation?.field;
-  const related_item = body.relation?.item;
 
   try {
     // Check if the table name exists in the Prisma client
-    if (!prisma[model_name]) {
-      return NextResponse.json(
-        { error: `Invalid table name '${model_name}'` },
-        { status: 400 } // Bad Request
-      );
-    }
-    const record = await prisma[model_name].findMany({
+
+    const record = await prisma.users.findMany({
       //search for the search term in the search field if search term is provided
-      where: search_term
-        ? {
-            [search_field]: {
-              contains: search_term,
-              mode: "insensitive",
-            },
-          }
-        : undefined,
+      where: {
+        name: user_name,
+      },
       select: {
-        [`id`]: true,
+        id: true,
+        name: true,
+        student: {
+          select: { student_class: { select: { admission_number: true } } },
+        },
+        staff: {
+          select: { department_staff: { select: { staff_code: true } } },
+        },
         // each field in the display_fields array
         ...Object.fromEntries(display_fields.map((field) => [field, true])),
-        search_field: true,
-        [related_field]: related_field
-          ? { select: { [related_item]: true } }
-          : undefined,
       },
     });
 

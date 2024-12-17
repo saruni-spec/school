@@ -21,7 +21,7 @@ export const SelectList: React.FC<SelectProps> = ({
   className = "",
   options,
   error,
-  placeholder,
+  placeholder = "Select an option",
   required,
   value, // value of the select input
   onChange, // what to do when the value changes
@@ -72,11 +72,10 @@ export const SelectList: React.FC<SelectProps> = ({
           onChange={onChange}
           {...props}
         >
-          {placeholder && (
-            <option value="" disabled>
-              {placeholder}
-            </option>
-          )}
+          <option value="" disabled>
+            {placeholder || "Select an option"}
+          </option>
+
           {options &&
             options.map((option, index) => (
               <option key={index}>{option}</option>

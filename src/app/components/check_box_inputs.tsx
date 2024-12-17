@@ -4,13 +4,12 @@ import { record } from "../types/types";
 interface CheckboxGroupProps {
   label?: string;
   options: record[];
-  name: string;
   //id field
   id?: string | number;
-  // the identifier is the key in the options object that will be used as the value of the checkbox
-  identifier: string;
-  // the title is the key in the options object that will be used as the label of the checkbox
-  title?: string;
+  // Will be used as the value of the checkbox
+  value_field: string;
+  // the show fild isthe fild that will be displayed
+  show_field?: string;
   value?: record[];
   // Modified to accept record[] instead of string[]
   onChange: (values: record[]) => void;
@@ -26,13 +25,12 @@ interface CheckboxGroupProps {
 const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
   label,
   options,
-  name,
   value = [],
   onChange,
   error,
   id = "id",
-  identifier,
-  title = identifier,
+  value_field,
+  show_field = value_field,
   containerClassName,
   labelClassName,
   errorClassName,
@@ -45,7 +43,7 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
     // Create a set of current selected values using the specified identifier
     // This helps quickly check if an option is already selected
     const currentValues = new Set(
-      value.map((item) => item[identifier] as string)
+      value.map((item) => item[value_field] as string)
     );
 
     if (currentValues.has(optionValue)) {
@@ -54,14 +52,14 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
       onChange(
         value.filter(
           // Use type assertion to tell TypeScript we're comparing strings
-          (item) => (item[identifier] as string) !== optionValue
+          (item) => (item[value_field] as string) !== optionValue
         )
       );
     } else {
       // If the option is not currently selected, add it
       // Find the full option object from the original options array
       const selectedOption = options.find(
-        (option) => (option[identifier] as string) === optionValue
+        (option) => (option[value_field] as string) === optionValue
       );
 
       // Only add the option if it's found
@@ -115,14 +113,13 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
           >
             <input
               type="checkbox"
-              id={`${name}-${option[identifier] as string}`}
-              name={name}
-              value={option[identifier] as string}
+              id={`${option[value_field] as string}`}
+              value={option[value_field] as string}
               checked={value.some(
                 (v) =>
-                  (v[identifier] as string) === (option[identifier] as string)
+                  (v[value_field] as string) === (option[value_field] as string)
               )}
-              onChange={() => handleChange(option[identifier] as string)}
+              onChange={() => handleChange(option[value_field] as string)}
               className={`
                 h-4
                 w-4
@@ -141,7 +138,7 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
               `}
             />
             <label
-              htmlFor={`${name}-${option[identifier] as string}`}
+              htmlFor={`${option[value_field] as string}`}
               className={`
                 ml-2
                 text-sm
@@ -149,9 +146,9 @@ const CheckboxGroup: React.FC<CheckboxGroupProps> = ({
                 ${option.disabled ? "cursor-not-allowed" : "cursor-pointer"}
               `}
             >
-              {title
-                ? (option[title] as string)
-                : (option[identifier] as string)}
+              {show_field
+                ? (option[show_field] as string)
+                : (option[value_field] as string)}
             </label>
           </div>
         ))}

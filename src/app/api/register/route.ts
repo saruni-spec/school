@@ -23,7 +23,7 @@ export async function POST(request: Request) {
   // Extract the data and model name from the request body
   const data = body.data;
   const model_name = body.model_name;
-  //
+
   //check if the model is users to hash the password
   if (model_name === "users") {
     data.password = await hash(data.password as string, 10);

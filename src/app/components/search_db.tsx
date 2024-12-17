@@ -4,17 +4,11 @@ import React, { useState, useEffect, useCallback } from "react";
 import { record } from "../types/types";
 
 interface TypeOnSearchProps {
-  table_name: string; // Name of the table to search
-  search_field: string; // Field to search in the table
   display_fields: string[]; // Fields to display in results
-  relationship?: { field: string; item: string }; // Optional relationship to include in the search
   onSelect?: (item: record) => void; // Optional callback when an item is selected
 }
 
 export const SearchDb: React.FC<TypeOnSearchProps> = ({
-  table_name,
-  search_field,
-  relationship,
   display_fields,
   onSelect,
 }) => {
@@ -25,17 +19,14 @@ export const SearchDb: React.FC<TypeOnSearchProps> = ({
   const performSearch = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/universal-search", {
+      const response = await fetch("http://localhost:3000/api/search", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          table_name,
-          search_field,
-          search_term,
+          user_name: search_term,
           display_fields,
-          relation: relationship,
         }),
       });
 
@@ -51,7 +42,7 @@ export const SearchDb: React.FC<TypeOnSearchProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [search_term, table_name, display_fields, search_field, relationship]);
+  }, [search_term, display_fields]);
 
   // Debounce search to reduce unnecessary API calls
   useEffect(() => {
@@ -80,7 +71,7 @@ export const SearchDb: React.FC<TypeOnSearchProps> = ({
         type="text"
         value={search_term}
         onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder={`Search in ${table_name}...`}
+        placeholder={`Search by name`}
         className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
       {isLoading && (

@@ -273,6 +273,42 @@ enum role_type {
   AUDIT_OFFICER         // Compliance and internal audit
 }
 
+enum picture_category {
+  EVENT
+  DOCUMENT
+  CLASSROOM
+  FINANCIAL
+  STUDENT_WORK
+  FACILITY
+  EXTRACURRICULAR
+  ADMINISTRATIVE
+  ACHIEVEMENT
+  MISCELLANEOUS
+  EDUCATIONAL
+  LOST_AND_FOUND
+}
+
+enum gallery_type {
+  EVENT
+  SCHOOL
+  DEPARTMENT
+  CLASS
+  STUDENT
+  STAFF
+  ADMINISTRATIVE
+  FACILITY
+  FINANCE
+  ACHIEVEMENTS
+  MISCELLANEOUS
+}
+
+enum gallery_visibility {
+  PRIVATE
+  INTERNAL
+  PUBLIC
+}
+
+
 //represents a school and details required for a school
 
 model school {
@@ -298,6 +334,8 @@ model school {
   levels_offered              levels_offered[]
   stream                      stream[]
   school_leader               school_leader[]
+  event                       event[]
+  announcement                announcement[]
 }
 
 // These are the different school levels,ie. LOWER_PRIMARY,UPPER_PRIMARY....that a spefic school has
@@ -422,9 +460,8 @@ model semester {
   academic_year          academic_year?         @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   student_ellectives     student_ellectives[]
-  announcement           announcement[]
+  
   award                  award[]
-  event                  event[]
   exam                   exam[]
   subject_allocation     subject_allocation[]
 
@@ -446,7 +483,7 @@ model department {
   department_staff                           department_staff[]  
   subject_allocation                         subject_allocation[]
   permission                                 permission[]
-  fee                                        fee[]
+  fee_payee                                  fee_payee[]
   award                                      award[]
   event_department_participant               event_department_participant[]
 
@@ -496,7 +533,6 @@ model grade_level{
   
   stream                     stream[]
   subject_grade              subject_grade[]
-  fee                        fee[]
 
 
 }
@@ -524,7 +560,7 @@ model stream {
   
   slot_assignment              slot_assignment[]
   permission                   permission[]
-  fee                          fee[]
+  fee_payee                    fee_payee[]
   class_progression            class_progression[]
 
   @@unique([grade_level_id,name])
@@ -555,7 +591,6 @@ model class_progression {
   teacher                     teacher?                   @relation(fields: [class_teacher], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   event_class_participant     event_class_participant[]
-  fee                         fee[]
   permission                  permission[]
   student_class               student_class[]
   assignment                  assignment[]
@@ -573,7 +608,7 @@ model class_progression {
 model student_class {
   student_id                 Int
   class_progress             Int
-  admission_number           String?            @unique @db.VarChar(20)
+  admission_number           String?            @db.VarChar(20)
 
   student_role               role_type?         @default(MEMBER)
 
@@ -665,7 +700,7 @@ model users {
   picture                            picture[]
   medical                            medical[]
   course_material                    course_material[]
-  fee                                fee[]
+  fee_payee                          fee_payee[]
   award                              award[]
 
   @@index([current_school,role_id])
@@ -694,7 +729,7 @@ model school_leader {
   id                                 Int                @id @default(autoincrement())
   school_id                          Int?
   staff_id                           Int?
-  leader_code                        String?            @db.VarChar(15)
+  leader_code                        String?            @db.VarChar(30)
   current_role                       role_type?
 
   academic_year_id                   Int?
@@ -709,6 +744,8 @@ model school_leader {
   staff                              staff?             @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   academic_year                      academic_year?     @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
+  
+  fee                                fee[]
   @@unique([staff_id,academic_year_id,school_id])
   @@index([staff_id,academic_year_id])
 }
@@ -779,7 +816,6 @@ model student {
   users                 users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   parent_student        parent_student[]
-  payment               payment[]
   result                result[]
   student_class         student_class[]
   student_ellectives    student_ellectives[]
@@ -1016,22 +1052,18 @@ model exam_sitting {
   @@unique([stream_id, subject_allocation_id, exam_id, sitting_date])
 }
 
-
-model fee {
+model fee_payee {
   id                        Int               @id @default(autoincrement())
-  code                      String            @db.VarChar(10)
-  fee_for                   fee_type_enum
-  description               String?           @db.VarChar(50)
-  approved_by               Int?
-  amount                    Decimal           @db.Decimal(10, 2)
-  installments              installment_types
-  due_date                  DateTime?         @db.Date
+  fee_id                    Int?
   for_individual            Int?
+
+  //when a fee is supposed to be payed by a class or grade,all streams in that grade will have a record
+  //when fee is recurring address it to a stream
   for_stream                Int?
-  for_grade                 Int?
-  for_class                 Int?
+  //when the fee is a single payment or emergency payment
+
   for_department            Int?
-  for_school                Int?
+  whole_school              Boolean           @default(false)   
 
   created_at                DateTime?         @default(now()) @db.Timestamptz(6)
   updated_at                DateTime?         @default(now()) @db.Timestamptz(6)
@@ -1039,43 +1071,86 @@ model fee {
 
 
   users                     users?            @relation(fields: [for_individual], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  grade_level               grade_level?      @relation(fields: [for_grade], references: [id], onDelete: NoAction, onUpdate: NoAction)
   stream                    stream?           @relation(fields: [for_stream], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  class_progression         class_progression? @relation(fields: [for_class], references: [id], onDelete: NoAction, onUpdate: NoAction)
   department                department?       @relation(fields: [for_department], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school                    school?           @relation(fields: [for_school], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  fee                       fee?              @relation(fields: [fee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+
   payment                   payment[]
 
-  @@unique([fee_for,amount,due_date])
-  @@index([due_date,for_class,for_department,for_individual,for_school,for_grade,for_stream])
+  @@index([fee_id])
 }
 
+
+model fee {
+  id                        Int               @id @default(autoincrement())
+  code                      String            @db.VarChar(50)
+  fee_for                   fee_type_enum
+  description               String?           @db.VarChar(100)
+  approved_by               Int?
+  amount                    Decimal           @db.Decimal(10, 2)
+  installments              installment_types
+  due_date                  DateTime?         @db.Date
+  school_id                 Int?  
+
+  school_leader             school_leader?    @relation(fields: [approved_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school                    school?           @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  created_at                DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at                DateTime?         @db.Timestamptz(6)
+
+  fee_payee                  fee_payee[]
+
+  @@unique([fee_for,amount,due_date])
+  @@index([due_date])
+}
+
+
+model payment {
+  id               Int             @id @default(autoincrement())
+  payed_by         Int?
+  amount           Decimal         @db.Decimal(10, 2)
+  payment_date     DateTime?       @default(now()) @db.Timestamptz(6)
+  payment_method   payment_method
+  status           payment_status? @default(PENDING)
+  reference_number String          @unique @db.VarChar(100)
+
+  created_at       DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime?       @default(now()) @db.Timestamptz(6)
+  deleted_at       DateTime?       @db.Timestamptz(6)
+
+  fee_payee        fee_payee?      @relation(fields: [payed_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([payed_by])
+}
 
 
 model announcement {
   id              Int         @id @default(autoincrement())
   announcement    String?     @db.VarChar(500)
-  semester_id     Int?
- 
+
   date_for        DateTime    @db.Date
   valid_upto      DateTime    @db.Date
   scope           event_scope
   made_by         Int?
+  school_id       Int?
 
   created_at      DateTime?   @default(now()) @db.Timestamptz(6)
   updated_at      DateTime?   @default(now()) @db.Timestamptz(6)
   deleted_at      DateTime?   @db.Timestamptz(6)
 
   users           users?      @relation(fields: [made_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  semester        semester?   @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
- @@unique([semester_id, date_for, made_by, scope])
+  school          school?     @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+ 
+ @@unique([school_id, date_for, made_by, scope,valid_upto])
 }
 
 
 model award {
   id                        Int               @id @default(autoincrement())
   name                      String?           @db.VarChar(20)
+  description               String?         
   semester_id               Int?
   awarded_by                String?           @db.VarChar(20)
   awared_for                String?           @db.VarChar(100)
@@ -1106,15 +1181,16 @@ model event {
   start_date               DateTime                   @db.Timestamptz(6)
   end_date                 DateTime                   @db.Timestamptz(6)
   scope                    event_scope
-  semester_id              Int?
   created_by               Int?
+  school_id                Int?
 
   created_at               DateTime?                  @default(now()) @db.Timestamptz(6)
   updated_at               DateTime?                  @default(now()) @db.Timestamptz(6)
   deleted_at               DateTime?                  @db.Timestamptz(6)
 
   users                    users?                     @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  semester                 semester?                  @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school                   school?                    @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
   event_class_participant  event_class_participant[]
   event_school_participant event_school_participant[]
   event_department_participant event_department_participant[]
@@ -1123,7 +1199,7 @@ model event {
 
   @@index([start_date, end_date], map: "idx_event_date")
   @@index([scope], map: "idx_event_scope")
-  @@unique([semester_id,name])
+  @@unique([name,start_date,school_id])
 }
 
 
@@ -1198,26 +1274,6 @@ model messages {
 }
 
 
-model payment {
-  id               Int             @id @default(autoincrement())
-  student_id       Int?
-  fee_id           Int?
-  amount           Decimal         @db.Decimal(10, 2)
-  payment_date     DateTime?       @default(now()) @db.Timestamptz(6)
-  payment_method   payment_method
-  status           payment_status? @default(PENDING)
-  reference_number String          @unique @db.VarChar(100)
-
-  created_at       DateTime?       @default(now()) @db.Timestamptz(6)
-  updated_at       DateTime?       @default(now()) @db.Timestamptz(6)
-  deleted_at       DateTime?       @db.Timestamptz(6)
-
-  fee              fee?            @relation(fields: [fee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student          student?        @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@index([student_id], map: "idx_payment_student_id")
-}
-
 
 model result {
   student_id      Int
@@ -1283,28 +1339,60 @@ model course_material {
   users                   users?                     @relation(fields: [published_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
-model gallery {
-  id                                         Int         @id @default(autoincrement())
-  created_for                                String                     @db.VarChar(50)
-  created_at                                 DateTime?   @default(now()) @db.Timestamptz(6)
-  updated_at                                 DateTime?   @default(now()) @db.Timestamptz(6)
-  deleted_at                                 DateTime?   @db.Timestamptz(6)
-  picture                                    picture[]
+
+model Gallery {
+  id             Int             @id @default(autoincrement())
+  name           String          @db.VarChar(255)
+  description    String?         @db.Text
+  type           gallery_type
+  visibility     gallery_visibility @default(INTERNAL)
+  category       picture_category
+  
+  location       String?         @db.VarChar(255)
+  academic_year  String?         @db.VarChar(20)
+  
+  created_by     String?         @db.VarChar(100)
+  tags           String[]        @db.VarChar(50)
+  
+  created_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  deleted_at     DateTime?       @db.Timestamptz(6)
+  
+  picture        picture[]
+
+  @@index([type])
+  @@index([visibility])
+  @@index([academic_year])
 }
 
 
 model picture {
-  id                                         Int       @id @default(autoincrement())
-  picture_location                           String                     @db.VarChar(50)
-  taken_by                                   Int
-  about                                      String                     @db.VarChar(150)
-  taken_for                                  Int
-  gallery_id                                 Int?
-  created_at                                 DateTime?   @default(now()) @db.Timestamptz(6)
-  updated_at                                 DateTime?   @default(now()) @db.Timestamptz(6)
-  deleted_at                                 DateTime?   @db.Timestamptz(6)
-  gallery                                    gallery?     @relation(fields:[gallery_id],references :[id], onDelete: NoAction, onUpdate: NoAction)
-  users                                      users       @relation(fields:[taken_by],references :[id], onDelete: NoAction, onUpdate: NoAction)
+  id             Int       @id @default(autoincrement())
+  gallery_id     Int?
+  title          String?         @db.VarChar(255)
+  
+  file_path      String          @db.VarChar(500)
+  file_name      String          @db.VarChar(255)
+  file_size      Int             @db.Integer
+  mime_type      String          @db.VarChar(100)
+  
+  taken_at       DateTime?       @db.Timestamptz(6)
+  uploaded_at    DateTime        @default(now()) @db.Timestamptz(6)
+  tags           String[]        @db.VarChar(50)
+  
+  uploaded_by    Int?        
+  
+  created_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime?       @default(now()) @db.Timestamptz(6)
+  deleted_at     DateTime?       @db.Timestamptz(6)
+
+  gallery        Gallery?        @relation(fields: [gallery_id], references: [id])
+  users          users?          @relation(fields:[uploaded_by],references :[id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([gallery_id])
+  @@index([taken_at])
+  @@index([uploaded_at])
+  
 }
 // Represents a library book and the details of the book
 

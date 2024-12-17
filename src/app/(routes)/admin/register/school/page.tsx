@@ -182,7 +182,7 @@ const School: React.FC = () => {
         value={selected_levels}
         onChange={set_selected_levels}
         error={levels_error}
-        identifier="type"
+        value_field="type"
         orientation="grid"
         gridColumns={2}
       />

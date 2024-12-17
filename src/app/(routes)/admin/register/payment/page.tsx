@@ -6,6 +6,7 @@ import Validation, { required } from "@/app/hooks/validation";
 import { useDateValidation } from "@/app/components/calendar";
 import { Input } from "@/app/components/input";
 import { DatePicker } from "@/app/components/calendar";
+import { SearchDb } from "@/app/components/search_db";
 
 const Payment = () => {
   const fee_id = Validation("", [required]);
@@ -49,6 +50,7 @@ const Payment = () => {
 
   return (
     <Form title="Payment" onSubmit={handleSubmit} submitButtonText="Submit">
+      <SearchDb display_fields={["name", "phone"]} />
       <Input
         label="Fee ID"
         placeholder="Enter Fee ID"
@@ -81,14 +83,6 @@ const Payment = () => {
         value={payment_method.value}
         onChange={payment_method.handle_change}
         error={payment_method.error}
-      />
-      <Input
-        label="Status"
-        placeholder="Enter Status"
-        required
-        value={status.value}
-        onChange={status.handle_change}
-        error={status.error}
       />
 
       <Input

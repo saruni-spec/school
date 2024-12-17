@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "fee" ALTER COLUMN "description" SET DATA TYPE VARCHAR(100),
+ALTER COLUMN "code" SET DATA TYPE VARCHAR(50);
+
+-- AlterTable
+ALTER TABLE "school_leader" ALTER COLUMN "leader_code" SET DATA TYPE VARCHAR(30);

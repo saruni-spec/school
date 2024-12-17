@@ -1,14 +1,16 @@
 import React from "react";
-import { record } from "../types/types";
 
 interface RadioGroupProps {
   label?: string;
-  identifier?: string;
-  title?: string;
-  options: record[];
+  id_field?: string;
+  value_field?: string;
+  show_field?: string;
+  options: Record<string, string | number | Record<string, string | number>>[];
   name: string;
   value?: string;
-  onChange: (int: record) => void;
+  onChange: (
+    record: Record<string, string | number | Record<string, string | number>>
+  ) => void;
   error?: string | null;
   containerClassName?: string;
   labelClassName?: string;
@@ -20,8 +22,9 @@ interface RadioGroupProps {
 
 const RadioInputs: React.FC<RadioGroupProps> = ({
   label,
-  identifier = "id",
-  title,
+  id_field = "id",
+  value_field = "id",
+  show_field = "name",
   options,
   name,
   value,
@@ -54,10 +57,15 @@ const RadioInputs: React.FC<RadioGroupProps> = ({
     //
     //get the option that was selected
     const selectedOption = options.find(
-      (option) => option[identifier] === e.target.value
+      (option) => option[value_field] === e.target.value
     );
     //
-    onChange(selectedOption as record);
+    onChange(
+      selectedOption as Record<
+        string,
+        string | number | Record<string, string | number>
+      >
+    );
   };
 
   return (
@@ -84,13 +92,13 @@ const RadioInputs: React.FC<RadioGroupProps> = ({
         role="radiogroup"
       >
         {options.map((option) => (
-          <div key={option.id} className="flex items-center">
+          <div key={option[id_field] as string} className="flex items-center">
             <input
               type="radio"
-              id={`${name}-${option.id}`}
+              id={`${name}-${option[id_field]}`}
               name={name}
-              value={option[identifier] as string | number}
-              checked={value === option[identifier]}
+              value={option[value_field] as string | number}
+              checked={value === option[value_field]}
               onChange={handleChange}
               className={`
                 h-4
@@ -109,7 +117,7 @@ const RadioInputs: React.FC<RadioGroupProps> = ({
               `}
             />
             <label
-              htmlFor={`${name}-${option[identifier]}`}
+              htmlFor={`${name}-${option[value_field]}`}
               className={`
                 ml-2
                 text-sm
@@ -117,9 +125,9 @@ const RadioInputs: React.FC<RadioGroupProps> = ({
                 ${option.disabled ? "cursor-not-allowed" : "cursor-pointer"}
               `}
             >
-              {title
-                ? (option[title] as string)
-                : (option[identifier] as string)}
+              {show_field
+                ? (option[show_field] as string)
+                : (option[value_field] as string)}
             </label>
           </div>
         ))}

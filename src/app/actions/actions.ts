@@ -29,3 +29,17 @@ export async function getGradeLevels(school_id: number | undefined) {
 
   return grade_levels.flat();
 }
+
+//
+//get the streams in a school
+export async function getStreams(school_id: number | undefined) {
+  if (!school_id) return [];
+  //
+  //get the streams in the school
+  const streams = await prisma.stream.findMany({
+    where: { school_id },
+    select: { id: true, name: true, grade_level_id: true },
+  });
+
+  return streams;
+}
