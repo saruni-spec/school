@@ -11,7 +11,7 @@ import React, {
 import { record } from "@/app/types/types";
 
 interface User {
-  id: string;
+  id: number;
   school: record;
   role: string;
   role_type: string;
@@ -53,7 +53,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (user) {
       setSchool(user.school);
-      setSchoolId(parseInt(user.school.id));
+      setSchoolId(user.school.id);
       setRole(user.role_type);
       setPermissions(user.permissions);
     }
@@ -63,7 +63,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   //update school id when the school is set
   useEffect(() => {
     if (school) {
-      setSchoolId(parseInt(school.id));
+      setSchoolId(school.id);
     }
   }, [school]);
 

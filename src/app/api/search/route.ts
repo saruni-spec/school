@@ -2,7 +2,7 @@ import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 /**
- * Will be used to search for records in the database
+ * Searches for records in the database with partial name matching
  *
  * @param {Request} request - The incoming HTTP request
  * @returns {NextResponse} - JSON response with data or error details
@@ -18,31 +18,40 @@ export async function POST(request: Request) {
   const display_fields = body.display_fields;
 
   try {
-    // Check if the table name exists in the Prisma client
-
+    // Perform partial matching using case-insensitive search
     const record = await prisma.users.findMany({
-      //search for the search term in the search field if search term is provided
       where: {
-        name: user_name,
+        name: {
+          contains: user_name,
+          mode: "insensitive", // Case-insensitive search
+        },
       },
       select: {
         id: true,
         name: true,
         student: {
-          select: { student_class: { select: { admission_number: true } } },
+          select: {
+            student_class: {
+              select: {
+                admission_number: true,
+                class_progression: {
+                  where: { is_current: true },
+                  select: { name: true },
+                },
+              },
+            },
+          },
         },
-        staff: {
-          select: { department_staff: { select: { staff_code: true } } },
-        },
-        // each field in the display_fields array
+        // Include each field in the display_fields array
         ...Object.fromEntries(display_fields.map((field) => [field, true])),
       },
+      // Limit results to prevent overwhelming responses
+      take: 10,
     });
 
     return NextResponse.json(record, { status: 200 });
   } catch (error) {
     console.error("Error fetching records:", error);
-
     if (error instanceof Error) {
       return NextResponse.json(
         { error: "Error fetching records", details: error.message },

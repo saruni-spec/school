@@ -1,6 +1,5 @@
-// Type-on-Search Component (Recommended)
 // components/TypeOnSearchComponent.tsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState } from "react";
 import { record } from "../types/types";
 
 interface TypeOnSearchProps {
@@ -16,7 +15,7 @@ export const SearchDb: React.FC<TypeOnSearchProps> = ({
   const [results, setResults] = useState<record[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const performSearch = useCallback(async () => {
+  const performSearch = async () => {
     setIsLoading(true);
     try {
       const response = await fetch("http://localhost:3000/api/search", {
@@ -42,43 +41,41 @@ export const SearchDb: React.FC<TypeOnSearchProps> = ({
     } finally {
       setIsLoading(false);
     }
-  }, [search_term, display_fields]);
-
-  // Debounce search to reduce unnecessary API calls
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (search_term.trim()) {
-        performSearch();
-      } else {
-        setResults([]);
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [search_term, performSearch]);
+  };
 
   const handleItemSelect = (item: record) => {
     if (onSelect) {
       onSelect(item);
     }
-    setSearchTerm("");
+    setSearchTerm(item.name as string);
     setResults([]);
   };
 
   return (
     <div className="relative w-full max-w-md">
-      <input
-        type="text"
-        value={search_term}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        placeholder={`Search by name`}
-        className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
+      <div className="flex">
+        <input
+          type="text"
+          value={search_term}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Search by name"
+          className="flex-grow p-2 border rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <button
+          onClick={performSearch}
+          disabled={!search_term.trim()}
+          className="px-4 py-2 bg-blue-500 text-white rounded-r-md hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+        >
+          Search
+        </button>
+      </div>
+
       {isLoading && (
         <div className="absolute top-full left-0 w-full z-10 mt-1 p-2 bg-gray-100 rounded-md">
           Searching...
         </div>
       )}
+
       {results.length > 0 && (
         <ul className="absolute top-full left-0 w-full z-10 mt-1 bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
           {results.map((item, index) => (
@@ -88,6 +85,9 @@ export const SearchDb: React.FC<TypeOnSearchProps> = ({
               className="p-2 hover:bg-gray-100 cursor-pointer"
             >
               {display_fields.map((field) => item[field]).join(" - ")}
+              {item.student.student_class?.admission_number ||
+                "no class"} -{" "}
+              {item.student.student_class?.class_progression.name || "no class"}
             </li>
           ))}
         </ul>

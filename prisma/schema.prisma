@@ -123,6 +123,7 @@ enum payment_status {
   COMPLETED
   FAILED
   REFUNDED
+  OVERPAID
 }
 
 
@@ -702,6 +703,7 @@ model users {
   course_material                    course_material[]
   fee_payee                          fee_payee[]
   award                              award[]
+  payment                            payment[]
 
   @@index([current_school,role_id])
 }
@@ -1109,8 +1111,10 @@ model fee {
 
 model payment {
   id               Int             @id @default(autoincrement())
-  payed_by         Int?
+  paid_by          Int?         
+  fee_payee_id     Int?
   amount           Decimal         @db.Decimal(10, 2)
+  over_payment     Decimal?        @db.Decimal(10, 2)
   payment_date     DateTime?       @default(now()) @db.Timestamptz(6)
   payment_method   payment_method
   status           payment_status? @default(PENDING)
@@ -1120,9 +1124,10 @@ model payment {
   updated_at       DateTime?       @default(now()) @db.Timestamptz(6)
   deleted_at       DateTime?       @db.Timestamptz(6)
 
-  fee_payee        fee_payee?      @relation(fields: [payed_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  fee_payee        fee_payee?      @relation(fields: [fee_payee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users            users?          @relation(fields: [paid_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@index([payed_by])
+  @@index([paid_by])
 }
 
 
@@ -1349,7 +1354,6 @@ model Gallery {
   category       picture_category
   
   location       String?         @db.VarChar(255)
-  academic_year  String?         @db.VarChar(20)
   
   created_by     String?         @db.VarChar(100)
   tags           String[]        @db.VarChar(50)
@@ -1362,7 +1366,7 @@ model Gallery {
 
   @@index([type])
   @@index([visibility])
-  @@index([academic_year])
+  
 }
 
 
