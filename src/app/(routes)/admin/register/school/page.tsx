@@ -2,20 +2,24 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
-import validation, {
-  required,
-  validateKey,
-  validateValue,
-} from "@/app/hooks/validation";
+import { validateKey, validateValue } from "@/app/hooks/validation";
 import { MultiInput } from "@/app/components/multi_input";
 import { useUser } from "@/app/context/user_context";
 import CheckboxGroup from "@/app/components/check_box_inputs";
-import { grade_levels, gradesInEachLevel, record } from "@/app/types/types";
+import {
+  FieldType,
+  grade_levels,
+  gradesInEachLevel,
+  record,
+} from "@/app/types/types";
+import { useValidation } from "@/app/hooks/validation_hooks";
+import { validInputs } from "@/lib/functions";
+import { fetchTable, register } from "@/app/api_functions/functions";
 
 // School Registration Component
 const School: React.FC = () => {
-  const name_field = validation("", [required]);
-  const address_field = validation("", []);
+  const name_field = useValidation({ type: FieldType.Text, required: true });
+  const address_field = useValidation({ type: FieldType.Text });
   const [contact_info, set_contact_info] = useState<Record<string, string>>({});
   const [license_info, set_license_info] = useState<Record<string, string>>({});
   const [school_levels, set_school_levels] = useState<record[]>([]);
@@ -40,11 +44,8 @@ const School: React.FC = () => {
   useEffect(() => {
     //get the school types from the database
     const getSchoolTypes = async () => {
-      const response = await fetch(
-        "http://localhost:3000/api/fetch_record?table_name=school_level"
-      );
-      const data = await response.json();
-      set_school_levels(data);
+      const response = await fetchTable("school_level");
+      set_school_levels(response);
     };
     getSchoolTypes();
   }, []);
@@ -56,15 +57,11 @@ const School: React.FC = () => {
       e.preventDefault();
 
       // Validate all fields before submission
-      let is_form_valid = [name_field, address_field].every((field) =>
-        field.validate(field.value)
-      );
+      if (!validInputs([name_field, address_field])) return;
       if (selected_levels.length === 0) {
         set_levels_error("Please select at least one school level");
-        is_form_valid = false;
+        return;
       }
-      if (!is_form_valid) return;
-
       // Send data to server or handle submission
       const school_data = {
         name: name_field.value,
@@ -73,72 +70,53 @@ const School: React.FC = () => {
         license_info: license_info,
       };
 
-      const response = await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        body: JSON.stringify({ data: school_data, model_name: "school" }),
+      const new_school = await register({
+        data: school_data,
+        model_name: "school",
+      });
+      setSchool(new_school);
+      //
+      //save the school levels
+      //loop through the selected levels and save them
+      selected_levels.forEach(async (level) => {
+        await register({
+          data: {
+            school_id: new_school.id,
+            school_level_id: level.id,
+          },
+          model_name: "levels_offered",
+        });
       });
       //
-      if (response.ok) {
-        const data = await response.json();
-        setSchool(data);
-        //
-        //save the school levels
-        //loop through the selected levels and save them
-        selected_levels.forEach(async (level) => {
-          await fetch("http://localhost:3000/api/register", {
-            method: "POST",
-            body: JSON.stringify({
-              data: {
-                school_id: data.id,
-                school_level_id: level.id,
-              },
-              model_name: "levels_offered",
-            }),
-          });
-        });
-
+      //save a default stream for each grade in the school
+      //get all the grades in the school
+      const grades = getGradesInSelectedSchoolLevel();
+      grades.forEach(async (grade) => {
         //
         //save a default stream for each grade in the school
-        //get all the grades in the school
-        const grades = getGradesInSelectedSchoolLevel();
-        grades.forEach(async (grade) => {
-          //
-          //save a default stream for each grade in the school
-          await fetch("http://localhost:3000/api/register", {
-            method: "POST",
-            body: JSON.stringify({
-              data: {
-                school_id: data.id,
-                grade_level_id: grade,
-                //the name of the stream will be the name of the grade
-                //we will use grade to get the key of the grade
-                name: Object.keys(grade_levels).find(
-                  (key) => grade_levels[key] === grade
-                ),
-              },
-              model_name: "stream",
-            }),
-          });
+        await register({
+          data: {
+            school_id: new_school.id,
+            grade_level_id: grade,
+            //the name of the stream will be the name of the grade
+            //we will use grade to get the key of the grade
+            name: Object.keys(grade_levels).find(
+              (key) => grade_levels[key] === grade
+            ),
+          },
+          model_name: "stream",
         });
-        //
-        //register a default department for the school
-        await fetch("http://localhost:3000/api/register", {
-          method: "POST",
-          body: JSON.stringify({
-            data: {
-              school_id: data.id,
-              name: "Default Department",
-              description: "Default Department",
-            },
-            model_name: "department",
-          }),
-        });
-
-        //
-        alert("School registered successfully!");
-      } else {
-        alert("Failed to register school!");
-      }
+      });
+      //
+      //register a default department for the school
+      await register({
+        data: {
+          school_id: new_school.id,
+          name: "Default Department",
+          description: "Default Department",
+        },
+        model_name: "department",
+      });
     },
     [
       name_field,
@@ -178,7 +156,6 @@ const School: React.FC = () => {
       <CheckboxGroup
         label="Select School Levels offered"
         options={school_levels}
-        name="school-levels"
         value={selected_levels}
         onChange={set_selected_levels}
         error={levels_error}

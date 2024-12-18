@@ -496,7 +496,6 @@ model department {
 model department_staff {
   id                                   Int                     @id @default(autoincrement()) 
   staff_id                             Int?                    
-  staff_code                           String?
   department_id                        Int?
   employment_status                    employment_status?      @default(FULL_TIME)
   qualifications                       Json?
@@ -598,6 +597,7 @@ model class_progression {
   award                       award[]
 
   @@unique([stream_id,academic_year_id])
+  @@unique([stream_id,is_current])
   @@map("class")
 }
 
@@ -607,9 +607,10 @@ model class_progression {
 //Will be used when a student changes schools,then they can be placed in a different class group
 
 model student_class {
-  student_id                 Int
-  class_progress             Int
-  admission_number           String?            @db.VarChar(20)
+  id                         Int                 @id @default(autoincrement())
+  student_id                 Int?
+  class_progress             Int?
+  
 
   student_role               role_type?         @default(MEMBER)
 
@@ -625,7 +626,7 @@ model student_class {
   class_progression          class_progression?  @relation(fields: [class_progress], references: [id], onDelete: NoAction, onUpdate: NoAction)
   student                    student?            @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([student_id, class_progress])
+  @@unique([student_id, class_progress])
   @@index([student_id,class_progress])
 }
 
@@ -670,6 +671,7 @@ model users {
   name                               String?                  @db.VarChar(50)
   first_name                         String                   @db.VarChar(50)
   last_name                          String                   @db.VarChar(50)
+  id_code                            String?                  @db.VarChar(30)
   email                              String                   @unique @db.VarChar(100)
   phone                              String?                  @db.VarChar(20)
   date_of_birth                      DateTime?                @db.Date
@@ -770,7 +772,7 @@ model admin{
 model staff {
   id                                              Int                 @id @default(autoincrement())
   user_id                                         Int                 @unique
-  
+  staff_code                                      String?             @db.VarChar(20)
   created_at                                      DateTime?           @default(now()) @db.Timestamptz(6)
   updated_at                                      DateTime?           @default(now()) @db.Timestamptz(6)
   deleted_at                                      DateTime?           @db.Timestamptz(6)
@@ -809,6 +811,8 @@ model teacher {
 
 model student {
   id                    Int               @id @default(autoincrement())
+  admission_number      String?           @db.VarChar(20) 
+  student_code          String?           @db.VarChar(20) @unique
   user_id               Int               @unique
 
   created_at            DateTime?         @default(now()) @db.Timestamptz(6)

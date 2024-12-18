@@ -2,35 +2,33 @@
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
-import Validation, { required } from "@/app/hooks/validation";
-
 import { useUser } from "@/app/context/user_context";
+import { useValidation } from "@/app/hooks/validation_hooks";
+import { FieldType } from "@/app/types/types";
+import { validInputs } from "@/lib/functions";
+import { register } from "@/app/api_functions/functions";
 //
 //Register departments
 const Department = () => {
-  const name = Validation("", [required]);
-  const description = Validation("", []);
+  const name = useValidation({ type: FieldType.Text, required: true });
+  const description = useValidation({ type: FieldType.Text });
   const { school_id } = useUser();
-
+  //
+  // Register a department
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
 
-      const is_form_valid = [name, description].every((field) =>
-        field.validate(field.value)
-      );
-      if (!is_form_valid) return;
+      // Validate the input fields
+      if (!validInputs([name, description])) return;
 
-      await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        body: JSON.stringify({
-          data: {
-            school_id: school_id,
-            name: name.value,
-            description: description.value,
-          },
-          model_name: "department",
-        }),
+      await register({
+        data: {
+          school_id: school_id,
+          name: name.value,
+          description: description.value,
+        },
+        model_name: "department",
       });
     },
     [name, description, school_id]

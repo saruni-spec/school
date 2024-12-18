@@ -28,7 +28,7 @@ const UserRegistration = () => {
   //save the user after registration
   const [user, set_user] = useState<record>();
   //save the school selected
-  const { school_id } = useUser();
+  const { school_id, school } = useUser();
   //label the steps
   //save the user type selected and move to user details
   const handleUserTypeSelect = (selectedUserType: UserType) => {
@@ -69,7 +69,7 @@ const UserRegistration = () => {
         <User
           set_user={handleUserRegistration}
           role_id={user_type ? roles_id[user_type] : 26}
-          school_id={school_id}
+          school={school}
           user_type={user_type}
         />
       ),
@@ -93,7 +93,6 @@ const UserRegistration = () => {
           user_type={user_type}
           setCurrentStep={setCurrentStep}
           set_user={set_user}
-          set_user_type={set_user_type}
         />
       ),
     },
@@ -119,12 +118,17 @@ const UserRegistration = () => {
     <div className="flex items-center justify-center p-4 ">
       <div className="w-full min-h-screen bg-white shadow-2xl rounded-xl ">
         <div className="p-6 h-full">
-          <RenderProgressIndicator
-            steps={steps}
-            currentStep={currentStep}
-            handleStepChange={handleStepChange}
-          />
-          <RenderContent steps={steps} currentStep={currentStep} />
+          {school_id && (
+            <>
+              <RenderProgressIndicator
+                steps={steps}
+                currentStep={currentStep}
+                handleStepChange={handleStepChange}
+              />
+              <RenderContent steps={steps} currentStep={currentStep} />
+            </>
+          )}
+          {!school_id && <p>Please Select a School</p>}
         </div>
       </div>
     </div>

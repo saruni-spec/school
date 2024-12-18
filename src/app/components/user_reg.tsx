@@ -1,121 +1,117 @@
 "use client";
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
-import { MultiInput } from "@/app/components/multi_input";
-import { MultiSelect } from "@/app/components/multi_select";
-import Validation, {
-  validateKey,
-  validateValue,
-  required,
-  ValidateMultipleOptions,
-  validateEmail,
-} from "@/app/hooks/validation";
+import { validateEmail } from "@/app/hooks/validation";
 import React, { useCallback, useEffect, useState } from "react";
-import { DatePicker, useDateValidation } from "@/app/components/calendar";
+import { DatePicker } from "@/app/components/calendar";
 import { Select } from "./select";
-import { record, UserType, RegistrationStep } from "../types/types";
+import { record, UserType, RegistrationStep, FieldType } from "../types/types";
 import { role_type } from "@prisma/client";
-import { DetailsDisplay } from "./display";
-import { ArrowRight } from "lucide-react";
-import { SelectList } from "./select_list";
 import { useUser } from "../context/user_context";
 import { SelectObject } from "./selectobejctitem";
-
+import { getCurrentClassProgressions } from "../actions/actions";
+import { useValidation } from "../hooks/validation_hooks";
+import { validInputs } from "@/lib/functions";
+import { register } from "../api_functions/functions";
 //the main component for user registration
 export const User = ({
   set_user,
   role_id,
-  school_id,
+  school,
   user_type,
 }: {
   set_user: (record: record) => void;
   role_id?: number;
-  school_id?: number;
+  school?: record;
   user_type?: UserType;
 }) => {
   // these are the variables that will be used to store the user details
-  const first_name = Validation("", []);
-  const last_name = Validation("", []);
-  const email = Validation("", [validateEmail]);
-  const phone = Validation("", []);
+  const first_name = useValidation({ type: FieldType.Text, required: true });
+  const last_name = useValidation({ type: FieldType.Text, required: true });
+  const email = useValidation({
+    type: FieldType.Text,
+    validators: [validateEmail],
+  });
+  const phone = useValidation({ type: FieldType.Text });
+  const admission_number = useValidation({ type: FieldType.Text });
 
   // the function to handle the form submission
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
+
+      if (!school) {
+        alert("Please select a school");
+        return;
+      }
       //check if all the fields are valid
-      const is_form_valid = [first_name, last_name, email, phone].every(
-        (field) => field.validate(field.value)
-      );
-      if (!is_form_valid) return;
-      //send the data to the backend
-      const result = await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        body: JSON.stringify({
-          data: {
-            first_name: first_name.value,
-            last_name: last_name.value,
-            email: email.value,
-            phone: phone.value,
-            role_id: role_id,
-            current_school: school_id,
-            name: `${first_name.value} ${last_name.value}`,
-            password: `${first_name.value}${last_name.value}@${school_id}`,
-          },
-          model_name: "users",
-        }),
+      if (!validInputs([first_name, last_name, email, phone])) return;
+
+      //
+      //generate id code
+      const full_year = new Date().getFullYear();
+      const minutes = new Date().getMinutes();
+      //
+      const first_name_code = first_name.value.toString()[0];
+      const last_name_code = last_name.value.toString()[0];
+      //
+      const id_code = `${first_name_code}${last_name_code}-${school.id}${role_id}${minutes}/${full_year}`;
+      //
+      //register the user
+      const registered_user = await register({
+        data: {
+          first_name: first_name.value,
+          last_name: last_name.value,
+          email: email.value,
+          phone: phone.value,
+          role_id: role_id,
+          current_school: school.id,
+          name: `${first_name.value} ${last_name.value}`,
+          id_code: id_code,
+          password: id_code,
+        },
+        model_name: "users",
       });
 
-      const user = await result.json();
-      let response;
+      let additional_user_details;
       //
       //save the user in the user specific table
-      console.log("user type", user_type);
       if (user_type === "STUDENT") {
-        response = await fetch("http://localhost:3000/api/register", {
-          method: "POST",
-          body: JSON.stringify({
-            data: {
-              user_id: user.id,
-            },
-            model_name: "student",
-          }),
+        additional_user_details = await register({
+          data: {
+            user_id: registered_user.id,
+            admission_number:
+              admission_number.value === ""
+                ? `${school.name[0]}${school.id}/${id_code}`
+                : admission_number.value,
+            student_code: `STU/${id_code}`,
+          },
+          model_name: "student",
         });
       } else {
-        response = await fetch("http://localhost:3000/api/register", {
-          method: "POST",
-          body: JSON.stringify({
-            data: {
-              user_id: user.id,
-            },
-            model_name: "staff",
-          }),
+        additional_user_details = await register({
+          data: {
+            user_id: registered_user.id,
+            staff_code: `STF/${id_code}`,
+          },
+          model_name: "staff",
         });
-      }
-      console.log("sttaf reg", response);
-      if (!response.ok) {
-        alert("Registration failed");
-        return;
       }
 
       if (user_type === "PRINCIPAL" || user_type === "VICE_PRINCIPAL") {
         const staff_code_prefix = user_type === "PRINCIPAL" ? "PRN" : "VPRN";
-        response = await fetch("http://localhost:3000/api/register", {
-          method: "POST",
-          body: JSON.stringify({
-            data: {
-              staff_id: user.id,
-              school_id: school_id,
-              leader_code: `${staff_code_prefix}-${school_id}-${user.id}`,
-              current_role: user_type,
-            },
-            model_name: "school_leader",
-          }),
+        additional_user_details = await register({
+          data: {
+            staff_id: registered_user.id,
+            school_id: school.id,
+            leader_code: `${staff_code_prefix}-${school.id}-${id_code}`,
+            current_role: user_type,
+          },
+          model_name: "school_leader",
         });
       }
 
-      const user_details = await response.json();
-      set_user(user_details);
+      set_user(additional_user_details);
     },
     [
       first_name,
@@ -124,42 +120,48 @@ export const User = ({
       phone,
       set_user,
       role_id,
-      school_id,
+      school,
       user_type,
+      admission_number,
     ]
   );
   return (
     <>
-      {school_id && (
-        <Form onSubmit={handleSubmit} submitButtonText="Sign Up">
+      <Form onSubmit={handleSubmit} submitButtonText="Sign Up">
+        <Input
+          label="First Name"
+          onChange={first_name.handle_change}
+          value={first_name.value}
+          error={first_name.error}
+        />
+        <Input
+          label="Last Name"
+          onChange={last_name.handle_change}
+          value={last_name.value}
+          error={last_name.error}
+        />
+        <Input
+          type="email"
+          label="Email"
+          onChange={email.handle_change}
+          value={email.value}
+          error={email.error}
+        />
+        <Input
+          label="Phone Number"
+          onChange={phone.handle_change}
+          value={phone.value}
+          error={phone.error}
+        />
+        {user_type === "STUDENT" && (
           <Input
-            label="First Name"
-            onChange={first_name.handle_change}
-            value={first_name.value}
-            error={first_name.error}
+            label="Admission Number"
+            onChange={admission_number.handle_change}
+            value={admission_number.value}
+            error={admission_number.error}
           />
-          <Input
-            label="Last Name"
-            onChange={last_name.handle_change}
-            value={last_name.value}
-            error={last_name.error}
-          />
-          <Input
-            type="email"
-            label="Email"
-            onChange={email.handle_change}
-            value={email.value}
-            error={email.error}
-          />
-          <Input
-            label="Phone Number"
-            onChange={phone.handle_change}
-            value={phone.value}
-            error={phone.error}
-          />
-        </Form>
-      )}
-      {!school_id && <>Please select a school</>}
+        )}
+      </Form>
     </>
   );
 };
@@ -226,9 +228,9 @@ export const Staff = ({
   onSubmit?: () => void;
 }) => {
   const department_table = "department";
-  const department_id = Validation("", []);
+  const department_id = useValidation({ type: FieldType.Text });
 
-  const role = Validation("", []);
+  const role = useValidation({ type: FieldType.Text });
   const { school_id } = useUser();
 
   //
@@ -243,6 +245,10 @@ export const Staff = ({
       const response = await fetch(
         `http://localhost:3000/api/fetch_record?table_name=${department_table}&school_id=${school_id}`
       );
+      if (!response.ok) {
+        alert(`Failed to fetch ${department_table}`);
+        throw new Error(`Failed to fetch ${department_table}`);
+      }
       const departments = await response.json();
       setDepartments(departments);
     };
@@ -253,32 +259,23 @@ export const Staff = ({
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const if_form_valid = [department_id, role].every((field) =>
-        field.validate(field.value)
-      );
 
-      if (!if_form_valid) return;
+      if (!validInputs([department_id, role])) return;
 
-      const staff_code = `STF-${school_id}-${department_id.value}-${staff_id}`;
-
-      await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        body: JSON.stringify({
-          data: {
-            staff_id: staff_id,
-            department_id: parseInt(department_id.value as string),
-            current_role: role.value as role_type,
-            staff_code,
-          },
-          model_name: "department_staff",
-        }),
+      await register({
+        data: {
+          staff_id: staff_id,
+          department_id: parseInt(department_id.value as string),
+          current_role: role.value as role_type,
+        },
+        model_name: "department_staff",
       });
 
       if (onSubmit) {
         onSubmit();
       }
     },
-    [staff_id, onSubmit, school_id, department_id, role]
+    [staff_id, onSubmit, department_id, role]
   );
   return (
     <Form
@@ -308,43 +305,108 @@ export const Staff = ({
 
 //component to add details about a student after registration
 export const Student = ({
-  user, // the user id of the student/
+  student_id,
   onSubmit,
 }: {
-  user: record;
+  student_id: number;
   onSubmit?: () => void;
 }) => {
-  const handleSubmit = async () => {
-    // Validate inputs
-    const is_form_valid = [date_of_birth].every((field) =>
-      field.validate(field.value)
-    );
-    if (!is_form_valid) return;
+  const [streams, setStreams] = useState<record[]>([]);
+  const stream_id = useValidation({ type: FieldType.Text });
+  const admission_date = useValidation({ type: FieldType.Date });
+  const start_date = useValidation({
+    type: FieldType.Date,
+    minDate: admission_date.formatted_date as Date | undefined,
+  });
 
-    // Submit to backend
-    await fetch("", {
-      method: "POST",
-      body: JSON.stringify({
-        data: { role, school_id },
-        model_name: "student",
-      }),
+  const { school_id } = useUser();
+  //
+  //get all the current classes
+  const current_classes = useCallback(async () => {
+    const classes = await getCurrentClassProgressions(school_id);
+    //
+    // Format the classes for the select input
+    const flattenedClasses = classes.map((classProgression) => {
+      return {
+        id: classProgression.id,
+        name: classProgression.stream
+          ? classProgression.stream.name
+          : undefined,
+        grade_level:
+          classProgression.stream && classProgression.stream.grade_level
+            ? classProgression.stream.grade_level.level
+            : undefined,
+        start_date: classProgression.academic_year
+          ? classProgression.academic_year.start_date
+          : undefined,
+      };
     });
+    setStreams(flattenedClasses);
+  }, [school_id]);
 
+  useEffect(() => {
+    current_classes();
+  }, [school_id, current_classes]);
+
+  //
+  //handle stream selection
+  //set the admission date and start date to the start date of the selected stream
+  const streamSelecttion = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    stream_id.handle_change(e);
+    const selectedStream = streams.find(
+      (stream) => stream.id === parseInt(e.target.value)
+    );
+
+    const selected_date =
+      selectedStream?.start_date?.toString() || new Date().toISOString();
+    admission_date.set_value(selected_date);
+    start_date.set_value(selected_date);
+  };
+
+  //
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validInputs([stream_id, admission_date, start_date])) return;
+
+    await register({
+      data: {
+        student_id: student_id,
+        class_progress: parseInt(stream_id.value as string),
+        admission_date: admission_date.formatted_date,
+        start_date: start_date.formatted_date,
+      },
+      model_name: "student_class",
+    });
     if (onSubmit) {
       onSubmit();
     }
   };
 
   return (
-    <DetailsDisplay
-      details={user}
-      actionButton={{
-        label: "Proceed",
-        onClick: handleSubmit,
-        icon: ArrowRight,
-        variant: "primary",
-      }}
-    />
+    <Form onSubmit={handleSubmit} submitButtonText="save Student Details">
+      <Select
+        options={streams}
+        label={"Select Student's Current Class"}
+        show_field={"name"}
+        error={stream_id.error}
+        placeholder={"Select Class"}
+        value={stream_id.value}
+        onChange={streamSelecttion}
+      />
+      <DatePicker
+        label="Admission Date"
+        value={admission_date.value}
+        onChange={admission_date.handle_change}
+        error={admission_date.error}
+      />
+      <DatePicker
+        label="Start Date"
+        value={start_date.value}
+        onChange={start_date.handle_change}
+        error={start_date.error}
+      />
+    </Form>
   );
 };
 
@@ -380,6 +442,12 @@ export const UserTypeComponent = ({
               onSubmit={handleAdditionalDetailsSubmit}
             />
           )}
+          {user_type === "STUDENT" && (
+            <Student
+              student_id={user.id}
+              onSubmit={handleAdditionalDetailsSubmit}
+            />
+          )}
 
           {user_type && !excludedRoles.includes(user_type) && (
             <Staff
@@ -397,12 +465,10 @@ export const CompleteRegistration = ({
   user_type,
   setCurrentStep,
   set_user,
-  set_user_type,
 }: {
   user_type: string | undefined;
   setCurrentStep: (step: RegistrationStep) => void;
   set_user: (user: record | undefined) => void;
-  set_user_type: (user_type: UserType | undefined) => void;
 }) => {
   return (
     <div className="text-center p-8 bg-gray-50 rounded-lg shadow-md">
@@ -417,7 +483,6 @@ export const CompleteRegistration = ({
           // Reset to initial state or redirect
           setCurrentStep("user_details");
           set_user(undefined);
-          set_user_type(undefined);
         }}
         className="
           px-6 py-3 
@@ -436,164 +501,169 @@ export const CompleteRegistration = ({
     </div>
   );
 };
+// //
+//   // table name to get the subjects available
+//   const subject_table = "subject";
+// const stream_table = "stream";
+// //
+// //get additional details for a teacher
+// export const TeacherRegistration = ({
+//   teacher_id, // the id of the teacher
+//   onSubmit,
+// }: {
+//   teacher_id: string | number;
+//   onSubmit?: () => void;
+// }) => {
+//   //
+//   //get the role type of the teacher
+//   const roleType = useValidation({ type: FieldType.Text });
+//   const joinDate = useValidation({ type: FieldType.Date,required:true,maxDate:new Date()});
+//   const qualifications = useValidation({ type: FieldType.Text });
+//   const stream = useValidation({ type: FieldType.Text });
+//   //
+//   //validate the subject allocations
+//   const subjectAllocations = ValidateMultipleOptions({
+//     maxSelections: 5,
+//     minSelections: 1,
+//   });
+//   //
+//   //get the specialization of the teacher
+//   const [specialization, set_specialization] =
+//     useState<Record<string, string>>();
+//   //
+//   //save the streams
+//   const [streams, setstreams] = useState<record[]>([]);
 
-//get additional details for a teacher
-export const TeacherRegistration = ({
-  teacher_id, // the id of the teacher
-  onSubmit,
-}: {
-  teacher_id: string | number;
-  onSubmit?: () => void;
-}) => {
-  // table name to et the streams available
-  const stream_table = "stream";
-  //save the streams
-  const [streams, setstreams] = useState<record[]>([]);
-  // table name to get the subjects available
-  const subject_table = "subject";
-  //save the subjects
-  const [subjects, setsubjects] = useState<record[]>([]);
-  //get the role type of the teacher
-  const roleType = Validation("", []);
-  //get the specialization of the teacher
-  const [specialization, set_specialization] =
-    useState<Record<string, string>>();
-  const joinDate = useDateValidation("", true, undefined, new Date());
-  const qualifications = Validation("", []);
-  const stream = Validation("", []);
-  //validate the subject allocations
-  const subjectAllocations = ValidateMultipleOptions({
-    maxSelections: 5,
-    minSelections: 1,
-  });
-  //get the streams
-  //should get the streams without a vlas teacher
-  const getStreams = async () => {
-    const response = await fetch(`/api/fetch?table=${stream_table}`);
-    const result = await response.json();
-    setstreams(result.records);
-  };
-  //get the subjects
-  const getSubjects = async () => {
-    const response = await fetch(`/api/fetch?table=${subject_table}`);
-    const result = await response.json();
-    setsubjects(result.records);
-  };
-  //get the streams and subjects
-  useEffect(() => {
-    getStreams();
-    getSubjects();
-  }, []);
+//   //
+//   //save the subjects
+//   const [subjects, setsubjects] = useState<record[]>([]);
+//   //
+//   //get the streams
+//   //should get the streams without a vlas teacher
+//   const getStreams = async () => {
+//     const response = await fetchTable(stream_table);
+//     setstreams(response);
+//   };
+//   //
+//   //get the subjects
+//   const getSubjects = async () => {
+//     const response = await fetchTable(subject_table);
+//     setsubjects(response);
+//   };
+//   //
+//   //get the streams and subjects
+//   useEffect(() => {
+//     getStreams();
+//     getSubjects();
+//   }, []);
+// //
+//   // Handle form submission
+//   const handleSubmit = useCallback(
+//     async (e: React.FormEvent) => {
+//       e.preventDefault();
+// //
+//       // Validate inputs
+//      if(!validInputs([roleType,joinDate,qualifications,stream])) return;
+//       //validate the subject allocations
+//       const isSubjectAllocationsValid = subjectAllocations.validate(
+//         subjectAllocations.value
+//       );
+//       if (!isSubjectAllocationsValid) {
+//         alert("Please fill in all required fields");
+//         return;
+//       }
 
-  // Handle form submission
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
+//       try {
+//         // Prepare submission data
+//         const teacherData = {
+//           role: {
+//             type: roleType,
+//             category: "TEACHING", // example category
+//           },
+//           staff: {
+//             joinDate: new Date(joinDate.value),
+//             qualifications: JSON.parse(qualifications.value || "{}"),
+//           },
+//           teacher: {
+//             specialization,
+//             subjectAllocations: subjectAllocations.value.map((allocation) => ({
+//               subjectId: allocation.subjectId,
+//               streamId: allocation.streamId,
+//               academicYearId: allocation.academicYearId,
+//             })),
+//           },
+//         };
 
-      // Validate inputs
-      const isFormValid = [roleType, joinDate, qualifications, stream].every(
-        (field) => field.validate(field.value)
-      );
-      //validate the subject allocations
-      const isSubjectAllocationsValid = subjectAllocations.validate(
-        subjectAllocations.value
-      );
-      if (!isFormValid || !isSubjectAllocationsValid) {
-        alert("Please fill in all required fields");
-        return;
-      }
+//         // Submit to backend
+//         const response = await fetch("/api/teachers", {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//           },
+//           body: JSON.stringify(teacherData),
+//         });
 
-      try {
-        // Prepare submission data
-        const teacherData = {
-          role: {
-            type: roleType,
-            category: "TEACHING", // example category
-          },
-          staff: {
-            joinDate: new Date(joinDate.value),
-            qualifications: JSON.parse(qualifications.value || "{}"),
-          },
-          teacher: {
-            specialization,
-            subjectAllocations: subjectAllocations.value.map((allocation) => ({
-              subjectId: allocation.subjectId,
-              streamId: allocation.streamId,
-              academicYearId: allocation.academicYearId,
-            })),
-          },
-        };
+//         if (!response.ok) {
+//           throw new Error("Failed to register teacher");
+//         }
 
-        // Submit to backend
-        const response = await fetch("/api/teachers", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(teacherData),
-        });
+//         // Reset form or navigate
+//         alert("Teacher registered successfully");
+//         if (onSubmit) onSubmit();
+//       } catch (error) {
+//         console.error("Error registering teacher:", error);
+//         alert("Failed to register teacher");
+//       }
+//     },
+//     [
+//       roleType,
+//       specialization,
+//       joinDate,
+//       qualifications,
+//       subjectAllocations,
+//       stream,
+//       onSubmit,
+//     ]
+//   );
 
-        if (!response.ok) {
-          throw new Error("Failed to register teacher");
-        }
+//   return (
+//     <Form onSubmit={handleSubmit} submitButtonText="Add teacher information">
+//       <MultiInput
+//         label="Specialization"
+//         placeholder="Enter any specializations the teacher has"
+//         value={specialization}
+//         onChange={set_specialization}
+//         keyPlaceholder="Specialization"
+//         valuePlaceholder="Specilized in"
+//         validators={{
+//           key: [validateKey],
+//           value: [validateValue],
+//         }}
+//       />
+//       <DatePicker
+//         label="Join Date"
+//         value={joinDate.value}
+//         onChange={joinDate.handle_change}
+//         error={joinDate.error || ""}
+//       />
 
-        // Reset form or navigate
-        alert("Teacher registered successfully");
-        if (onSubmit) onSubmit();
-      } catch (error) {
-        console.error("Error registering teacher:", error);
-        alert("Failed to register teacher");
-      }
-    },
-    [
-      roleType,
-      specialization,
-      joinDate,
-      qualifications,
-      subjectAllocations,
-      stream,
-      onSubmit,
-    ]
-  );
+//       <MultiSelect
+//         label="Subject Allocations"
+//         selectedOptions={subjectAllocations.value}
+//         options={subjects}
+//         onSelectionChange={subjectAllocations.setSelectedOptions}
+//         handleOptionToggle={subjectAllocations.handleOptionToggle}
+//         handleRemoveOption={subjectAllocations.handleRemoveOption}
+//       />
 
-  return (
-    <Form onSubmit={handleSubmit} submitButtonText="Add teacher information">
-      <MultiInput
-        label="Specialization"
-        placeholder="Enter any specializations the teacher has"
-        value={specialization}
-        onChange={set_specialization}
-        keyPlaceholder="Specialization"
-        valuePlaceholder="Specilized in"
-        validators={{
-          key: [validateKey],
-          value: [validateValue],
-        }}
-      />
-      <DatePicker
-        label="Join Date"
-        value={joinDate.value}
-        onChange={joinDate.handle_change}
-        error={joinDate.error || ""}
-      />
-
-      <MultiSelect
-        label="Subject Allocations"
-        selectedOptions={subjectAllocations.value}
-        options={subjects}
-        onSelectionChange={subjectAllocations.setSelectedOptions}
-        handleOptionToggle={subjectAllocations.handleOptionToggle}
-        handleRemoveOption={subjectAllocations.handleRemoveOption}
-      />
-
-      <Select
-        label="Class teacher of"
-        value={stream.value}
-        onChange={stream.handle_change}
-        error={stream.error}
-        placeholder="Select what class to assign the teacher"
-        options={streams}
-      />
-    </Form>
-  );
-};
+//       <Select
+//         label="Class teacher of"
+//         value={stream.value}
+//         onChange={stream.handle_change}
+//         error={stream.error}
+//         placeholder="Select what class to assign the teacher"
+//         options={streams}
+//       />
+//     </Form>
+//   );
+// };

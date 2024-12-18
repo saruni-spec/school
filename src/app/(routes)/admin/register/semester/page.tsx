@@ -3,30 +3,36 @@ import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
 import { useUser } from "@/app/context/user_context";
-
+import { useValidation } from "@/app/hooks/validation_hooks";
+import { FieldType } from "@/app/types/types";
+import { validInputs } from "@/lib/functions";
+import { register } from "@/app/api_functions/functions";
+const table_name = "academic_year";
+//
+// Semester Registration Component
 const Semester = () => {
-  const start_date = useDateValidation("", true);
-  const end_date = useDateValidation(
-    "",
-    false,
-    start_date.formatted_date ? start_date.formatted_date : undefined
-  );
-  const table_name = "academic_year";
+  const start_date = useValidation({ type: FieldType.Date, required: true });
+  const end_date = useValidation({
+    type: FieldType.Date,
+    required: true,
+    minDate: start_date.formatted_date as Date | undefined,
+  });
 
   const { school_id } = useUser();
-
   //
   //need to get the academic year id
   //we can get the year through the start_date or end_date value
   //we can get the academic year id by querying the academic_year table using the year and school_id
-
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const is_form_valid = [start_date, end_date].every((field) =>
-        field.validate(field.value)
-      );
-      if (!is_form_valid) return;
+
+      if (!school_id) {
+        alert("Please select a school");
+        return;
+      }
+
+      if (!validInputs([start_date, end_date])) return;
       //
       //get the academic year id
       //use the year from the start_date or end_date value
@@ -36,8 +42,13 @@ const Semester = () => {
       const response = await fetch(
         `http://localhost:3000/api/fetch_record?table_name=${table_name}&school_id=${school_id}&year=${year}`
       );
+      if (!response.ok) {
+        alert(`Failed to fetch ${table_name}`);
+        throw new Error(`Failed to fetch ${table_name}`);
+      }
+      //
+      //get the academic year id
       const academic_year_id = await response.json();
-
       //
       //generate a name for the semester
       // use the start_month and end_month from the start_date and end_date value
@@ -48,17 +59,14 @@ const Semester = () => {
         end_date.value.toString().split("-")[1]
       }-${year}-${school_id}`;
 
-      await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        body: JSON.stringify({
-          data: {
-            academic_year_id: academic_year_id[0]?.id,
-            name: name,
-            start_date: start_date.formatted_date,
-            end_date: end_date.formatted_date,
-          },
-          model_name: "semester",
-        }),
+      await register({
+        data: {
+          academic_year_id: academic_year_id[0]?.id,
+          name: name,
+          start_date: start_date.formatted_date,
+          end_date: end_date.formatted_date,
+        },
+        model_name: "semester",
       });
     },
     [start_date, end_date, school_id]

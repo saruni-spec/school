@@ -26,9 +26,7 @@ const Facility = () => {
       if (!is_form_valid) return;
 
       //collect the inputs and send them to the server
-      await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        body: JSON.stringify({
+      await register({
           data: { facility_name: facility_name.value, type: type.value },
           model_name: "facility",
         }),

@@ -37,9 +37,7 @@ const School: React.FC = () => {
         license_info: license_info,
       };
 
-      await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        body: JSON.stringify({ data: school_data, model_name: "school" }),
+      await register({ data: school_data, model_name: "school" }),
       });
       // Add your submission logic here
     },

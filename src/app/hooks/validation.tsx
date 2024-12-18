@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useCallback } from "react";
-import { record } from "../types/types";
+import { input_field, record } from "../types/types";
 
 /**
  * A custom React hook for managing form input validation
@@ -12,7 +12,7 @@ import { record } from "../types/types";
 export default function Validation(
   initialValue = "",
   validators: ((value: string | number) => string | null)[]
-) {
+): input_field {
   // State to store the current input value
   const [value, set_value] = useState<string | number>(initialValue);
 
@@ -84,7 +84,6 @@ export default function Validation(
     error, // Current error message (null if no error)
     handle_change, // Event handler for input changes
     validate, // Method to manually trigger validation
-    set_value, // Method to manually set the input value
     setError, // Method to manually set the error message
     handle_value_change, // Method to get the value from a source other than the input element
   };

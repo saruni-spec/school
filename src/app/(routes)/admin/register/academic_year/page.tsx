@@ -1,45 +1,158 @@
 "use client";
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
-import { DatePicker, useDateValidation } from "@/app/components/calendar";
-import Validation, { required } from "@/app/hooks/validation";
+import { DatePicker } from "@/app/components/calendar";
 import { useUser } from "@/app/context/user_context";
-
+import { SelectList } from "@/app/components/select_list";
+import { getStreams } from "@/app/actions/actions";
+import CheckBoxToggle from "@/app/components/checkbox_toggle";
+import { validInputs } from "@/lib/functions";
+import { useValidation } from "@/app/hooks/validation_hooks";
+import { FieldType } from "@/app/types/types";
+import { register } from "@/app/api_functions/functions";
+import { FailureFeedback, SuccessFeedback } from "@/app/components/feedback";
+//
+//Register ans academic year for a school
 const AcademicYear = () => {
-  const name = Validation("", [required]);
-  const start_date = useDateValidation("", true);
-  const end_date = useDateValidation(
-    "",
-    false,
-    start_date.formatted_date ? start_date.formatted_date : undefined
-  );
-  const { school_id } = useUser();
+  // State for managing feedback
+  const [feedbackType, setFeedbackType] = useState<
+    "success" | "failure" | null
+  >(null);
+  const [feedbackMessage, setFeedbackMessage] = useState("");
 
+  const name = useValidation({ type: FieldType.Text, required: true });
+  const start_date = useValidation({
+    type: FieldType.Date,
+    required: true,
+    maxDate: new Date(),
+  });
+  const end_date = useValidation({ type: FieldType.Date, required: true });
+  const is_current = useValidation({
+    type: FieldType.Text,
+    initialValue: "off",
+    required: true,
+  });
   //
+  //get the school id from the context
+  const { school_id } = useUser();
+  //
+  //Update the year name and checkbox when the nae(year) is selected
+  const handleYearSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    name.handle_change(e);
+    const current =
+      new Date().getFullYear() === parseInt(e.target.value as string);
+
+    if (current) {
+      is_current.set_value("on");
+      return;
+    }
+
+    is_current.set_value("off");
+  };
+  //
+  // Submit the details to register the academic year
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const is_form_valid = [name, start_date, end_date].every((field) =>
-        field.validate(field.value.toString())
-      );
-      if (!is_form_valid) return;
 
-      await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        body: JSON.stringify({
-          data: {
-            school_id: school_id,
-            year: name.value,
-            start_date: start_date.formatted_date,
-            end_date: end_date.formatted_date,
-          },
-          model_name: "academic_year",
-        }),
-      });
+      // Reset previous feedback
+      setFeedbackType(null);
+      setFeedbackMessage("");
+
+      // Validate the inputs
+      if (!validInputs([name, start_date, end_date])) {
+        setFeedbackType("failure");
+        setFeedbackMessage("Please check and correct the form inputs.");
+        return;
+      }
+
+      try {
+        const academic_year_data = {
+          school_id: school_id,
+          year: name.value,
+          start_date: start_date.formatted_date,
+          end_date: end_date.formatted_date,
+          is_current: is_current.value === "on",
+        };
+        const model_name = "academic_year";
+
+        // Register the academic year
+        const academic_year = await register({
+          data: academic_year_data,
+          model_name,
+        });
+
+        // Get the streams in that school
+        const streams = await getStreams(school_id);
+
+        // Create a class progression in each of the streams
+        await Promise.all(
+          streams.map(async (stream) => {
+            await register({
+              data: {
+                stream_id: stream.id,
+                academic_year_id: academic_year.id,
+                is_current: is_current.value === "on",
+                name: `${stream.name}/${name.value}`,
+              },
+              model_name: "class_progression",
+            });
+          })
+        );
+
+        // Set success feedback
+        setFeedbackType("success");
+        setFeedbackMessage(
+          `Academic Year ${name.value} successfully registered!`
+        );
+      } catch (error) {
+        // Set failure feedback
+        setFeedbackType("failure");
+        setFeedbackMessage(
+          error instanceof Error
+            ? error.message
+            : "Failed to register academic year. Please try again."
+        );
+      }
     },
-    [name, start_date, end_date, school_id]
+    [name, start_date, end_date, school_id, is_current]
   );
+
+  // Reset form after successful registration
+  const handleResetForm = () => {
+    name.set_value("");
+    start_date.set_value("");
+    end_date.set_value("");
+    is_current.set_value("off");
+    setFeedbackType(null);
+  };
+
+  // Render feedback if exists
+  if (feedbackType === "success") {
+    return (
+      <SuccessFeedback
+        input_message={feedbackMessage}
+        action={{
+          label: "Go to Dashboard",
+          onClick: handleResetForm,
+        }}
+      />
+    );
+  }
+
+  if (feedbackType === "failure") {
+    return (
+      <FailureFeedback
+        input_message={feedbackMessage}
+        action={{
+          label: "Try Again",
+          onClick() {
+            setFeedbackType(null);
+          },
+        }}
+      />
+    );
+  }
 
   return (
     <Form
@@ -47,14 +160,6 @@ const AcademicYear = () => {
       onSubmit={handleSubmit}
       submitButtonText="Register"
     >
-      <Input
-        label="Academic Year"
-        placeholder="Enter Academic Year eg 2025..."
-        required
-        value={name.value}
-        onChange={name.handle_change}
-        error={name.error}
-      />
       <DatePicker
         label="Start Date"
         value={start_date.value}
@@ -68,6 +173,21 @@ const AcademicYear = () => {
         onChange={end_date.handle_change}
         error={end_date.error}
         required
+      />
+      <SelectList
+        label="Academic Year"
+        placeholder="Enter Academic Year eg 2025..."
+        options={["2020", "2021", "2022", "2023", "2024", "2025"]}
+        required
+        value={name.value}
+        onChange={handleYearSelect}
+        error={name.error}
+      />
+      <CheckBoxToggle
+        label="Is this academic year is still in progress?"
+        error={is_current.error}
+        onChange={is_current.handle_change}
+        value={(is_current.value as "on") || "off"}
       />
     </Form>
   );

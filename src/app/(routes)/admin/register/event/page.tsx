@@ -1,51 +1,55 @@
 "use client";
 import { Form } from "@/app/components/form";
 import React from "react";
-import Validation, { required } from "@/app/hooks/validation";
 import { Input } from "@/app/components/input";
-
 import { SelectList } from "@/app/components/select_list";
 import { event_scope } from "@prisma/client";
 import { useUser } from "@/app/context/user_context";
-import { DatePicker, useDateValidation } from "@/app/components/calendar";
-
+import { DatePicker } from "@/app/components/calendar";
+import { useValidation } from "@/app/hooks/validation_hooks";
+import { FieldType } from "@/app/types/types";
+import { validInputs } from "@/lib/functions";
+import { register } from "@/app/api_functions/functions";
+//
+// Event Registration Page
 const Event = () => {
-  const name = Validation("", [required]);
-  const description = Validation("", [required]);
-  const location = Validation("", [required]);
-  const start_date = useDateValidation("", true, new Date());
-  const end_date = useDateValidation("", true, new Date());
-  const scope = Validation("", [required]);
+  const name = useValidation({ type: FieldType.Text, required: true });
+  const description = useValidation({ type: FieldType.Text, required: true });
+  const location = useValidation({ type: FieldType.Text, required: true });
+  const start_date = useValidation({
+    type: FieldType.Date,
+    required: true,
+    minDate: new Date(),
+  });
+  const end_date = useValidation({
+    type: FieldType.Date,
+    required: true,
+    minDate: new Date(),
+  });
+  const scope = useValidation({ type: FieldType.Text, required: true });
   const { school_id } = useUser();
 
   const event_scopes = Object.keys(event_scope);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const is_form_valid = [
-      name,
-      description,
-      location,
-      start_date,
-      end_date,
-      scope,
-    ].every((field) => field.validate(field.value));
-    if (!is_form_valid) return;
 
-    await fetch("http://localhost:3000/api/register", {
-      method: "POST",
-      body: JSON.stringify({
-        data: {
-          name: name.value,
-          description: description.value,
-          location: location.value,
-          start_date: start_date.formatted_date,
-          end_date: end_date.formatted_date,
-          scope: scope.value,
-          school_id: school_id,
-        },
-        model_name: "event",
-      }),
+    if (
+      !validInputs([name, description, location, start_date, end_date, scope])
+    )
+      return;
+
+    await register({
+      data: {
+        name: name.value,
+        description: description.value,
+        location: location.value,
+        start_date: start_date.formatted_date,
+        end_date: end_date.formatted_date,
+        scope: scope.value,
+        school_id: school_id,
+      },
+      model_name: "event",
     });
   };
 

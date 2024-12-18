@@ -1,18 +1,26 @@
 "use client";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { use, useCallback, useEffect, useState } from "react";
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
-import Validation, { required } from "@/app/hooks/validation";
 import { useUser } from "@/app/context/user_context";
 import { getGradeLevels } from "@/app/actions/actions";
-import { record } from "@/app/types/types";
+import { FieldType, record } from "@/app/types/types";
 import { Select } from "@/app/components/select";
-
+import { useValidation } from "@/app/hooks/validation_hooks";
+import { validInputs } from "@/lib/functions";
+import { register } from "@/app/api_functions/functions";
+//
+// Stream Registration Component
 const Stream = () => {
-  const stream_name = Validation("", [required]);
-  const capacity = Validation("", []);
-  const grade_level_id = Validation("", [required]);
+  const stream_name = useValidation({ type: FieldType.Text, required: true });
+  const capacity = useValidation({ type: FieldType.Number });
+  const grade_level_id = useValidation({
+    type: FieldType.Text,
+    required: true,
+  });
+
   const { school_id } = useUser();
+
   const [grade_levels, setGradeLevels] = useState<record[]>([]);
 
   //
@@ -27,27 +35,21 @@ const Stream = () => {
     getGrades();
   }, [getGrades]);
 
+  //
+  //submit the form
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const is_form_valid = [stream_name, capacity].every((field) =>
-        field.validate(field.value)
-      );
-      if (!is_form_valid) return;
+      if (!validInputs([stream_name, capacity, grade_level_id])) return;
 
-      await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        body: JSON.stringify({
-          data: {
-            school_id: school_id,
-            name: stream_name.value,
-            capacity: capacity.value
-              ? parseInt(capacity.value as string)
-              : null,
-            grade_level_id: parseInt(grade_level_id.value as string),
-          },
-          model_name: "stream",
-        }),
+      await register({
+        data: {
+          school_id: school_id,
+          name: stream_name.value,
+          capacity: capacity.value ? parseInt(capacity.value as string) : null,
+          grade_level_id: parseInt(grade_level_id.value as string),
+        },
+        model_name: "stream",
       });
     },
     [stream_name, capacity, grade_level_id, school_id]

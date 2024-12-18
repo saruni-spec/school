@@ -5,12 +5,10 @@ interface RadioGroupProps {
   id_field?: string;
   value_field?: string;
   show_field?: string;
-  options: Record<string, string | number | Record<string, string | number>>[];
+  options: generic_record[];
   name: string;
   value?: string;
-  onChange: (
-    record: Record<string, string | number | Record<string, string | number>>
-  ) => void;
+  onChange: (record: generic_record) => void;
   error?: string | null;
   containerClassName?: string;
   labelClassName?: string;

@@ -1,3 +1,5 @@
+//
+//Currently not in use
 "use client";
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
@@ -8,7 +10,8 @@ import { useUser } from "@/app/context/user_context";
 import CheckBoxToggle from "@/app/components/checkbox_toggle";
 import { grade_levels, record } from "@/app/types/types";
 import { grade_level_type } from "@prisma/client";
-
+//
+// Register a class level
 const ClassLevel = () => {
   //
   //get the current year

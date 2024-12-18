@@ -1,6 +1,5 @@
 "use client";
 import React from "react";
-import Validation, { required } from "@/app/hooks/validation";
 import {
   gallery_type,
   gallery_visibility,
@@ -10,15 +9,20 @@ import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
 import { SelectList } from "@/app/components/select_list";
 import { useUser } from "@/app/context/user_context";
-
+import { register } from "@/app/api_functions/functions";
+import { useValidation } from "@/app/hooks/validation_hooks";
+import { FieldType } from "@/app/types/types";
+import { validInputs } from "@/lib/functions";
+//
+// Create a new gallery
 const Gallery = () => {
-  const name = Validation("", [required]);
-  const description = Validation("", [required]);
-  const type = Validation("", [required]);
-  const visibility = Validation("", [required]);
-  const category = Validation("", [required]);
-  const location = Validation("", [required]);
-  const tags = Validation("", [required]);
+  const name = useValidation({ type: FieldType.Text, required: true });
+  const description = useValidation({ type: FieldType.Text, required: true });
+  const type = useValidation({ type: FieldType.Text, required: true });
+  const visibility = useValidation({ type: FieldType.Text, required: true });
+  const category = useValidation({ type: FieldType.Text, required: true });
+  const location = useValidation({ type: FieldType.Text, required: true });
+  const tags = useValidation({ type: FieldType.Text, required: true });
 
   const { user } = useUser();
 
@@ -28,32 +32,32 @@ const Gallery = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const is_form_valid = [
-      name,
-      description,
-      type,
-      visibility,
-      category,
-      location,
-      tags,
-    ].every((field) => field.validate(field.value));
-    if (!is_form_valid) return;
 
-    await fetch("http://localhost:3000/api/register", {
-      method: "POST",
-      body: JSON.stringify({
-        data: {
-          name: name.value,
-          description: description.value,
-          type: type.value,
-          visibility: visibility.value,
-          category: category.value,
-          location: location.value,
-          tags: tags.value,
-          created_by: user ? user.id : null,
-        },
-        model_name: "gallery",
-      }),
+    if (
+      !validInputs([
+        name,
+        description,
+        type,
+        visibility,
+        category,
+        location,
+        tags,
+      ])
+    )
+      return;
+
+    await register({
+      data: {
+        name: name.value,
+        description: description.value,
+        type: type.value,
+        visibility: visibility.value,
+        category: category.value,
+        location: location.value,
+        tags: tags.value,
+        created_by: user ? user.id : null,
+      },
+      model_name: "gallery",
     });
   };
 

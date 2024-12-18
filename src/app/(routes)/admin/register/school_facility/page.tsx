@@ -2,24 +2,26 @@
 import React, { useCallback, useState, useEffect } from "react";
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
-import Validation, { required } from "@/app/hooks/validation";
 import { useUser } from "@/app/context/user_context";
 import { Select } from "@/app/components/select";
-import { record } from "@/app/types/types";
-
+import { FieldType, record } from "@/app/types/types";
+import { fetchTable, register } from "@/app/api_functions/functions";
+import { useValidation } from "@/app/hooks/validation_hooks";
+import { validInputs } from "@/lib/functions";
+//
+// School Facility Registration Component
 const SchoolFacility = () => {
-  const description = Validation("", []);
-  const [facilities, setFacilities] = useState<record[]>([]);
-  const facility_id = Validation("", [required]);
+  const description = useValidation({ type: FieldType.Text });
+  const facility_id = useValidation({ type: FieldType.Text, required: true });
+
   const { school_id } = useUser();
 
+  const [facilities, setFacilities] = useState<record[]>([]);
+  //
   //get the facilities available
   const getFacilities = async () => {
-    const response = await fetch(
-      `http://localhost:3000/api/fetch_record?table_name=facility`
-    );
-    const data = await response.json();
-    setFacilities(data);
+    const response = await fetchTable("facility");
+    setFacilities(response);
   };
 
   useEffect(() => {
@@ -29,21 +31,15 @@ const SchoolFacility = () => {
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const is_form_valid = [facility_id, description].every((field) =>
-        field.validate(field.value)
-      );
-      if (!is_form_valid) return;
+      if (!validInputs([facility_id, description])) return;
 
-      await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        body: JSON.stringify({
-          data: {
-            current_school: school_id,
-            is_facility: parseInt(facility_id.value as string),
-            description: description.value,
-          },
-          model_name: "school_facility",
-        }),
+      await register({
+        data: {
+          current_school: school_id,
+          is_facility: parseInt(facility_id.value as string),
+          description: description.value,
+        },
+        model_name: "school_facility",
       });
     },
     [description, school_id, facility_id]

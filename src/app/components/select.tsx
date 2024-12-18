@@ -14,6 +14,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   error?: string | null; // Error message
   options: record[]; // Array of options to be displayed in the select input
   placeholder?: string; // Placeholder text
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; // Function to run when the value of the select input changes
 }
 // The Select component is a functional component that accepts the props mentioned above
 export const Select: React.FC<SelectProps> = ({

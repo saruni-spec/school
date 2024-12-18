@@ -1,5 +1,6 @@
 "use client";
 import React, { useCallback, useState } from "react";
+import { date_field } from "../types/types";
 
 type dateFormat = "YYYY-MM-DD" | "MM/DD/YYYY" | "DD/MM/YYYY";
 
@@ -130,15 +131,12 @@ export const useDateValidation = (
   maxDate?: Date,
   dateFormat: dateFormat = "YYYY-MM-DD",
   customValidator?: (date: Date) => string | null
-) => {
+): date_field => {
   const [value, set_value] = useState(initialValue);
   const [error, setError] = useState<string | null>(null);
 
   const validate = useCallback(
-    (inputValue: string | number) => {
-      //
-      //convert to string
-      inputValue = inputValue.toString();
+    (inputValue: string) => {
       const date = parseDate(inputValue);
 
       // Required validation
@@ -192,13 +190,28 @@ export const useDateValidation = (
     [validate]
   );
 
+  //
+  //handle change that is not from the input element
+  const handle_value_change = useCallback(
+    (newValue: string) => {
+      // Update the stored value
+      set_value(newValue);
+
+      // Validate the new value
+      validate(newValue);
+    },
+    [validate] // Memoize this function to prevent unnecessary re-renders
+  );
+
   const formatted_date = parseDate(value, dateFormat);
 
   return {
     value,
     formatted_date,
+    setError,
     error,
     handle_change,
+    handle_value_change,
     validate,
     set_value,
   };

@@ -29,8 +29,10 @@ export async function POST(request: Request) {
       select: {
         id: true,
         name: true,
+        current_school: true,
         student: {
           select: {
+            id: true,
             student_class: {
               select: {
                 admission_number: true,

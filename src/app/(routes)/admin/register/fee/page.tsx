@@ -2,20 +2,18 @@
 import React, { useState } from "react";
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
-import Validation, {
-  ListValidation,
-  required,
-  requiredList,
-} from "@/app/hooks/validation";
-import { DatePicker, useDateValidation } from "@/app/components/calendar";
+import { ListValidation, requiredList } from "@/app/hooks/validation";
+import { DatePicker } from "@/app/components/calendar";
 import { useUser } from "@/app/context/user_context";
 import { SelectList } from "@/app/components/select_list";
 import { fee_type_enum, installment_types } from "@prisma/client";
-import { record } from "@/app/types/types";
+import { FieldType, generic_record, record } from "@/app/types/types";
 import RadioInputs from "@/app/components/radio";
 import CheckboxGroup from "@/app/components/check_box_inputs";
 import { getGradeLevels, getStreams } from "@/app/actions/actions";
-
+import { fetchData, register } from "@/app/api_functions/functions";
+import { useValidation } from "@/app/hooks/validation_hooks";
+import { validInputs } from "@/lib/functions";
 //
 //fees an be for individuals,streams,classes,department or the entire school
 const possibe_payees = [
@@ -32,19 +30,27 @@ const payee_fields = {
 };
 
 const department_table = "department";
+const stream_table = "stream";
 
 const Fee = () => {
-  const amount = Validation("", [required]);
-  const fee_for = Validation("", [required]);
-  const description = Validation("", []);
-  const due_date = useDateValidation("", true, new Date());
-  const installment_type = Validation("", [required]);
-
+  const amount = useValidation({ type: FieldType.Text, required: true });
+  const fee_for = useValidation({ type: FieldType.Text, required: true });
+  const description = useValidation({ type: FieldType.Text });
+  const due_date = useValidation({
+    type: FieldType.Date,
+    required: true,
+    minDate: new Date(),
+  });
+  const installment_type = useValidation({
+    type: FieldType.Text,
+    required: true,
+  });
   const payees = ListValidation([], { listValidator: requiredList });
-
-  const [selectedRadio, setSelectedRadio] = useState<
-    Record<string, string | number | Record<string, string | number>>
-  >({ name: "School" });
+  //
+  //
+  const [selectedRadio, setSelectedRadio] = useState<generic_record>({
+    name: "School",
+  });
   const [options, setOptions] = useState<record[]>([]);
 
   const fee_types: string[] = Object.keys(fee_type_enum);
@@ -55,34 +61,25 @@ const Fee = () => {
   //
   //fetch departments in the school
   const fetchDepartments = async () => {
-    const response = await fetch(
-      `http://localhost:3000/api/fetch_record?table_name=${department_table}&school_id=${school_id}`
-    );
-    const data = await response.json();
-    setOptions(data);
+    const response = await fetchData(department_table, school_id);
+    setOptions(response);
   };
-
   //
-  //fetch grade level
+  //fetch grade level (server action)
   const fetchGradeLevels = async () => {
     const response = await getGradeLevels(school_id);
     setOptions(response);
   };
-
-  //
-  //fetch streams
   //
   //fetch departments in the school
   const fetchStreams = async () => {
-    const response = await getStreams(school_id);
+    const response = await fetchData(stream_table, school_id);
     setOptions(response as record[]);
   };
 
   //
   //fetch payees based on the selected radio
-  const handleRadioChange = (
-    selected: Record<string, string | number | Record<string, string | number>>
-  ) => {
+  const handleRadioChange = (selected: generic_record) => {
     setSelectedRadio(selected);
     switch (selected.name) {
       case "Streams":
@@ -103,55 +100,42 @@ const Fee = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const is_form_valid = [
-      amount,
-      fee_for,
-      description,
-      due_date,
-      installment_type,
-    ].every((input) => input.validate(input.value));
-
-    if (!is_form_valid) return;
-
-    const response = await fetch("http://localhost:3000/api/register", {
-      method: "POST",
-      body: JSON.stringify({
-        data: {
-          amount: amount.value,
-          fee_for: fee_for.value,
-          description: description.value,
-          due_date: due_date.formatted_date,
-          installments: installment_type.value,
-          school_id,
-          code: `${fee_for.value}-${installment_type.value}-${school_id}`,
-        },
-        model_name: "fee",
-      }),
-    });
-    if (!response.ok) {
-      alert("An error occured");
+    if (
+      !validInputs([amount, fee_for, description, due_date, installment_type])
+    )
       return;
-    }
+
+    if (!payees.validate) return;
+
+    const data = await register({
+      data: {
+        amount: amount.value,
+        fee_for: fee_for.value,
+        description: description.value,
+        due_date: due_date.formatted_date,
+        installments: installment_type.value,
+        school_id,
+        code: `${fee_for.value}-${installment_type.value}-${school_id}`,
+      },
+      model_name: "fee",
+    });
+
     //
     //add a each payee to the fee_payee table
-    const data = await response.json();
     const fee_id = data.id;
     switch (selectedRadio.name) {
       case "School":
-        await fetch("http://localhost:3000/api/register", {
-          method: "POST",
-          body: JSON.stringify({
-            data: {
-              fee_id,
-              whole_school: true,
-            },
-            model_name: "fee_payee",
-          }),
+        await register({
+          data: {
+            fee_id,
+            whole_school: true,
+          },
+          model_name: "fee_payee",
         });
         break;
 
       case "Grades": {
-        const streams = await getStreams(school_id);
+        const streams: record[] = await fetchData(stream_table, school_id);
 
         // Get all the streams in the selected grades
         const selected_streams = streams.filter((stream) =>
@@ -160,15 +144,12 @@ const Fee = () => {
 
         await Promise.all(
           selected_streams.map(async (stream) => {
-            await fetch("http://localhost:3000/api/register", {
-              method: "POST",
-              body: JSON.stringify({
-                data: {
-                  fee_id,
-                  for_stream: stream.id,
-                },
-                model_name: "fee_payee",
-              }),
+            await register({
+              data: {
+                fee_id,
+                for_stream: stream.id,
+              },
+              model_name: "fee_payee",
             });
           })
         );
@@ -180,15 +161,12 @@ const Fee = () => {
 
         await Promise.all(
           payees.list.map(async (payee) => {
-            await fetch("http://localhost:3000/api/register", {
-              method: "POST",
-              body: JSON.stringify({
-                data: {
-                  fee_id,
-                  [payee_field]: payee.id,
-                },
-                model_name: "fee_payee",
-              }),
+            await register({
+              data: {
+                fee_id,
+                [payee_field]: payee.id,
+              },
+              model_name: "fee_payee",
             });
           })
         );

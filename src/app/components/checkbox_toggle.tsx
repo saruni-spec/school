@@ -7,6 +7,7 @@ interface BooleanInputProps
   containerClassName?: string;
   labelClassName?: string;
   errorClassName?: string;
+  value?: "on" | "off";
 }
 
 const CheckBoxToggle: React.FC<BooleanInputProps> = ({
@@ -16,6 +17,7 @@ const CheckBoxToggle: React.FC<BooleanInputProps> = ({
   containerClassName,
   labelClassName,
   errorClassName,
+  value,
   ...props
 }) => {
   return (
@@ -37,6 +39,7 @@ const CheckBoxToggle: React.FC<BooleanInputProps> = ({
       )}
       <input
         type="checkbox"
+        checked={value === "on" ? true : false}
         className={`
           h-4 w-4
           border

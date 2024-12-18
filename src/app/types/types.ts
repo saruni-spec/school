@@ -5,10 +5,71 @@ import { role_type } from "@prisma/client";
 //all my database tables are of this type
 //an object with key value pairs where key is a string and value is a string,number or json
 //each table has an id field for identification
-export type record = Record<
-  string,
-  string | number | Record<string, string | number>
-> & { id: number };
+export type generic_record = {
+  [key: string]: string | number | generic_record | null | undefined;
+};
+
+export type record = {
+  [key: string]: string | number | Date | record | null | undefined;
+} & { id: number };
+
+export type input_field = {
+  value: string | number;
+  error: string | null;
+  handle_change: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => void;
+  validate: (inputValue: string | number) => boolean;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  handle_value_change: (newValue: string | number) => void;
+};
+
+export type date_field = {
+  value: string;
+  error: string | null;
+  handle_change: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  validate: (inputValue: string) => boolean;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  handle_value_change: (newValue: string) => void;
+  formatted_date: Date | null;
+  set_value: React.Dispatch<React.SetStateAction<string>>;
+};
+
+// Enum to specify the type of field
+export enum FieldType {
+  Text,
+  Number,
+  Date,
+}
+export type dateFormat = "YYYY-MM-DD" | "MM/DD/YYYY" | "DD/MM/YYYY";
+// Generic validator function type
+type ValidatorFunction = (value: string | number) => string | null;
+
+// Unified field configuration
+export interface FieldConfig {
+  type: FieldType;
+  initialValue?: string | number;
+  required?: boolean;
+  validators?: ValidatorFunction[];
+
+  // Date-specific options
+  minDate?: Date;
+  maxDate?: Date;
+  date_format?: dateFormat;
+}
+
+export interface FieldValidation {
+  value: string | number;
+  error: string | null;
+  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  validate: (inputValue: string) => boolean;
+  handle_change: (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => void;
+  handle_value_change: (newValue: string) => void;
+  formatted_date?: Date | null;
+  set_value: React.Dispatch<React.SetStateAction<string | number>>;
+}
 
 //
 //the possible users that can be registred
