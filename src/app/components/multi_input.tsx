@@ -1,4 +1,10 @@
-import React, { useState, useMemo, useCallback, useEffect } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
 import { Trash2, Plus } from "lucide-react";
 
 interface KeyValuePair {
@@ -33,24 +39,17 @@ export const MultiInput: React.FC<MultiInputProps> = ({
   valuePlaceholder = "Value (e.g., contact@example.com)",
   validators = {},
 }) => {
-  // Use a unique identifier for each input to help with stable keys
-  const [inputs, setInputs] = useState<KeyValuePair[]>(
-    Object.entries(value).map(([key, value], index) => ({
-      key,
-      value,
-      id: Date.now() + index,
-    }))
-  );
-
+  const [inputs, setInputs] = useState<KeyValuePair[]>([]);
   const [inputErrors, setInputErrors] = useState<{
     [id: number]: { key?: string | null; value?: string | null };
   }>({});
 
-  // Validate a specific input field
+  // Track initialization state
+  const isInitialized = useRef(false);
+
   const validateInput = useCallback(
     (value: string, validators?: ((value: string) => string | null)[]) => {
       if (!validators) return null;
-
       for (const validator of validators) {
         const validationError = validator(value);
         if (validationError) {
@@ -62,7 +61,6 @@ export const MultiInput: React.FC<MultiInputProps> = ({
     []
   );
 
-  // Memoized validation and value extraction
   const processedData = useMemo(() => {
     const newValue: Record<string, string> = {};
     const newErrors: {
@@ -72,18 +70,13 @@ export const MultiInput: React.FC<MultiInputProps> = ({
     inputs.forEach((input) => {
       const trimmedKey = input.key.trim();
       const trimmedValue = input.value.trim();
-
-      // Validate key
       const keyError = validateInput(trimmedKey, validators.key);
-      // Validate value
       const valueError = validateInput(trimmedValue, validators.value);
 
-      // Only add to newValue if both key and value are valid and non-empty
       if (!keyError && !valueError && trimmedKey && trimmedValue) {
         newValue[trimmedKey] = trimmedValue;
       }
 
-      // Store any errors
       if (keyError || valueError) {
         newErrors[input.id] = {
           key: keyError,
@@ -95,9 +88,7 @@ export const MultiInput: React.FC<MultiInputProps> = ({
     return { newValue, newErrors };
   }, [inputs, validateInput, validators]);
 
-  // Separate the onChange effect to prevent unnecessary re-renders
   useEffect(() => {
-    // Only call onChange if the value has actually changed
     const stringifiedNewValue = JSON.stringify(processedData.newValue);
     const stringifiedPrevValue = JSON.stringify(value);
 
@@ -107,6 +98,22 @@ export const MultiInput: React.FC<MultiInputProps> = ({
 
     setInputErrors(processedData.newErrors);
   }, [processedData, onChange, value]);
+
+  const addValues = useCallback(() => {
+    const newInputs = Object.entries(value).map(([key, value], index) => ({
+      key,
+      value,
+      id: Date.now() + index,
+    }));
+    setInputs(newInputs);
+  }, [value]);
+
+  useEffect(() => {
+    if (!isInitialized.current && Object.keys(value).length > 0) {
+      addValues();
+      isInitialized.current = true;
+    }
+  }, [addValues]);
 
   const addInput = () => {
     setInputs((prev) => [

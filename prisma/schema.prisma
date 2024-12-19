@@ -15,6 +15,12 @@ enum attendance_status {
   LATE
   EXCUSED
 }
+enum absence_reason {
+  MEDICAL
+  PERSONAL
+  SCHOOL_RELATED
+
+}
 
 enum installment_types{
   SINGLE_PAYMENT
@@ -563,7 +569,7 @@ model stream {
   fee_payee                    fee_payee[]
   class_progression            class_progression[]
 
-  @@unique([grade_level_id,name])
+  @@unique([grade_level_id,name,school_id])
 }
 
 // Represents a colletion of students in the same class
@@ -628,6 +634,25 @@ model student_class {
 
   @@unique([student_id, class_progress])
   @@index([student_id,class_progress])
+}
+
+model attendace {
+  id                   Int                 @id @default(autoincrement())
+  attendee             Int?
+  checked_by           Int?
+
+  status               attendance_status?
+  reason_for_absence   absence_reason?
+  notified_on          DateTime?
+  permitted_by         Int?   
+
+  created_at           DateTime            @default(now())
+  updated_at           DateTime            @default(now())
+  deleted_at           DateTime?
+
+  users                users?              @relation(fields: [attendee], references: [id], onDelete: SetNull)
+  staff                staff?              @relation(fields: [checked_by], references: [id], onDelete: SetNull)
+  school_leader        school_leader?      @relation(fields: [permitted_by], references: [id], onDelete: SetNull)
 }
 
 
@@ -706,6 +731,7 @@ model users {
   fee_payee                          fee_payee[]
   award                              award[]
   payment                            payment[]
+  attendace                          attendace[]
 
   @@index([current_school,role_id])
 }
@@ -750,6 +776,8 @@ model school_leader {
 
   
   fee                                fee[]
+  attendace                          attendance[]
+
   @@unique([staff_id,academic_year_id,school_id])
   @@index([staff_id,academic_year_id])
 }
@@ -781,6 +809,7 @@ model staff {
   
   department_staff                                department_staff[]
   school_leader                                   school_leader[]
+  attendace                                       attendace[]
   @@index([user_id])
 }
 

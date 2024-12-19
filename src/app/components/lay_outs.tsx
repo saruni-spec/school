@@ -3,8 +3,11 @@ import { useRouter } from "next/navigation";
 import { MenuLink } from "../types/types";
 import SideMenu from "./side_menu";
 import SchoolSelection from "./school_selection";
+import { useLoadingState } from "@/app/context/user_context";
+import InspirationLoader from "@/app/components/loading";
 
 export const Admin_Layout = ({ children }: { children: React.ReactNode }) => {
+  const { isLoading, setLoading } = useLoadingState();
   const router = useRouter();
   const links: MenuLink[] = [
     {
@@ -42,7 +45,8 @@ export const Admin_Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <div className="flex">
       <SideMenu links={links} SchoolSelect={SchoolSelection} />
-      {children}
+      {isLoading && <InspirationLoader isLoading={isLoading} />}
+      {!isLoading && <>{children}</>}
     </div>
   );
 };

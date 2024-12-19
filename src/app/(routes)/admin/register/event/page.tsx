@@ -24,7 +24,7 @@ const Event = () => {
   const end_date = useValidation({
     type: FieldType.Date,
     required: true,
-    minDate: new Date(),
+    minDate: start_date.formatted_date as Date | undefined,
   });
   const scope = useValidation({ type: FieldType.Text, required: true });
   const { school_id } = useUser();
@@ -79,6 +79,13 @@ const Event = () => {
         onChange={location.handle_change}
         error={location.error}
       />
+      <SelectList
+        label="Scope"
+        options={event_scopes}
+        value={scope.value}
+        onChange={scope.handle_change}
+        error={scope.error}
+      />
       <DatePicker
         label="Start Date"
         placeholder="Enter Start Date"
@@ -94,13 +101,6 @@ const Event = () => {
         value={end_date.value}
         onChange={end_date.handle_change}
         error={end_date.error}
-      />
-      <SelectList
-        label="Scope"
-        options={event_scopes}
-        value={scope.value}
-        onChange={scope.handle_change}
-        error={scope.error}
       />
     </Form>
   );

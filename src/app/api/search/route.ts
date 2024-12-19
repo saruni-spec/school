@@ -32,10 +32,10 @@ export async function POST(request: Request) {
         current_school: true,
         student: {
           select: {
+            student_code: true,
             id: true,
             student_class: {
               select: {
-                admission_number: true,
                 class_progression: {
                   where: { is_current: true },
                   select: { name: true },

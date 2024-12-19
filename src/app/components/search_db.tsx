@@ -85,8 +85,7 @@ export const SearchDb: React.FC<TypeOnSearchProps> = ({
               className="p-2 hover:bg-gray-100 cursor-pointer"
             >
               {display_fields.map((field) => item[field]).join(" - ")}
-              {item.student.student_class?.admission_number ||
-                "no class"} -{" "}
+              {item.student.student_code || "no class"} -{" "}
               {item.student.student_class?.class_progression.name || "no class"}
             </li>
           ))}

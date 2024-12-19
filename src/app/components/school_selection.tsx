@@ -17,7 +17,6 @@ const SchoolSelection: React.FC<SchoolSelectionProps> = ({
   useEffect(() => {
     const fetchSchools = async () => {
       try {
-        // Replace with your actual API endpoint
         const response = await fetch("/api/fetch_name?table=school");
         if (!response.ok) {
           throw new Error("Failed to fetch schools");

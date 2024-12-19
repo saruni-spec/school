@@ -1,6 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LucideIcon } from "lucide-react";
+import InspirationLoader from "./loading";
+import { useLoadingState } from "../context/user_context";
+import Link from "next/link";
 
 // Define the type for grid item
 interface GridItemProps {
@@ -23,6 +26,7 @@ export const Screen: React.FC<ScreenProps> = ({
   columns = 3,
 }) => {
   const router = useRouter();
+  const { isLoading, setLoading } = useLoadingState();
 
   // Dynamically generate grid columns based on prop
   const gridColumns =
@@ -34,27 +38,43 @@ export const Screen: React.FC<ScreenProps> = ({
       6: "grid-cols-6",
     }[columns] || "grid-cols-3";
 
+  const handleItemClick = () => {
+    setLoading(true);
+
+    // Use setTimeout to ensure a minimum loading time
+    setTimeout(() => {
+      setLoading(false);
+    }, 1500); // Small delay to ensure loading state is visible
+  };
+
   return (
-    <div className="container mx-auto px-4">
-      <h2 className="text-2xl font-bold mb-6">{title}</h2>
-      <div className={`grid ${gridColumns} gap-4`}>
-        {items.map((item, index) => {
-          const Icon = item.icon;
-          return (
-            <div
-              key={index}
-              onClick={() => router.push(item.route)}
-              className="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all duration-300 ease-in-out transform hover:-translate-y-1 flex flex-col items-center justify-center text-center"
-            >
-              <Icon className="mb-2" />
-              <h3 className="font-semibold">{item.label}</h3>
-              {item.description && (
-                <p className="text-sm text-gray-600 mt-1">{item.description}</p>
-              )}
-            </div>
-          );
-        })}
+    <>
+      {isLoading && <InspirationLoader isLoading={isLoading} />}
+
+      <div className="container mx-auto px-4">
+        <h2 className="text-2xl font-bold mb-6">{title}</h2>
+        <div className={`grid ${gridColumns} gap-4`}>
+          {items.map((item, index) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={index}
+                href={item.route}
+                onClick={handleItemClick}
+                className="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all duration-300 ease-in-out transform hover:-translate-y-1 flex flex-col items-center justify-center text-center"
+              >
+                <Icon className="mb-2" />
+                <h3 className="font-semibold">{item.label}</h3>
+                {item.description && (
+                  <p className="text-sm text-gray-600 mt-1">
+                    {item.description}
+                  </p>
+                )}
+              </Link>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </>
   );
 };

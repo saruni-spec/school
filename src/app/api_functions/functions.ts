@@ -37,7 +37,8 @@ export const register = async ({
 // fetch data from th database given a model name and school id
 export const fetchData = async (
   model_name: string,
-  school_id: number | undefined
+  school_id: number | undefined,
+  column_name?: string
 ) => {
   if (!school_id) {
     alert("Please select a school");
@@ -45,8 +46,9 @@ export const fetchData = async (
   }
 
   try {
+    const queryParam = column_name || "school_id";
     const response = await fetch(
-      `http://localhost:3000/api/fetch_record?table_name=${model_name}&school_id=${school_id}`
+      `http://localhost:3000/api/fetch_record?table_name=${model_name}&${queryParam}=${school_id}`
     );
     if (!response.ok) {
       alert(`Failed to fetch ${model_name}`);

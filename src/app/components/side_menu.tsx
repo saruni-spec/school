@@ -9,7 +9,7 @@ import {
 import { MenuLink } from "../types/types";
 import { SchoolSelectionProps } from "./school_selection";
 import { record } from "../types/types";
-import { useUser } from "../context/user_context";
+import { useLoadingState, useUser } from "../context/user_context";
 
 // Define the interface for menu links
 
@@ -28,6 +28,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { setSchool, school } = useUser();
+  const { setLoading } = useLoadingState();
 
   const handleSchoolChange = (school: record) => {
     setSchool(school);
@@ -35,6 +36,15 @@ const SideMenu: React.FC<SideMenuProps> = ({
 
   const toggleMenu = () => {
     setIsCollapsed(!isCollapsed);
+  };
+
+  const handleRouteChange = (link: MenuLink) => {
+    setLoading(true);
+    link.action();
+
+    setTimeout(() => {
+      setLoading(false);
+    }, 1500);
   };
 
   return (
@@ -95,7 +105,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
               `}
             >
               <div
-                onClick={link.action}
+                onClick={() => handleRouteChange(link)}
                 className="flex items-center p-3 space-x-3"
               >
                 {link.icon || <Dashboard className="w-5 h-5" />}

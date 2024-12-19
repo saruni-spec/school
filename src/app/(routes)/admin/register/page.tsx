@@ -113,14 +113,18 @@ const RegisterPage = () => {
       description: "Manage photo galleries",
     },
     {
-      label: "Role",
+      label: "Time Table",
       icon: ShieldCheck,
       route: "/admin/register/role",
-      description: "Define user roles and permissions",
+      description: "Create and manage time tables",
     },
   ];
 
-  return <Screen items={registerItems} title="Register Options" columns={4} />;
+  return (
+    <>
+      <Screen items={registerItems} title="Register Options" columns={4} />
+    </>
+  );
 };
 
 export default RegisterPage;

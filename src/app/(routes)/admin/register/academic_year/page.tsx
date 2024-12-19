@@ -24,7 +24,6 @@ const AcademicYear = () => {
   const start_date = useValidation({
     type: FieldType.Date,
     required: true,
-    maxDate: new Date(),
   });
   const end_date = useValidation({ type: FieldType.Date, required: true });
   const is_current = useValidation({
@@ -36,9 +35,30 @@ const AcademicYear = () => {
   //get the school id from the context
   const { school_id } = useUser();
   //
+  //handle the change of the start date
+  const handleStartDateChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    start_date.handle_change(e);
+    //
+    //get the year from the start date
+    const year = new Date(e.target.value).getFullYear();
+    //
+    //set the year to the academic year name
+    name.set_value(year.toString());
+    //
+    //check if the year is the current year
+    checkCurrentYear(e as React.ChangeEvent<HTMLSelectElement>);
+  };
+  //
   //Update the year name and checkbox when the nae(year) is selected
   const handleYearSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     name.handle_change(e);
+    checkCurrentYear(e);
+  };
+  //
+  //check if the year selected is the current year
+  const checkCurrentYear = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const current =
       new Date().getFullYear() === parseInt(e.target.value as string);
 
@@ -163,7 +183,7 @@ const AcademicYear = () => {
       <DatePicker
         label="Start Date"
         value={start_date.value}
-        onChange={start_date.handle_change}
+        onChange={handleStartDateChange}
         error={start_date.error}
         required
       />
@@ -184,7 +204,7 @@ const AcademicYear = () => {
         error={name.error}
       />
       <CheckBoxToggle
-        label="Is this academic year is still in progress?"
+        label="Select if this is the current academic year or the one about to start"
         error={is_current.error}
         onChange={is_current.handle_change}
         value={(is_current.value as "on") || "off"}
