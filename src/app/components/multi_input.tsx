@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useMemo,
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
+import React, { useMemo } from "react";
 import { Trash2, Plus } from "lucide-react";
 
 interface KeyValuePair {
@@ -15,7 +9,7 @@ interface KeyValuePair {
 
 interface MultiInputProps {
   label?: string;
-  value?: Record<string, string>;
+  value: Record<string, string>;
   onChange: (value: Record<string, string>) => void;
   error?: string | null;
   placeholder?: string;
@@ -39,107 +33,109 @@ export const MultiInput: React.FC<MultiInputProps> = ({
   valuePlaceholder = "Value (e.g., contact@example.com)",
   validators = {},
 }) => {
-  const [inputs, setInputs] = useState<KeyValuePair[]>([]);
-  const [inputErrors, setInputErrors] = useState<{
-    [id: number]: { key?: string | null; value?: string | null };
-  }>({});
+  // Convert the value object to an array of KeyValuePair for rendering
+  const inputs: KeyValuePair[] = useMemo(() => {
+    const entries = Object.entries(value);
+    // If there are no entries, provide an empty input
+    if (entries.length === 0) {
+      return [{ key: "", value: "", id: 0 }];
+    }
+    return entries.map(([key, val], index) => ({
+      key,
+      value: val,
+      id: index,
+    }));
+  }, [value]);
 
-  // Track initialization state
-  const isInitialized = useRef(false);
-
-  const validateInput = useCallback(
-    (value: string, validators?: ((value: string) => string | null)[]) => {
-      if (!validators) return null;
-      for (const validator of validators) {
-        const validationError = validator(value);
-        if (validationError) {
-          return validationError;
-        }
+  // Validate a single input
+  const validateInput = (
+    value: string,
+    validators?: ((value: string) => string | null)[]
+  ) => {
+    if (!validators) return null;
+    for (const validator of validators) {
+      const validationError = validator(value);
+      if (validationError) {
+        return validationError;
       }
-      return null;
-    },
-    []
-  );
+    }
+    return null;
+  };
 
-  const processedData = useMemo(() => {
-    const newValue: Record<string, string> = {};
-    const newErrors: {
+  // Calculate errors for all inputs
+  const inputErrors = useMemo(() => {
+    const errors: {
       [id: number]: { key?: string | null; value?: string | null };
     } = {};
 
     inputs.forEach((input) => {
-      const trimmedKey = input.key.trim();
-      const trimmedValue = input.value.trim();
-      const keyError = validateInput(trimmedKey, validators.key);
-      const valueError = validateInput(trimmedValue, validators.value);
-
-      if (!keyError && !valueError && trimmedKey && trimmedValue) {
-        newValue[trimmedKey] = trimmedValue;
-      }
+      if (!input.key && !input.value) return; // Skip validation for empty inputs
+      const keyError = validateInput(input.key.trim(), validators.key);
+      const valueError = validateInput(input.value.trim(), validators.value);
 
       if (keyError || valueError) {
-        newErrors[input.id] = {
+        errors[input.id] = {
           key: keyError,
           value: valueError,
         };
       }
     });
 
-    return { newValue, newErrors };
-  }, [inputs, validateInput, validators]);
-
-  useEffect(() => {
-    const stringifiedNewValue = JSON.stringify(processedData.newValue);
-    const stringifiedPrevValue = JSON.stringify(value);
-
-    if (stringifiedNewValue !== stringifiedPrevValue) {
-      onChange(processedData.newValue);
-    }
-
-    setInputErrors(processedData.newErrors);
-  }, [processedData, onChange, value]);
-
-  const addValues = useCallback(() => {
-    const newInputs = Object.entries(value).map(([key, value], index) => ({
-      key,
-      value,
-      id: Date.now() + index,
-    }));
-    setInputs(newInputs);
-  }, [value]);
-
-  useEffect(() => {
-    if (!isInitialized.current && Object.keys(value).length > 0) {
-      addValues();
-      isInitialized.current = true;
-    }
-  }, [addValues]);
-
-  const addInput = () => {
-    setInputs((prev) => [
-      ...prev,
-      {
-        key: "",
-        value: "",
-        id: Date.now(),
-      },
-    ]);
-  };
+    return errors;
+  }, [inputs, validators]);
 
   const updateInput = (
     id: number,
     field: "key" | "value",
     newValue: string
   ) => {
-    setInputs((prev) =>
-      prev.map((input) =>
-        input.id === id ? { ...input, [field]: newValue } : input
-      )
-    );
+    const newInputs = [...inputs];
+    const inputIndex = newInputs.findIndex((input) => input.id === id);
+
+    if (inputIndex === -1) return;
+
+    newInputs[inputIndex] = {
+      ...newInputs[inputIndex],
+      [field]: newValue,
+    };
+
+    const newValueObj: Record<string, string> = {};
+    newInputs.forEach((input) => {
+      // Include empty values in the state
+      newValueObj[input.key] = input.value;
+    });
+
+    // Filter out completely empty entries when updating parent
+    const filteredValue: Record<string, string> = {};
+    Object.entries(newValueObj).forEach(([k, v]) => {
+      if (k.trim() || v.trim()) {
+        filteredValue[k] = v;
+      }
+    });
+
+    onChange(filteredValue);
+  };
+
+  const addInput = () => {
+    const newId =
+      inputs.length > 0 ? Math.max(...inputs.map((i) => i.id)) + 1 : 0;
+    const newValue = { ...value, "": "" };
+    onChange(newValue);
   };
 
   const removeInput = (id: number) => {
-    setInputs((prev) => prev.filter((input) => input.id !== id));
+    const inputToRemove = inputs.find((input) => input.id === id);
+    if (!inputToRemove) return;
+
+    const newValue = { ...value };
+    delete newValue[inputToRemove.key];
+
+    // If removing the last input, add an empty one
+    if (Object.keys(newValue).length === 0) {
+      onChange({ "": "" });
+    } else {
+      onChange(newValue);
+    }
   };
 
   return (

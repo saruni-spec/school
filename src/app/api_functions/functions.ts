@@ -1,3 +1,6 @@
+import { flattenObjectIterative } from "@/lib/functions";
+import { record } from "../types/types";
+
 //
 const REGISTER_ROUTE = "http://localhost:3000/api/register";
 //
@@ -78,4 +81,29 @@ export const fetchTable = async (model_name: string) => {
     console.error("Fetch error:", error);
     throw error;
   }
+};
+
+//
+export const getDataWithSchoolId = async (
+  table_name: string,
+  school_id: number | undefined
+) => {
+  if (!school_id) {
+    alert("Please select a school");
+    throw new Error("School ID is required");
+  }
+
+  const response = await fetch(
+    `http://localhost:3000/api/get/${table_name}?school_id=${school_id}`
+  );
+  if (!response.ok) {
+    alert(`Failed to fetch ${table_name}`);
+    throw new Error(`Failed to fetch ${table_name}`);
+  }
+  const data = await response.json();
+  const flattened_data = data.map((item: record) =>
+    flattenObjectIterative(item)
+  );
+
+  return flattened_data;
 };

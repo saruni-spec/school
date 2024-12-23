@@ -3,16 +3,28 @@ import React, { useState } from "react";
 import { record } from "../types/types";
 
 interface TypeOnSearchProps {
-  display_fields: string[]; // Fields to display in results
   onSelect?: (item: record) => void; // Optional callback when an item is selected
 }
 
-export const SearchDb: React.FC<TypeOnSearchProps> = ({
-  display_fields,
-  onSelect,
-}) => {
+type searchResult = {
+  school_id: number | null;
+  id: number;
+  name: string | null;
+  student: {
+    id: number;
+    student_class: {
+      class_progression: {
+        name: string;
+      } | null;
+    }[];
+    student_code: string | null;
+  } | null; // Changed from []
+  id_code: string | null;
+}[];
+
+export const SearchDb: React.FC<TypeOnSearchProps> = ({ onSelect }) => {
   const [search_term, setSearchTerm] = useState("");
-  const [results, setResults] = useState<record[]>([]);
+  const [results, setResults] = useState<searchResult>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const performSearch = async () => {
@@ -25,7 +37,6 @@ export const SearchDb: React.FC<TypeOnSearchProps> = ({
         },
         body: JSON.stringify({
           user_name: search_term,
-          display_fields,
         }),
       });
 
@@ -34,6 +45,7 @@ export const SearchDb: React.FC<TypeOnSearchProps> = ({
       }
 
       const data = await response.json();
+      console.log("Search results:", data);
       setResults(data);
     } catch (error) {
       console.error("Search error:", error);
@@ -84,9 +96,7 @@ export const SearchDb: React.FC<TypeOnSearchProps> = ({
               onClick={() => handleItemSelect(item)}
               className="p-2 hover:bg-gray-100 cursor-pointer"
             >
-              {display_fields.map((field) => item[field]).join(" - ")}
-              {item.student.student_code || "no class"} -{" "}
-              {item.student.student_class?.class_progression.name || "no class"}
+              {item.name}({item.id_code}){item.student?.student_code}
             </li>
           ))}
         </ul>

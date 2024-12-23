@@ -30,7 +30,7 @@ const Staff = () => {
           data: {
             school_id,
             department_id,
-            user_id,
+            users_id,
             employment_status,
             qualifications,
             join_date,

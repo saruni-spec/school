@@ -122,15 +122,16 @@ const Payment = () => {
 
       await register({
         data: {
-          paid_by: payed_by?.id,
+          users_id: payed_by?.id,
           fee_payee_id: selectedFee.fee_id,
           amount: parseFloat(amount.value as string),
           payment_date: payment_date.formatted_date,
           payment_method: pay_method.value,
           status: selectedFee.payment_status,
           reference_number: reference_number.value,
-          over_payment:
-            (selectedFee.total_paid as number) - (selectedFee.amount as number),
+          balance:
+            parseFloat(selectedFee.amount as string) -
+            parseFloat(selectedFee.total_paid as string),
         },
         model_name: "payment",
       });
@@ -148,7 +149,7 @@ const Payment = () => {
 
   return (
     <Form title="Payment" onSubmit={handleSubmit} submitButtonText="Submit">
-      <SearchDb display_fields={["name", "phone"]} onSelect={hanlePayedBy} />
+      <SearchDb onSelect={hanlePayedBy} />
       <Select
         options={fees as record[]}
         label="Fee ID"

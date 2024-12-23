@@ -33,7 +33,6 @@ export async function GET(request: Request) {
 
     // Fetch all records from the specified table
     const records = await prisma[tableName].findMany();
-    console.log(records);
 
     return NextResponse.json(records, { status: 200 }); // OK
   } catch (error) {

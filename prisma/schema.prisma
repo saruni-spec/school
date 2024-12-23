@@ -58,6 +58,17 @@ enum event_scope {
   INDIVIDUAL
 }
 
+enum award_type {
+  ACADEMIC_ACHIEVEMENT
+  SPORTS
+  INNOVATION
+  HUMANITARIAN
+  DILIGENCE
+  COMMUNICATION
+  PARTICIPATION
+  CREATIVITY
+}
+
 
 enum exam_type {
   QUIZ
@@ -74,6 +85,7 @@ enum facility_type {
   SPORTS
   TRANSPORTATION
   MEDICAL
+  RESEARCH
 }
 
 
@@ -254,6 +266,8 @@ enum role_type {
   ASSISTANT_LIBRARIAN   // Support for library operations
   TECHNOLOGY_SUPPORT    // IT and technical support
   SECURITY_PERSONNEL    // Campus security
+  LAB_TECHNICIAN
+  INVENTORY_MANAGER
   
   // Student and Admission Related Roles
   ADMISSIONS_OFFICER    // Student admissions management
@@ -269,15 +283,15 @@ enum role_type {
   STUDENT               // Current students
   PARENT                // Student guardians
 
-  //
-  // Specific roles in domains
-  REPRESENTATIVE
-  ASSISTANT_REPRESENTATIVE
-  MEMBER
-  
-
   // Audit and Compliance
   AUDIT_OFFICER         // Compliance and internal audit
+}
+
+enum domain_specific_roles {
+  MEMBER
+  REPRESENTATIVE
+  ASSISTANT_REPRESENTATIVE
+  
 }
 
 enum picture_category {
@@ -324,6 +338,7 @@ model school {
   address                     String?
   contact_info                Json?
   license_info                Json?
+
   created_at                  DateTime?                  @default(now()) @db.Timestamptz(6)
   updated_at                  DateTime?                  @default(now()) @db.Timestamptz(6)
   deleted_at                  DateTime?                  @db.Timestamptz(6)
@@ -340,9 +355,9 @@ model school {
   course_material             course_material[]
   levels_offered              levels_offered[]
   stream                      stream[]
-  school_leader               school_leader[]
   event                       event[]
   announcement                announcement[]
+  gallery                     gallery[]
 }
 
 // These are the different school levels,ie. LOWER_PRIMARY,UPPER_PRIMARY....that a spefic school has
@@ -351,8 +366,8 @@ model levels_offered{
   school_id                  Int
   school_level_id            Int
  
-  school                     school?            @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school_level               school_level?      @relation(fields: [school_level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school                     school?            @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  school_level               school_level?      @relation(fields: [school_level_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@id([school_id,school_level_id])
 }
@@ -375,6 +390,7 @@ model facility {
   name                    String                  @db.VarChar(20)
   type                    facility_type         
   description             String?                 @db.VarChar(100)
+
   created_at              DateTime?               @default(now()) @db.Timestamptz(6)
   updated_at              DateTime?               @default(now()) @db.Timestamptz(6)
   deleted_at              DateTime?               @db.Timestamptz(6)
@@ -389,8 +405,9 @@ model facility {
 
 model school_facility {
   id                      Int                     @id @default(autoincrement())
-  current_school          Int?
-  is_facility             Int?
+  school_id               Int?
+  facility_id             Int?
+  capacity                Int?
   description             String?                 @db.VarChar(100)
   justification           String?                 @db.VarChar(100)
 
@@ -398,37 +415,20 @@ model school_facility {
   updated_at              DateTime?               @default(now()) @db.Timestamptz(6)
   deleted_at              DateTime?               @db.Timestamptz(6)
 
-  capacity                Int?
+  
   opening_hours           DateTime?
   closing_hours           DateTime?
 
-  facility                facility?               @relation(fields: [is_facility], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school                  school?                 @relation(fields: [current_school], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  facility                facility?               @relation(fields: [facility_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  school                  school?                 @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   
 
   lib_books               lib_book[]
   permission              permission[]
   facility_staff          facility_staff[]
 
-  @@unique([current_school,is_facility])
+  @@unique([school_id,facility_id,capacity])
 }
-
-model facility_staff {
-  staff_id                  Int
-  school_facility_id        Int
-
-  role                      role_type?
-
-  created_at                DateTime?               @default(now()) @db.Timestamptz(6)
-  updated_at                DateTime?               @default(now()) @db.Timestamptz(6)
-  deleted_at                DateTime?               @db.Timestamptz(6)
-
-  department_staff          department_staff?       @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school_facility           school_facility?        @relation(fields: [school_facility_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  @@id([staff_id,school_facility_id])
-}
-
 
 // Represents the start and end date of an academic year of a specific school
 
@@ -436,19 +436,22 @@ model academic_year {
   id                        Int               @id @default(autoincrement())
   school_id                 Int?
   year                      String            @db.VarChar(50)
-  start_date                DateTime          @db.Date
-  end_date                  DateTime          @db.Date
+  start_date                DateTime?         @db.Date
+  end_date                  DateTime?         @db.Date
   is_current                Boolean?          @default(false)
   created_at                DateTime?         @default(now()) @db.Timestamptz(6)
   updated_at                DateTime?         @default(now()) @db.Timestamptz(6)
   deleted_at                DateTime?         @db.Timestamptz(6)
-  school                    school?           @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  school                    school?           @relation(fields: [school_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   
   semester                  semester[]
   class_progression         class_progression[]
   school_leader             school_leader[]
   
   @@unique([school_id, year])  
+  @@unique([school_id,start_date])
+  
 }
 
 // Represents a semester and the details of the semester of a specific academic year
@@ -456,21 +459,24 @@ model academic_year {
 model semester {
   id                     Int                    @id @default(autoincrement())
   academic_year_id       Int? 
-  name                   String                 @db.VarChar(50)  @unique
+  name                   String                 @db.VarChar(50) 
   start_date             DateTime               @db.Date
   end_date               DateTime               @db.Date
   is_current             Boolean?               @default(false)
+  
   created_at             DateTime?              @default(now()) @db.Timestamptz(6)
   updated_at             DateTime?              @default(now()) @db.Timestamptz(6)
   deleted_at             DateTime?              @db.Timestamptz(6)
 
-  academic_year          academic_year?         @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  academic_year          academic_year?         @relation(fields: [academic_year_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   student_ellectives     student_ellectives[]
   
   award                  award[]
   exam                   exam[]
   subject_allocation     subject_allocation[]
+
+  @@unique([academic_year_id,start_date])
 
 }
 
@@ -485,9 +491,9 @@ model department {
   updated_at                                 DateTime? @default(now()) @db.Timestamptz(6)
   deleted_at                                 DateTime? @db.Timestamptz(6)
 
-  school                                     school?   @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school                                     school?   @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   
-  department_staff                           department_staff[]  
+  staff                                      staff[]  
   subject_allocation                         subject_allocation[]
   permission                                 permission[]
   fee_payee                                  fee_payee[]
@@ -499,29 +505,20 @@ model department {
 }
 
 
-model department_staff {
-  id                                   Int                     @id @default(autoincrement()) 
-  staff_id                             Int?                    
-  department_id                        Int?
-  employment_status                    employment_status?      @default(FULL_TIME)
-  qualifications                       Json?
-  join_date                            DateTime?               @default(now())  @db.Date
+model facility_staff {
+  staff_id                  Int
+  school_facility_id        Int
 
-  current_role                         role_type?              @default(MEMBER)
+  role                      role_type?
 
-  created_at                           DateTime?               @default(now()) @db.Timestamptz(6)
-  updated_at                           DateTime?               @default(now()) @db.Timestamptz(6)
-  deleted_at                           DateTime?               @db.Timestamptz(6)
+  created_at                DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime?               @default(now()) @db.Timestamptz(6)
+  deleted_at                DateTime?               @db.Timestamptz(6)
 
-  department                           department?             @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  staff                                staff?                  @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  staff                     staff?                  @relation(fields: [staff_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  school_facility           school_facility?        @relation(fields: [school_facility_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  facility_staff                       facility_staff[]                                   
-  teacher                              teacher[]
-  
-
-  @@unique([department_id,staff_id])
-
+  @@id([staff_id,school_facility_id])
 }
 
 // Represents the diffrent grades that are currently being offered in a school
@@ -535,7 +532,7 @@ model grade_level{
   updated_at                 DateTime?                  @default(now()) @db.Timestamptz(6)
   deleted_at                 DateTime?                  @db.Timestamptz(6)
 
-  school_level               school_level?              @relation(fields: [school_level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school_level               school_level?              @relation(fields: [school_level_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
   
   stream                     stream[]
   subject_grade              subject_grade[]
@@ -557,8 +554,8 @@ model stream {
   updated_at                   DateTime?                    @default(now()) @db.Timestamptz(6)
   deleted_at                   DateTime?                    @db.Timestamptz(6)
 
-  grade_level                  grade_level?                 @relation(fields: [grade_level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school                       school?                      @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  grade_level                  grade_level?                 @relation(fields: [grade_level_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  school                       school?                      @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   exam_sitting                 exam_sitting[]
   
@@ -570,6 +567,8 @@ model stream {
   class_progression            class_progression[]
 
   @@unique([grade_level_id,name,school_id])
+  @@index([school_id])
+  
 }
 
 // Represents a colletion of students in the same class
@@ -585,26 +584,28 @@ model class_progression {
 
   academic_year_id            Int?
   stream_id                   Int
-  class_teacher               Int?
+  teacher_id                  Int?
 
   created_at                  DateTime?                  @default(now()) @db.Timestamptz(6)
   updated_at                  DateTime?                  @default(now()) @db.Timestamptz(6)
   deleted_at                  DateTime?                  @db.Timestamptz(6)
 
 
-  academic_year               academic_year?             @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  stream                      stream?                    @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher                     teacher?                   @relation(fields: [class_teacher], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  academic_year               academic_year?             @relation(fields: [academic_year_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  stream                      stream?                    @relation(fields: [stream_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  teacher                     teacher?                   @relation(fields: [teacher_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   
   event_class_participant     event_class_participant[]
   permission                  permission[]
   student_class               student_class[]
   assignment                  assignment[]
   award                       award[]
+  attendance                  attendance[]
 
   @@unique([stream_id,academic_year_id])
-  @@unique([stream_id,is_current])
   @@map("class")
+  @@index([academic_year_id])
+  @@index([is_current])
 }
 
 
@@ -615,10 +616,10 @@ model class_progression {
 model student_class {
   id                         Int                 @id @default(autoincrement())
   student_id                 Int?
-  class_progress             Int?
+  class_progression_id       Int?
   
 
-  student_role               role_type?         @default(MEMBER)
+  student_role               domain_specific_roles?   @default(MEMBER)
 
   admission_date             DateTime?          @db.Date
   start_date                 DateTime?          @db.Date
@@ -629,39 +630,51 @@ model student_class {
   deleted_at                 DateTime?          @db.Timestamptz(6)
 
 
-  class_progression          class_progression?  @relation(fields: [class_progress], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student                    student?            @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  class_progression          class_progression?  @relation(fields: [class_progression_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  student                    student?            @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  @@unique([student_id, class_progress])
-  @@index([student_id,class_progress])
+  @@unique([student_id, class_progression_id])
+  @@index([student_id])
 }
 
-model attendace {
+model attendance {
   id                   Int                 @id @default(autoincrement())
-  attendee             Int?
-  checked_by           Int?
+  //
+  // the person attending
+  users_id             Int?
+  //
+  // the staff member checking the attendance
+  staff_id             Int?
+ 
+  class_progression_id Int?
 
+  taken_on             DateTime?
   status               attendance_status?
   reason_for_absence   absence_reason?
   notified_on          DateTime?
-  permitted_by         Int?   
+  to_miss_on           DateTime?
+  up_to                DateTime?
+  //
+  // the person who approved a absentee
+  school_leader_id     Int?   
 
   created_at           DateTime            @default(now())
   updated_at           DateTime            @default(now())
   deleted_at           DateTime?
 
-  users                users?              @relation(fields: [attendee], references: [id], onDelete: SetNull)
-  staff                staff?              @relation(fields: [checked_by], references: [id], onDelete: SetNull)
-  school_leader        school_leader?      @relation(fields: [permitted_by], references: [id], onDelete: SetNull)
+  users                users?              @relation(fields: [users_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
+  staff                staff?              @relation(fields: [staff_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
+  school_leader        school_leader?      @relation(fields: [school_leader_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
+  class_progression    class_progression?  @relation(fields: [class_progression_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
+
+  @@unique([users_id,created_at])
+  @@index([users_id])
 }
 
 
 model permission {
   id                   Int                 @id @default(autoincrement())
-
   role_id              Int
-  role                 role                @relation(fields: [role_id], references: [id], onDelete: Cascade)
-
   resource             system_resource
   scope                privilege_scope     @default(DEPARTMENTAL)
  
@@ -673,19 +686,20 @@ model permission {
 
   department_id        Int?
   school_id            Int?
-  class_progression_id             Int?
+  class_progression_id Int?
   school_facility_id   Int?
   stream_id            Int?
-
-  department           department?         @relation(fields: [department_id], references: [id], onDelete: SetNull)
-  school               school?             @relation(fields: [school_id], references: [id], onDelete: SetNull)
-  class_progression    class_progression?  @relation(fields: [class_progression_id], references: [id], onDelete: SetNull)          
-  school_facility      school_facility?    @relation(fields: [school_facility_id], references: [id], onDelete: SetNull)
-  stream               stream?             @relation(fields: [stream_id], references: [id], onDelete: SetNull)
 
   created_at           DateTime            @default(now())
   updated_at           DateTime            @default(now())
   deleted_at           DateTime?
+
+  department           department?         @relation(fields: [department_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
+  school               school?             @relation(fields: [school_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
+  class_progression    class_progression?  @relation(fields: [class_progression_id], references: [id], onDelete: SetNull,onUpdate: Cascade)          
+  school_facility      school_facility?    @relation(fields: [school_facility_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
+  stream               stream?             @relation(fields: [stream_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
+  role                 role                @relation(fields: [role_id], references: [id], onDelete: Cascade,onUpdate: Cascade)
   
   @@unique([role_id, resource,scope,can_admin,can_create,can_delete,can_read,can_update])
   @@index([resource, department_id, school_id, class_progression_id,role_id])
@@ -696,7 +710,7 @@ model users {
   name                               String?                  @db.VarChar(50)
   first_name                         String                   @db.VarChar(50)
   last_name                          String                   @db.VarChar(50)
-  id_code                            String?                  @db.VarChar(30)
+  id_code                            String?                  @db.VarChar(30) @unique
   email                              String                   @unique @db.VarChar(100)
   phone                              String?                  @db.VarChar(20)
   date_of_birth                      DateTime?                @db.Date
@@ -710,18 +724,18 @@ model users {
   deleted_at                         DateTime?                @db.Timestamptz(6)
 
 
-  current_school                     Int? 
+  school_id                          Int? 
 
-  role                               role?                    @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school                             school?                  @relation(fields: [current_school], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role                               role?                    @relation(fields: [role_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  school                             school?                  @relation(fields: [school_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   announcement                       announcement[]
   event                              event[]
   event_user_participant             event_user_participant[]
   messages_messages_recepientTousers messages[]               @relation("messages_recepientTousers")
   messages_messages_senderTousers    messages[]               @relation("messages_senderTousers")
-  parent                             parent[]
   review                             review[]
+  parent                             parent[]
   staff                              staff[]
   student                            student[]
   admin                              admin[]
@@ -731,9 +745,11 @@ model users {
   fee_payee                          fee_payee[]
   award                              award[]
   payment                            payment[]
-  attendace                          attendace[]
+  attendance                         attendance[]
+  gallery                            gallery[]
 
-  @@index([current_school,role_id])
+  @@index([school_id])
+  @@index([role_id])
 }
 
 
@@ -757,10 +773,7 @@ model role {
 
 model school_leader {
   id                                 Int                @id @default(autoincrement())
-  school_id                          Int?
-  staff_id                           Int?
-  leader_code                        String?            @db.VarChar(30)
-  current_role                       role_type?
+  staff_id                           Int?               @unique
 
   academic_year_id                   Int?
   date_removed                       DateTime?          @db.Date
@@ -770,28 +783,26 @@ model school_leader {
   updated_at                         DateTime?          @default(now()) @db.Timestamptz(6)
   deleted_at                         DateTime?          @db.Timestamptz(6)
 
-  school                             school?            @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  staff                              staff?             @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  academic_year                      academic_year?     @relation(fields: [academic_year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  staff                              staff?             @relation(fields: [staff_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  academic_year                      academic_year?     @relation(fields: [academic_year_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  
   fee                                fee[]
-  attendace                          attendance[]
+  attendance                         attendance[]
 
-  @@unique([staff_id,academic_year_id,school_id])
-  @@index([staff_id,academic_year_id])
+  @@index([academic_year_id])
+ 
 }
 
 
 model admin{
   id                                 Int                @id @default(autoincrement())
-  user_id                            Int                @unique
+  users_id                           Int                @unique
   
   created_at                         DateTime?          @default(now()) @db.Timestamptz(6)
   updated_at                         DateTime?          @default(now()) @db.Timestamptz(6)
   deleted_at                         DateTime?          @db.Timestamptz(6)
  
-  users                              users?             @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                              users?             @relation(fields: [users_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
  
 
 }
@@ -799,18 +810,25 @@ model admin{
 
 model staff {
   id                                              Int                 @id @default(autoincrement())
-  user_id                                         Int                 @unique
-  staff_code                                      String?             @db.VarChar(20)
+  users_id                                        Int                 @unique
+  school_code                                     String?             @db.VarChar(20)
+  department_id                                   Int?
+  employment_status                               employment_status   @default(FULL_TIME) 
+
+  domain_role                                     domain_specific_roles  @default(MEMBER)
   created_at                                      DateTime?           @default(now()) @db.Timestamptz(6)
   updated_at                                      DateTime?           @default(now()) @db.Timestamptz(6)
   deleted_at                                      DateTime?           @db.Timestamptz(6)
   
-  users                                           users?              @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                                           users?              @relation(fields: [users_id], references: [id], onDelete:Cascade, onUpdate:Cascade)
+  department                                      department?         @relation(fields: [department_id], references: [id], onDelete:Cascade, onUpdate:Cascade)
   
-  department_staff                                department_staff[]
+  teacher                                         teacher[]
+  facility                                        facility_staff[]
   school_leader                                   school_leader[]
-  attendace                                       attendace[]
-  @@index([user_id])
+  attendance                                      attendance[]
+
+  @@index([users_id])
 }
 
 
@@ -824,7 +842,7 @@ model teacher {
   deleted_at            DateTime?         @db.Timestamptz(6)
 
 
-  department_staff      department_staff? @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  staff                 staff?            @relation(fields: [staff_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   exam_sitting          exam_sitting[]
   result                result[]
@@ -833,6 +851,7 @@ model teacher {
   slot_assignment       slot_assignment[]
   assignment            assignment[]
   class_progression     class_progression[]
+  assignment_attempt    assignment_attempt[]
 
   @@index([staff_id])
 }
@@ -842,19 +861,19 @@ model student {
   id                    Int               @id @default(autoincrement())
   admission_number      String?           @db.VarChar(20) 
   student_code          String?           @db.VarChar(20) @unique
-  user_id               Int               @unique
+  users_id              Int?               @unique
 
   created_at            DateTime?         @default(now()) @db.Timestamptz(6)
   updated_at            DateTime?         @default(now()) @db.Timestamptz(6)
   deleted_at            DateTime?         @db.Timestamptz(6)
           
-  users                 users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                 users?            @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   parent_student        parent_student[]
   result                result[]
   student_class         student_class[]
   student_ellectives    student_ellectives[]
-  
+  assignment_attempt    assignment_attempt[]
 
 }
 
@@ -885,8 +904,9 @@ model subject_grade {
   created_at            DateTime?               @default(now())
   updated_at            DateTime?               @default(now())
   
-  subject               subject?                @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  grade_level           grade_level?            @relation(fields: [grade_level_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subject               subject?                @relation(fields: [subject_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  grade_level           grade_level?            @relation(fields: [grade_level_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
   subject_allocation    subject_allocation[]
 
   @@unique([grade_level_id,subject_id])
@@ -906,11 +926,11 @@ model subject_allocation {
   deleted_at                DateTime?                 @db.Timestamptz(6)
 
 
-  stream                    stream                    @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  semester                  semester                  @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subject_grade             subject_grade?            @relation(fields: [subject_grade_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher                   teacher?                  @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  department                department?               @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  stream                    stream                    @relation(fields: [stream_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  semester                  semester                  @relation(fields: [semester_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  subject_grade             subject_grade?            @relation(fields: [subject_grade_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  teacher                   teacher?                  @relation(fields: [teacher_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  department                department?               @relation(fields: [department_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   
   
   student_ellectives    student_ellectives[]
@@ -923,7 +943,7 @@ model subject_allocation {
 
 model medical {
   id                                Int                      @id @default(autoincrement())
-  user_id                           Int
+  users_id                          Int
   description                       String                   @unique @db.VarChar(100)                              
   notes                             String                   @unique @db.VarChar(100)
   medic_id                          Int?
@@ -932,9 +952,9 @@ model medical {
   updated_at                        DateTime?                @default(now()) @db.Timestamptz(6)
   deleted_at                        DateTime?                @db.Timestamptz(6)
 
-  users                             users?                   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                             users?                   @relation(fields: [users_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  @@index([user_id])
+  @@index([users_id])
 }
 
 
@@ -945,15 +965,59 @@ model assignment {
   subject_allocation_id   Int?
   class_progression_id    Int?
   due_date                DateTime?              @db.Date
+  ref                     String?
+  file_path               String?                @db.VarChar(50)
 
   created_at              DateTime?              @default(now()) @db.Timestamptz(6)
   updated_at              DateTime?              @default(now()) @db.Timestamptz(6)
   deleted_at              DateTime?              @db.Timestamptz(6)
 
 
-  teacher                 teacher?               @relation(fields: [teacher_id], references: [id])
-  subject_allocation      subject_allocation?    @relation(fields: [subject_allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  class_progression       class_progression?     @relation(fields: [class_progression_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teacher                 teacher?               @relation(fields: [teacher_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  subject_allocation      subject_allocation?    @relation(fields: [subject_allocation_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  class_progression       class_progression?     @relation(fields: [class_progression_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+
+  assignment_content      assignment_content[]
+  @@index([class_progression_id])
+  @@index([subject_allocation_id])
+}
+
+model assignment_content{
+  id                    Int                    @id @default(autoincrement())
+  assignment_id         Int?                   @unique
+  details               String?
+  options               Json? 
+
+  assignment            assignment?            @relation(fields: [assignment_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
+  assignment_attempt    assignment_attempt[]
+
+}
+
+model assignment_attempt {
+  id                          Int                      @id @default(autoincrement())
+  assignment_content_id       Int?
+  submission                  String?
+  student_id                  Int?
+  date_submitted              DateTime?
+  date_marked                 DateTime?
+  teacher_id                  Int?
+  result                      Decimal?                  @db.Decimal(5, 2)
+  assessment                  String?                   @db.VarChar(30)                  
+  remarks                     String?                   @db.VarChar(50)
+  
+
+  created_at                  DateTime?                 @default(now()) @db.Timestamptz(6)
+  updated_at                  DateTime?                 @default(now()) @db.Timestamptz(6)
+  deleted_at                  DateTime?                 @db.Timestamptz(6)
+
+  teacher                     teacher?                  @relation(fields: [teacher_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  student                     student?                  @relation(fields: [student_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  assignment_content          assignment_content?       @relation(fields: [assignment_content_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+ 
+ @@index([assignment_content_id])
+ @@index([date_submitted])
 }
 
 
@@ -968,9 +1032,9 @@ model student_ellectives {
   deleted_at                  DateTime?                 @db.Timestamptz(6)
 
 
-  semester                    semester                  @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subject_allocation          subject_allocation        @relation(fields: [subject_allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student                     student                   @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  semester                    semester                  @relation(fields: [semester_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  subject_allocation          subject_allocation        @relation(fields: [subject_allocation_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  student                     student                   @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   
   @@id([student_id, subject_allocation_id])
 }
@@ -978,14 +1042,14 @@ model student_ellectives {
 
 model parent {
   id                Int               @id @default(autoincrement())
-  user_id           Int?              @unique
+  users_id          Int?              @unique
   relationship_type relationship_type
 
   created_at        DateTime?         @default(now()) @db.Timestamptz(6)
   updated_at        DateTime?         @default(now()) @db.Timestamptz(6)
   deleted_at        DateTime?         @db.Timestamptz(6)
 
-  users             users?            @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users             users?            @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   parent_student    parent_student[]
 
 }
@@ -999,8 +1063,8 @@ model parent_student {
   updated_at        DateTime? @default(now()) @db.Timestamptz(6)
   deleted_at        DateTime? @db.Timestamptz(6)
 
-  parent            parent    @relation(fields: [parent_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student           student   @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parent            parent    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  student           student   @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@id([parent_id, student_id])
 }
@@ -1008,7 +1072,7 @@ model parent_student {
 
 model slot {
   id                Int           @id @default(autoincrement())
-  name              String?           @db.VarChar(50)
+  name              String?       @db.VarChar(50)
   day_of_week       Int
   start_time        DateTime      @db.Time(6)
   end_time          DateTime      @db.Time(6)
@@ -1034,12 +1098,14 @@ model slot_assignment {
   updated_at                     DateTime?                    @default(now()) @db.Timestamptz(6)
   deleted_at                     DateTime?                    @db.Timestamptz(6)
 
-  slot                           slot                         @relation(fields: [slot_id], references: [id])
-  teacher                        teacher                      @relation(fields: [teacher_id], references: [id])
-  subject_allocation             subject_allocation           @relation(fields: [subject_allocation_id], references: [id])
-  stream                         stream?                      @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  slot                           slot                         @relation(fields: [slot_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  teacher                        teacher                      @relation(fields: [teacher_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  subject_allocation             subject_allocation           @relation(fields: [subject_allocation_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  stream                         stream?                      @relation(fields: [stream_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   
-  @@unique([slot_id, teacher_id,stream_id])
+  @@unique([slot_id, teacher_id])
+  @@index([teacher_id])
+  @@index([subject_allocation_id])
 }
 
 
@@ -1056,17 +1122,20 @@ model exam {
   updated_at          DateTime?      @default(now()) @db.Timestamptz(6)
   deleted_at          DateTime?      @db.Timestamptz(6)
 
-  semester            semester?      @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  semester            semester?      @relation(fields: [semester_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   exam_sitting        exam_sitting[]
 
   @@unique([semester_id, name, type, start_date])
+  @@index([start_date])
 }
 
 
 model exam_sitting {
   id                    Int                        @id @default(autoincrement())
   exam_id               Int?
-  supervisor            Int?
+  //
+  //the supervisor of the sitting
+  teacher_id            Int?
   subject_allocation_id Int?
   stream_id             Int?
   out_of                Decimal?                   @db.Decimal(5, 2)
@@ -1078,26 +1147,27 @@ model exam_sitting {
   deleted_at            DateTime?                  @db.Timestamptz(6)
 
   total_marks           Int
-  exam                  exam?                      @relation(fields: [exam_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  stream                stream?                    @relation(fields: [stream_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subject_allocation    subject_allocation?        @relation(fields: [subject_allocation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher               teacher?                   @relation(fields: [supervisor], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  exam                  exam?                      @relation(fields: [exam_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  stream                stream?                    @relation(fields: [stream_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  subject_allocation    subject_allocation?        @relation(fields: [subject_allocation_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  teacher               teacher?                   @relation(fields: [teacher_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   result                result[]
 
   @@unique([stream_id, subject_allocation_id, exam_id, sitting_date])
+  @@index([sitting_date])
 }
 
 model fee_payee {
   id                        Int               @id @default(autoincrement())
   fee_id                    Int?
-  for_individual            Int?
 
-  //when a fee is supposed to be payed by a class or grade,all streams in that grade will have a record
-  //when fee is recurring address it to a stream
-  for_stream                Int?
-  //when the fee is a single payment or emergency payment
+  //
+  //the possible payees of a fee,individual,all in a stream or all in a department or school
+  users_id                  Int?
+  stream_id                 Int?
+  department_id             Int?
 
-  for_department            Int?
   whole_school              Boolean           @default(false)   
 
   created_at                DateTime?         @default(now()) @db.Timestamptz(6)
@@ -1105,10 +1175,10 @@ model fee_payee {
   deleted_at                DateTime?         @db.Timestamptz(6)
 
 
-  users                     users?            @relation(fields: [for_individual], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  stream                    stream?           @relation(fields: [for_stream], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  department                department?       @relation(fields: [for_department], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  fee                       fee?              @relation(fields: [fee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                     users?            @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  stream                    stream?           @relation(fields: [stream_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  department                department?       @relation(fields: [department_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  fee                       fee?              @relation(fields: [fee_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   
 
   payment                   payment[]
@@ -1122,14 +1192,16 @@ model fee {
   code                      String            @db.VarChar(50)
   fee_for                   fee_type_enum
   description               String?           @db.VarChar(100)
-  approved_by               Int?
+  //
+  //who approved the fee
+  school_leader_id          Int?
   amount                    Decimal           @db.Decimal(10, 2)
   installments              installment_types
   due_date                  DateTime?         @db.Date
   school_id                 Int?  
 
-  school_leader             school_leader?    @relation(fields: [approved_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school                    school?           @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  school_leader             school_leader?    @relation(fields: [school_leader_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  school                    school?           @relation(fields: [school_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   created_at                DateTime?         @default(now()) @db.Timestamptz(6)
   updated_at                DateTime?         @default(now()) @db.Timestamptz(6)
@@ -1144,10 +1216,10 @@ model fee {
 
 model payment {
   id               Int             @id @default(autoincrement())
-  paid_by          Int?         
+  users_id          Int?         
   fee_payee_id     Int?
   amount           Decimal         @db.Decimal(10, 2)
-  over_payment     Decimal?        @db.Decimal(10, 2)
+  balance          Decimal?        @db.Decimal(10, 2)
   payment_date     DateTime?       @default(now()) @db.Timestamptz(6)
   payment_method   payment_method
   status           payment_status? @default(PENDING)
@@ -1157,10 +1229,12 @@ model payment {
   updated_at       DateTime?       @default(now()) @db.Timestamptz(6)
   deleted_at       DateTime?       @db.Timestamptz(6)
 
-  fee_payee        fee_payee?      @relation(fields: [fee_payee_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users            users?          @relation(fields: [paid_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  fee_payee        fee_payee?      @relation(fields: [fee_payee_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  users            users?          @relation(fields: [users_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
-  @@index([paid_by])
+  @@index([users_id])
+  @@index([payment_method])
+  @@index([status])
 }
 
 
@@ -1171,17 +1245,17 @@ model announcement {
   date_for        DateTime    @db.Date
   valid_upto      DateTime    @db.Date
   scope           event_scope
-  made_by         Int?
+  users_id        Int?
   school_id       Int?
 
   created_at      DateTime?   @default(now()) @db.Timestamptz(6)
   updated_at      DateTime?   @default(now()) @db.Timestamptz(6)
   deleted_at      DateTime?   @db.Timestamptz(6)
 
-  users           users?      @relation(fields: [made_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school          school?     @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users           users?      @relation(fields: [users_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  school          school?     @relation(fields: [school_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
  
- @@unique([school_id, date_for, made_by, scope,valid_upto])
+ @@unique([school_id, date_for, users_id, scope,valid_upto])
 }
 
 
@@ -1191,21 +1265,22 @@ model award {
   description               String?         
   semester_id               Int?
   awarded_by                String?           @db.VarChar(20)
+  type                      award_type
   awared_for                String?           @db.VarChar(100)
-  for_individual            Int?
-  for_class                 Int?
-  for_department            Int?
-  for_school                Int?
+  users_id                  Int?
+  class_progression_id      Int?
+  department_id             Int?
+  school_id                 Int?
 
   created_at                DateTime?         @default(now()) @db.Timestamptz(6)
   updated_at                DateTime?         @default(now()) @db.Timestamptz(6)
   deleted_at                DateTime?         @db.Timestamptz(6)
 
-  users                     users?            @relation(fields: [for_individual], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  class_progression         class_progression? @relation(fields: [for_class], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  department                department?       @relation(fields: [for_department], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school                    school?           @relation(fields: [for_school], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  semester                  semester?         @relation(fields: [semester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                     users?            @relation(fields: [users_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  class_progression         class_progression? @relation(fields: [class_progression_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  department                department?       @relation(fields: [department_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  school                    school?           @relation(fields: [school_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  semester                  semester?         @relation(fields: [semester_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
 @@unique([semester_id,name])
 }
@@ -1219,15 +1294,18 @@ model event {
   start_date               DateTime                   @db.Timestamptz(6)
   end_date                 DateTime                   @db.Timestamptz(6)
   scope                    event_scope
-  created_by               Int?
+
+  //
+  // person who created the event
+  users_id                 Int?
   school_id                Int?
 
   created_at               DateTime?                  @default(now()) @db.Timestamptz(6)
   updated_at               DateTime?                  @default(now()) @db.Timestamptz(6)
   deleted_at               DateTime?                  @db.Timestamptz(6)
 
-  users                    users?                     @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school                   school?                    @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users                    users?                     @relation(fields: [users_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  school                   school?                    @relation(fields: [school_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   event_class_participant  event_class_participant[]
   event_school_participant event_school_participant[]
@@ -1246,9 +1324,13 @@ model event_class_participant {
   class_progression_id          Int
   registration_date DateTime?             @default(now()) @db.Timestamptz(6)
   status            participation_status? @default(REGISTERED)
+
+  created_at        DateTime?             @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?             @default(now()) @db.Timestamptz(6)
   deleted_at        DateTime?             @db.Timestamptz(6)
-  class_progression class_progression     @relation(fields: [class_progression_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  class_progression class_progression     @relation(fields: [class_progression_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  event             event                 @relation(fields: [event_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@id([event_id, class_progression_id])
 }
@@ -1259,9 +1341,13 @@ model event_school_participant {
   school_id         Int
   registration_date DateTime?             @default(now()) @db.Timestamptz(6)
   status            participation_status? @default(REGISTERED)
+
+  created_at        DateTime?             @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?             @default(now()) @db.Timestamptz(6)
   deleted_at        DateTime?             @db.Timestamptz(6)
-  event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school            school                @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  event             event                 @relation(fields: [event_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  school            school                @relation(fields: [school_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@id([event_id, school_id])
   @@index([event_id, school_id], map: "idx_event_school_participant")
@@ -1273,9 +1359,13 @@ model event_department_participant {
   department_id     Int
   registration_date DateTime?             @default(now()) @db.Timestamptz(6)
   status            participation_status? @default(REGISTERED)
+
+  created_at        DateTime?             @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?             @default(now()) @db.Timestamptz(6)
   deleted_at        DateTime?             @db.Timestamptz(6)
-  event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  department        department            @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  event             event                 @relation(fields: [event_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  department        department            @relation(fields: [department_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@id([event_id, department_id])
 }
@@ -1283,57 +1373,69 @@ model event_department_participant {
 
 model event_user_participant {
   event_id          Int
-  user_id           Int
+  users_id          Int
   participant_type  participant_type
   registration_date DateTime?             @default(now()) @db.Timestamptz(6)
   attendance_status participation_status? @default(REGISTERED)
   role              event_role?
-  deleted_at        DateTime?             @db.Timestamptz(6)
-  event             event                 @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users             users                 @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([event_id, user_id])
-  @@index([event_id, user_id], map: "idx_event_user_participant")
+  created_at        DateTime?             @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?             @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime?             @db.Timestamptz(6)
+
+  event             event                 @relation(fields: [event_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  users             users                 @relation(fields: [users_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@id([event_id, users_id])
+  @@index([event_id, users_id], map: "idx_event_user_participant")
 }
 
 
 model messages {
-  id                              Int       @id @default(autoincrement())
-  message_details                 String?   @db.VarChar(200)
-  topic                           String?   @db.VarChar(30)
+  id                              Int         @id @default(autoincrement())
+  message_details                 String?     @db.VarChar(200)
+  topic                           String?     @db.VarChar(30)
   severity                        severity?
   sender                          Int?
   recepient                       Int?
-  deleted_at                      DateTime? @db.Timestamptz(6)
-  users_messages_recepientTousers users?    @relation("messages_recepientTousers", fields: [recepient], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users_messages_senderTousers    users?    @relation("messages_senderTousers", fields: [sender], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  created_at                      DateTime?   @default(now()) @db.Timestamptz(6)
+  updated_at                      DateTime?   @default(now()) @db.Timestamptz(6)
+  deleted_at                      DateTime?   @db.Timestamptz(6)
 
+
+  users_messages_recepientTousers users?      @relation("messages_recepientTousers", fields: [recepient], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  users_messages_senderTousers    users?      @relation("messages_senderTousers", fields: [sender], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+ @@index([sender])
+@@index([recepient])
 
 }
 
-
-
 model result {
   student_id      Int
-  marked_by       Int?
-  marks_obtained  Decimal?     @db.Decimal(5, 2)
+  //
+  //the teacher who gave the result
+  teacher_id      Int?
+
+  marks_obtained  Decimal?        @db.Decimal(5, 2)
   exam_sitting_id Int
 
-  created_at      DateTime?    @default(now()) @db.Timestamptz(6)
-  updated_at      DateTime?    @default(now()) @db.Timestamptz(6)
-  deleted_at      DateTime?    @db.Timestamptz(6)
+  created_at      DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime?       @default(now()) @db.Timestamptz(6)
+  deleted_at      DateTime?       @db.Timestamptz(6)
 
-  exam_sitting    exam_sitting @relation(fields: [exam_sitting_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher         teacher?     @relation(fields: [marked_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  student         student      @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  exam_sitting    exam_sitting?   @relation(fields: [exam_sitting_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  teacher         teacher?        @relation(fields: [teacher_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  student         student         @relation(fields: [student_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 
   @@id([student_id, exam_sitting_id])
+  @@index([student_id])
 }
 
 
 model review {
   id                 Int               @id @default(autoincrement())
-  reviewer_id        Int
+  users_id           Int?
   entity_type        reviewable_entity
   school_id          Int?
   school_facility_id Int?
@@ -1347,13 +1449,13 @@ model review {
   updated_at         DateTime?         @default(now()) @db.Timestamptz(6)
   deleted_at         DateTime?         @db.Timestamptz(6)
 
-  event              event?            @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users              users             @relation(fields: [reviewer_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school             school?           @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  teacher            teacher?          @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  event              event?            @relation(fields: [event_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  users              users?            @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  school             school?           @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  teacher            teacher?          @relation(fields: [teacher_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([entity_type], map: "idx_review_entity_type")
-  @@unique([reviewer_id,entity_type,title])
+  @@unique([users_id,entity_type,title])
 }
 
 
@@ -1366,35 +1468,48 @@ model review {
 model course_material {
   id                      Int                        @id @default(autoincrement())
   name                    String                     @db.VarChar(50)
-  published_by            Int?
+  //
+  //who published this
+  users_id                Int?
   school_id               Int?
   subject_id              Int?
   grade_level             grade_level_type               
   description             String                     @db.VarChar(100)
+  file_path               String                     @db.VarChar(50)
+  topic                   String                     @db.VarChar(30)      
 
-  subject                 subject?                   @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  school                  school?                    @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users                   users?                     @relation(fields: [published_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subject                 subject?                   @relation(fields: [subject_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  school                  school?                    @relation(fields: [school_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  users                   users?                     @relation(fields: [users_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+@@index([topic])
+@@index([subject_id])
 }
 
 
-model Gallery {
+model gallery {
   id             Int             @id @default(autoincrement())
   name           String          @db.VarChar(255)
   description    String?         @db.Text
   type           gallery_type
   visibility     gallery_visibility @default(INTERNAL)
   category       picture_category
+
+  school_id     Int?
   
   location       String?         @db.VarChar(255)
-  
-  created_by     String?         @db.VarChar(100)
+  //
+  //the person who created this gallery
+  users_id       Int?
   tags           String[]        @db.VarChar(50)
   
   created_at     DateTime?       @default(now()) @db.Timestamptz(6)
   updated_at     DateTime?       @default(now()) @db.Timestamptz(6)
   deleted_at     DateTime?       @db.Timestamptz(6)
-  
+
+  school         school?         @relation(fields:[school_id],references :[id], onDelete: SetNull, onUpdate: Cascade)
+  users          users?          @relation(fields:[users_id],references :[id], onDelete: SetNull, onUpdate: Cascade)
+
   picture        picture[]
 
   @@index([type])
@@ -1404,7 +1519,7 @@ model Gallery {
 
 
 model picture {
-  id             Int       @id @default(autoincrement())
+  id             Int             @id @default(autoincrement())
   gallery_id     Int?
   title          String?         @db.VarChar(255)
   
@@ -1417,14 +1532,14 @@ model picture {
   uploaded_at    DateTime        @default(now()) @db.Timestamptz(6)
   tags           String[]        @db.VarChar(50)
   
-  uploaded_by    Int?        
+  users_id       Int?        
   
   created_at     DateTime?       @default(now()) @db.Timestamptz(6)
   updated_at     DateTime?       @default(now()) @db.Timestamptz(6)
   deleted_at     DateTime?       @db.Timestamptz(6)
 
-  gallery        Gallery?        @relation(fields: [gallery_id], references: [id])
-  users          users?          @relation(fields:[uploaded_by],references :[id], onDelete: NoAction, onUpdate: NoAction)
+  gallery        gallery?        @relation(fields: [gallery_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  users          users?          @relation(fields:[users_id],references :[id], onDelete: SetNull, onUpdate: Cascade)
 
   @@index([gallery_id])
   @@index([taken_at])
@@ -1449,7 +1564,7 @@ model lib_book {
   updated_at            DateTime?       @default(now()) @db.Timestamptz(6)
   deleted_at            DateTime?       @db.Timestamptz(6)
 
-  school_facility       school_facility @relation(fields: [school_facility_id], references: [id])
+  school_facility       school_facility @relation(fields: [school_facility_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   
 
   subject               subject?        @relation(fields: [subject_id], references: [id])

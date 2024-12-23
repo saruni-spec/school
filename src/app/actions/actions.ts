@@ -73,14 +73,14 @@ export async function findUnpaidFees(user: record) {
         },
         {
           OR: [
-            { for_individual: user.id }, // Fees assigned to the user directly
+            { users_id: user.id }, // Fees assigned to the user directly
             {
-              for_stream: {
+              stream_id: {
                 in: userStreams, // Fees assigned to user's streams
               },
             },
             // {
-            //   for_department: {
+            //   department_id: {
             //     in: userDepartments, // Fees assigned to user's departments
             //   },
             // },
@@ -98,7 +98,7 @@ export async function findUnpaidFees(user: record) {
           id: true,
           fee_for: true,
           code: true,
-          approved_by: true,
+          school_leader_id: true,
           amount: true,
           installments: true,
           due_date: true,
@@ -115,7 +115,7 @@ export async function findUnpaidFees(user: record) {
     fee_id: fee.fee?.id,
     fee_for: fee.fee?.fee_for,
     fee_code: fee.fee?.code,
-    approved_by: fee.fee?.approved_by,
+    school_leader_id: fee.fee?.school_leader_id,
     amount: fee.fee ? parseFloat(fee.fee.amount.toString()) : undefined,
     installments: fee.fee?.installments,
     due_date: fee.fee?.due_date,
@@ -136,7 +136,7 @@ export async function findUnpaidFees(user: record) {
 async function getUserStreams(user: record) {
   const userStreams = await prisma.stream.findMany({
     where: {
-      school_id: user.current_school as number, // Add constraint for user's current school
+      school_id: user.school_id as number, // Add constraint for user's current school
       class_progression: {
         some: {
           student_class: {
@@ -158,7 +158,7 @@ async function getUserStreams(user: record) {
 export async function getUserDepartments(user: record) {
   const userDepartments = await prisma.department.findMany({
     where: {
-      school_id: user.current_school as number, // Add constraint for user's current school
+      school_id: user.school_id as number, // Add constraint for user's current school
       department_staff: {
         some: { staff_id: user.id },
       },
@@ -171,9 +171,9 @@ export async function getUserDepartments(user: record) {
 async function getUserSchool(userId: number) {
   const user = await prisma.users.findUnique({
     where: { id: userId },
-    select: { current_school: true },
+    select: { school_id: true },
   });
-  return user?.current_school;
+  return user?.school_id;
 }
 
 //

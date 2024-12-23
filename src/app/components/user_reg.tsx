@@ -6,13 +6,15 @@ import React, { useCallback, useEffect, useState } from "react";
 import { DatePicker } from "@/app/components/calendar";
 import { Select } from "./select";
 import { record, UserType, RegistrationStep, FieldType } from "../types/types";
-import { role_type } from "@prisma/client";
+import { domain_specific_roles } from "@prisma/client";
 import { useUser } from "../context/user_context";
 import { SelectObject } from "./selectobejctitem";
 import { getCurrentClassProgressions } from "../actions/actions";
 import { useValidation } from "../hooks/validation_hooks";
 import { validInputs } from "@/lib/functions";
 import { register } from "../api_functions/functions";
+
+//
 //the main component for user registration
 export const User = ({
   set_user,
@@ -65,7 +67,7 @@ export const User = ({
           email: email.value,
           phone: phone.value,
           role_id: role_id,
-          current_school: school.id,
+          school_id: school.id,
           name: `${first_name.value} ${last_name.value}`,
           id_code: id_code,
           password: id_code,
@@ -79,39 +81,68 @@ export const User = ({
       if (user_type === "STUDENT") {
         additional_user_details = await register({
           data: {
-            user_id: registered_user.id,
+            users_id: registered_user.id,
             admission_number:
               admission_number.value === ""
-                ? `${school.name[0]}${school.id}/${id_code}`
+                ? `${school.name ? (school.name as string)[0] : ""}${
+                    school.id
+                  }/${id_code}`
                 : admission_number.value,
             student_code: `STU/${id_code}`,
           },
           model_name: "student",
         });
       } else {
+        const school_code_prefix =
+          user_type === "PRINCIPAL"
+            ? "PRN"
+            : user_type === "TEACHER"
+            ? "TR"
+            : user_type === "VICE_PRINCIPAL"
+            ? "VPRN"
+            : user_type === "SCHOOL_ADMINISTRATOR"
+            ? "ADM"
+            : user_type === "SECRETARY"
+            ? "SEC"
+            : "STF";
+
         additional_user_details = await register({
           data: {
-            user_id: registered_user.id,
-            staff_code: `STF/${id_code}`,
+            users_id: registered_user.id,
+            school_code: `${school_code_prefix}/${id_code}`,
           },
           model_name: "staff",
         });
       }
 
-      if (user_type === "PRINCIPAL" || user_type === "VICE_PRINCIPAL") {
-        const staff_code_prefix = user_type === "PRINCIPAL" ? "PRN" : "VPRN";
-        additional_user_details = await register({
-          data: {
-            staff_id: registered_user.id,
-            school_id: school.id,
-            leader_code: `${staff_code_prefix}-${school.id}-${id_code}`,
-            current_role: user_type,
-          },
-          model_name: "school_leader",
-        });
-      }
-
       set_user(additional_user_details);
+      if (user_type === "STUDENT" || user_type === "PARENT") return;
+
+      switch (user_type) {
+        case "PRINCIPAL":
+        case "VICE_PRINCIPAL":
+        case "SCHOOL_ADMINISTRATOR": {
+          break;
+        }
+        case "TEACHER": {
+          await register({
+            data: {
+              staff_id: additional_user_details.id,
+            },
+            model_name: "teacher",
+          });
+          break;
+        }
+        default: {
+          await register({
+            data: {
+              staff_id: additional_user_details.id,
+            },
+            model_name: "facility_staff",
+          });
+          break;
+        }
+      }
     },
     [
       first_name,
@@ -169,52 +200,60 @@ export const User = ({
 //component to render the form for additional details based on user type
 export const SchoolAdmin = ({
   onSubmit, // the function to handle the form submission
-  user_id, // the id of the user
+  staff_id, // the id of the user
 }: {
-  user_id: number;
+  staff_id: number;
   onSubmit: () => void;
 }) => {
-  // for a school admin, im registering a staff member with the role as school admin
-  // role is stores in the user table,so i need to get the role id for school admin
-  // then update the user table with the role id
-  // then register the staff member
-  const role_type: role_type = "SCHOOL_ADMINISTRATOR";
-
+  //
+  //
+  const academic_year = useValidation({
+    type: FieldType.Text,
+    required: true,
+    initialValue: new Date().getFullYear().toString(),
+  });
   const { school_id } = useUser();
+  //
+  //fetch the academic years
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      // update the user table with the role id
-      // then register the staff member
-      try {
-        await fetch("/api/staff/add_role", {
-          method: "POST",
-          body: JSON.stringify({
-            user_id,
-            school_id,
-            role_type: role_type,
-          }),
-        });
+      if (!validInputs([academic_year])) return;
 
-        if (onSubmit) {
-          onSubmit();
-        }
-      } catch (error) {
-        console.error(error);
-        alert("Registration failed");
-        return;
-      }
+      const response = await register({
+        data: {
+          school_id: school_id,
+          year: academic_year.value,
+        },
+        model_name: "academic_year",
+      });
+
+      await register({
+        data: {
+          staff_id: staff_id,
+          academic_year_id: response.id,
+        },
+        model_name: "school_leader",
+      });
+
+      if (onSubmit) onSubmit();
     },
-    [onSubmit, user_id, school_id]
+    [onSubmit, staff_id, school_id, academic_year]
   );
   return (
     <Form
       title="School Admin Registration"
       onSubmit={handleSubmit}
-      submitButtonText="Complete"
+      submitButtonText="Complete Registration"
     >
-      <output>Admin Registered</output>
+      <Input
+        label="Academic Year"
+        placeholder="Enter the academic year"
+        value={academic_year.value}
+        onChange={academic_year.handle_change}
+        error={academic_year.error}
+      />
     </Form>
   );
 };
@@ -240,21 +279,21 @@ export const Staff = ({
   //get the departments in the school
   const [departments, setDepartments] = useState<record[]>([]);
 
-  useEffect(() => {
-    const getDepartments = async () => {
-      const response = await fetch(
-        `http://localhost:3000/api/fetch_record?table_name=${department_table}&school_id=${school_id}`
-      );
-      if (!response.ok) {
-        alert(`Failed to fetch ${department_table}`);
-        throw new Error(`Failed to fetch ${department_table}`);
-      }
-      const departments = await response.json();
-      setDepartments(departments);
-    };
-
-    getDepartments();
+  const getDepartments = useCallback(async () => {
+    const response = await fetch(
+      `http://localhost:3000/api/fetch_record?table_name=${department_table}&school_id=${school_id}`
+    );
+    if (!response.ok) {
+      alert(`Failed to fetch ${department_table}`);
+      throw new Error(`Failed to fetch ${department_table}`);
+    }
+    const departments = await response.json();
+    setDepartments(departments);
   }, [school_id]);
+
+  useEffect(() => {
+    getDepartments();
+  }, [getDepartments]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -262,14 +301,16 @@ export const Staff = ({
 
       if (!validInputs([department_id, role])) return;
 
-      await register({
-        data: {
-          staff_id: staff_id,
-          department_id: parseInt(department_id.value as string),
-          current_role: role.value as role_type,
-        },
-        model_name: "department_staff",
-      });
+      console.log(department_id.value, role.value);
+
+      const response = await fetch(
+        `/api/staff/update?staff_id=${staff_id}&department_id=${department_id.value}&role=${role.value}`
+      );
+
+      if (!response.ok) {
+        alert("Failed to update staff department");
+        return;
+      }
 
       if (onSubmit) {
         onSubmit();
@@ -297,7 +338,7 @@ export const Staff = ({
         onChange={role.handle_change}
         error={role.error}
         placeholder="Select Role"
-        options={role_type}
+        options={domain_specific_roles}
       />
     </Form>
   );
@@ -372,7 +413,7 @@ export const Student = ({
     await register({
       data: {
         student_id: student_id,
-        class_progress: parseInt(stream_id.value as string),
+        class_progression_id: parseInt(stream_id.value as string),
         admission_date: admission_date.formatted_date,
         start_date: start_date.formatted_date,
       },
@@ -415,33 +456,33 @@ export const Student = ({
 export const UserTypeComponent = ({
   user_type,
   user,
-
   handleAdditionalDetailsSubmit,
 }: {
   user_type: UserType | undefined;
   user: record | undefined;
-
   handleAdditionalDetailsSubmit: () => void;
 }) => {
   const excludedRoles = [
     "SYSTEM_ADMINISTRATOR",
-    "PRINCIPAL",
-    "VICE_PRINCIPAL",
-    "SCHOOL_ADMINISTRATOR",
     "STUDENT",
     "PARENT",
     "AUDIT_OFFICER",
   ];
+
   return (
     <>
       {user && (
         <>
-          {user_type === "SCHOOL_ADMINISTRATOR" && (
+          {/* Fix the grouping of conditions */}
+          {(user_type === "SCHOOL_ADMINISTRATOR" ||
+            user_type === "PRINCIPAL" ||
+            user_type === "VICE_PRINCIPAL") && (
             <SchoolAdmin
-              user_id={user.id}
+              staff_id={user.id}
               onSubmit={handleAdditionalDetailsSubmit}
             />
           )}
+
           {user_type === "STUDENT" && (
             <Student
               student_id={user.id}
@@ -449,12 +490,17 @@ export const UserTypeComponent = ({
             />
           )}
 
-          {user_type && !excludedRoles.includes(user_type) && (
-            <Staff
-              staff_id={user.id}
-              onSubmit={handleAdditionalDetailsSubmit}
-            />
-          )}
+          {/* This condition should only run if none of the above match */}
+          {user_type &&
+            !excludedRoles.includes(user_type) &&
+            user_type !== "SCHOOL_ADMINISTRATOR" &&
+            user_type !== "PRINCIPAL" &&
+            user_type !== "VICE_PRINCIPAL" && (
+              <Staff
+                staff_id={user.id}
+                onSubmit={handleAdditionalDetailsSubmit}
+              />
+            )}
         </>
       )}
     </>

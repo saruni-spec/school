@@ -94,10 +94,12 @@ export function useValidation(config: FieldConfig): FieldValidation {
   // Change handler for programmatic value updates
   const handle_value_change = useCallback(
     (newValue: string) => {
+      if (newValue === value) return;
+
       set_value(newValue);
       validate(newValue);
     },
-    [validate]
+    [validate, value]
   );
 
   // Return unified field validation object

@@ -27,7 +27,7 @@ export const Select: React.FC<SelectProps> = ({
   className = "",
   options,
   error,
-  placeholder,
+  placeholder = "Select an option",
   required,
   value, // value of the select input
   onChange, // what to do when the value changes

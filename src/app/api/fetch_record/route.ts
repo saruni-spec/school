@@ -42,7 +42,7 @@ export async function GET(request: Request) {
           "school_id",
           "academic_year_id",
           "semester_id",
-          "user_id",
+          "users_id",
           "facility_id",
           "school_facility_id",
           "class_id",

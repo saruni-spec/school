@@ -17,7 +17,7 @@ const SchoolSelection: React.FC<SchoolSelectionProps> = ({
   useEffect(() => {
     const fetchSchools = async () => {
       try {
-        const response = await fetch("/api/fetch_name?table=school");
+        const response = await fetch("/api/school/name");
         if (!response.ok) {
           throw new Error("Failed to fetch schools");
         }
@@ -60,7 +60,11 @@ const SchoolSelection: React.FC<SchoolSelectionProps> = ({
         <p className="text-center text-gray-600">No schools available</p>
       ) : (
         <div className="grid gap-4">
-          <SearchableList initialData={schools} onItemSelect={onSchoolSelect} />
+          <SearchableList
+            id_field={"id"}
+            initialData={schools}
+            onItemSelect={onSchoolSelect}
+          />
         </div>
       )}
     </div>

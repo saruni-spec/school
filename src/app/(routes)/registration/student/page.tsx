@@ -23,7 +23,7 @@ const Student = () => {
       await fetch("", {
         method: "POST",
         body: JSON.stringify({
-          data: { date_of_birth, medical_info, user_id },
+          data: { date_of_birth, medical_info, users_id },
           model_name: "student",
         }),
       });

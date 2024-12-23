@@ -35,8 +35,8 @@ const SchoolFacility = () => {
 
       await register({
         data: {
-          current_school: school_id,
-          is_facility: parseInt(facility_id.value as string),
+          school_id: school_id,
+          facility_id: parseInt(facility_id.value as string),
           description: description.value,
         },
         model_name: "school_facility",

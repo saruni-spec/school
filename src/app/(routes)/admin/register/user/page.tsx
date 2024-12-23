@@ -38,13 +38,6 @@ const UserRegistration = () => {
   //save the user registered and move to additional details
   const handleUserRegistration = (registeredUser: record) => {
     set_user(registeredUser);
-
-    //
-    //if the user is a principal or vice principal, move to complete registration
-    if (user_type === "PRINCIPAL" || user_type === "VICE_PRINCIPAL") {
-      setCurrentStep("complete");
-      return;
-    }
     setCurrentStep("additional_details");
   };
   //submit the additional details and complete the registration

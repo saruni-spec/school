@@ -1,10 +1,11 @@
 "use client";
-import DataTable from "@/app/components/data_table";
+import { getDataWithSchoolId } from "@/app/api_functions/functions";
+import EditableTable from "@/app/components/editable_table";
 import { useUser } from "@/app/context/user_context";
 import { record } from "@/app/types/types";
-import { flattenObjectIterative } from "@/lib/functions";
 import React, { useCallback, useEffect, useState } from "react";
-
+//
+// This page is used to update the subject details for a school
 const SubjectUpdate = () => {
   const [subjects, set_subjects] = useState<record[]>([
     {
@@ -17,34 +18,29 @@ const SubjectUpdate = () => {
     },
   ]);
   const { school_id } = useUser();
-
+  //
   //get the subject details for a school
   const getSubjectDetails = useCallback(async () => {
-    const response = await fetch(
-      `http://localhost:3000/api/subject/get?school_id=${school_id}`
-    );
-    if (!response.ok) {
-      alert(`Failed to fetch subjects`);
-      throw new Error(`Failed to fetch subjects`);
-    }
-    const data = await response.json();
-    console.log(data);
-    const flattened_data = data.map((item: record) =>
-      flattenObjectIterative(item)
-    );
-    if (flattened_data.length === 0) {
-      return;
-    }
-    set_subjects(flattened_data);
+    const data = await getDataWithSchoolId("subject", school_id);
+
+    if (data.length === 0) return;
+
+    set_subjects(data);
   }, [school_id]);
 
   useEffect(() => {
-    if (school_id) {
-      getSubjectDetails();
-    }
-  }, [school_id, getSubjectDetails]);
+    getSubjectDetails();
+  }, [getSubjectDetails]);
 
-  return <DataTable records={subjects} title="Subject Details" />;
+  return (
+    <EditableTable
+      records={subjects}
+      title="Subject Details"
+      model_name="subject"
+      onUpdate={getSubjectDetails}
+      school_id={school_id}
+    />
+  );
 };
 
 export default SubjectUpdate;

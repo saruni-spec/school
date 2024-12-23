@@ -1,10 +1,11 @@
 "use client";
-import DataTable from "@/app/components/data_table";
+import { getDataWithSchoolId } from "@/app/api_functions/functions";
+import EditableTable from "@/app/components/editable_table";
 import { useUser } from "@/app/context/user_context";
 import { record } from "@/app/types/types";
-import { flattenObjectIterative } from "@/lib/functions";
 import React, { useCallback, useEffect, useState } from "react";
-
+//
+// Manage the payments made in the school
 const Payment = () => {
   const [payments, set_payments] = useState<record[]>([
     {
@@ -20,34 +21,30 @@ const Payment = () => {
       "users.phone": "",
     },
   ]);
-
   const { school_id } = useUser();
-
   //
   //get the payments made in a school
   const getPayments = useCallback(async () => {
-    const response = await fetch(
-      `http://localhost:3000/api/payment/get?school_id=${school_id}`
-    );
-    if (!response.ok) {
-      alert(`Failed to fetch payments`);
-      throw new Error(`Failed to fetch payments`);
-    }
-    const data = await response.json();
+    const data = await getDataWithSchoolId("payment", school_id);
 
-    const flattened_data = data.map((item: record) =>
-      flattenObjectIterative(item)
-    );
-    if (flattened_data.length === 0) return;
-    set_payments(flattened_data);
+    if (data.length === 0) return;
+
+    set_payments(data);
   }, [school_id]);
 
   useEffect(() => {
-    if (!school_id) return;
     getPayments();
-  }, [getPayments, school_id]);
+  }, [getPayments]);
 
-  return <DataTable records={payments} title="Payments" />;
+  return (
+    <EditableTable
+      records={payments}
+      model_name="payment"
+      title="Payments"
+      school_id={school_id}
+      onUpdate={getPayments}
+    />
+  );
 };
 
 export default Payment;

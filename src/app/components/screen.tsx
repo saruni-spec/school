@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React from "react";
 import { LucideIcon } from "lucide-react";
 import InspirationLoader from "./loading";
 import { useLoadingState } from "../context/user_context";
@@ -18,14 +17,15 @@ interface ScreenProps {
   items: GridItemProps[];
   title?: string;
   columns?: number;
+  path_name?: string;
 }
 
 export const Screen: React.FC<ScreenProps> = ({
   items,
   title = "Available Operations",
   columns = 3,
+  path_name,
 }) => {
-  const router = useRouter();
   const { isLoading, setLoading } = useLoadingState();
 
   // Dynamically generate grid columns based on prop
@@ -59,7 +59,11 @@ export const Screen: React.FC<ScreenProps> = ({
             return (
               <Link
                 key={index}
-                href={item.route}
+                href={
+                  path_name
+                    ? { pathname: path_name, query: { table: item.route } }
+                    : item.route
+                }
                 onClick={handleItemClick}
                 className="bg-white border border-gray-200 rounded-lg p-4 cursor-pointer hover:shadow-md hover:border-blue-200 transition-all duration-300 ease-in-out transform hover:-translate-y-1 flex flex-col items-center justify-center text-center"
               >

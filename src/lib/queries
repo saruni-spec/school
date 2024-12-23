@@ -4,6 +4,7 @@ VALUES ('PRE_PRIMARY'),
     ('UPPER_PRIMARY'),
     ('LOWER_SECONDARY'),
     ('UPPER_SECONDARY') ON CONFLICT (type) DO NOTHING;
+--stop here
 -- Insert grade levels into the grade_level table
 INSERT INTO grade_level (level, school_level_id)
 VALUES -- Pre-Primary Levels
@@ -25,6 +26,8 @@ VALUES -- Pre-Primary Levels
     ('GRADE_10', 4),
     ('GRADE_11', 4),
     ('GRADE_12', 4);
+--stop here
+-- Insert subjects for the Kenyan Competency-Based Curriculum (CBC)
 ##roles sql
 -- Seed Data for Roles Table
 -- This script populates the roles table with predefined roles
@@ -1238,8 +1241,10 @@ FROM role,
             ('DEPARTMENTS'::system_resource)
     ) AS resources(resource)
 WHERE role.type = 'AUDIT_OFFICER';
+-- Stop here
 -- Insert subjects for the Kenyan Competency-Based Curriculum (CBC)
 -- Core Academic Languages
+--start here
 INSERT INTO subject (name, description)
 VALUES (
         'English',

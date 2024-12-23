@@ -153,16 +153,7 @@ const School: React.FC = () => {
         onChange={address_field.handle_change}
         error={address_field.error}
       />
-      <CheckboxGroup
-        label="Select School Levels offered"
-        options={school_levels}
-        value={selected_levels}
-        onChange={set_selected_levels}
-        error={levels_error}
-        value_field="type"
-        orientation="grid"
-        gridColumns={2}
-      />
+
       <MultiInput
         label="Contact Info"
         placeholder='Enter contact info (e.g., {"email": "info@example.com", "phone": "1234567890"})'
@@ -186,6 +177,16 @@ const School: React.FC = () => {
           key: [validateKey],
           value: [validateValue],
         }}
+      />
+      <CheckboxGroup
+        label="Select School Levels offered"
+        options={school_levels}
+        value={selected_levels}
+        onChange={set_selected_levels}
+        error={levels_error}
+        value_field="type"
+        orientation="grid"
+        gridColumns={2}
       />
     </Form>
   );

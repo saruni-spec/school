@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
 import { useUser } from "@/app/context/user_context";
@@ -36,13 +36,22 @@ const Stream = () => {
   }, [getGrades]);
 
   //
+  //fetch current academic year
+  const currentAcademicYear = useCallback(async () => {
+    const respone = await fetch(
+      `/api/academic_year/current?school_id=${school_id}`
+    );
+    return await respone.json();
+  }, [school_id]);
+
+  //
   //submit the form
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
       if (!validInputs([stream_name, capacity, grade_level_id])) return;
 
-      await register({
+      const response = await register({
         data: {
           school_id: school_id,
           name: stream_name.value,
@@ -51,8 +60,20 @@ const Stream = () => {
         },
         model_name: "stream",
       });
+
+      const academic_year = await currentAcademicYear();
+
+      await register({
+        data: {
+          stream_id: response.id,
+          academic_year_id: academic_year.id,
+          is_current: true,
+          name: `${stream_name.value} ${academic_year.year}`,
+        },
+        model_name: "class_progression",
+      });
     },
-    [stream_name, capacity, grade_level_id, school_id]
+    [stream_name, capacity, grade_level_id, school_id, currentAcademicYear]
   );
 
   return (

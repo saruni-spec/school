@@ -5,10 +5,10 @@ import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
-    const { user_id, school_id, role_type } = await req.json();
+    const { users_id, school_id, role_type } = await req.json();
 
     const result = await completeSchoolAdminRegistration(prisma, {
-      user_id,
+      users_id,
       school_id,
       role_type,
     });
@@ -27,10 +27,9 @@ export async function completeSchoolAdminRegistration(
   prisma: PrismaClient,
   {
     role_type,
-    user_id,
-    school_id,
+    users_id,
   }: {
-    user_id: number;
+    users_id: number;
     school_id: number;
     role_type: role_type;
   }
@@ -50,7 +49,7 @@ export async function completeSchoolAdminRegistration(
 
       // Update user with the school admin role
       const updatedUser = await tx.users.update({
-        where: { id: user_id },
+        where: { id: users_id },
         data: {
           role_id: schoolAdminRole.id,
         },
@@ -59,8 +58,7 @@ export async function completeSchoolAdminRegistration(
       // Create staff member record
       const newStaffMember = await tx.staff.create({
         data: {
-          user_id: user_id,
-          school_id: school_id,
+          users_id: users_id,
         },
       });
 

@@ -53,7 +53,7 @@ const UpdatePage = () => {
       description: "Manage classes and streams",
     },
     {
-      label: "Time Table",
+      label: "Time Table Slots",
       icon: Clock,
       route: "/admin/update/role",
       description: "Manage time tables",
@@ -86,7 +86,7 @@ const UpdatePage = () => {
     {
       label: "Course Material",
       icon: MapPin,
-      route: "/admin/update/facility",
+      route: "/admin/update/course_material",
       description: "Manage course materials",
     },
     {
@@ -110,7 +110,7 @@ const UpdatePage = () => {
     {
       label: "Award",
       icon: Award,
-      route: "/admin/update/semester",
+      route: "/admin/update/award",
       description: "Manage awards",
     },
     {

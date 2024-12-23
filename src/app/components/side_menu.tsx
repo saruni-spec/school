@@ -22,7 +22,7 @@ interface SideMenuProps {
 
 const SideMenu: React.FC<SideMenuProps> = ({
   links,
-  schoolName = "Multi-School System",
+  schoolName = "Soma Nasi",
   logoUrl,
   SchoolSelect,
 }) => {

@@ -5,13 +5,18 @@ import { role_type } from "@prisma/client";
 //all my database tables are of this type
 //an object with key value pairs where key is a string and value is a string,number or json
 //each table has an id field for identification
+type BaseValue = string | number | Date | null | undefined;
+
 export type generic_record = {
-  [key: string]: string | number | generic_record | null | undefined;
+  [key: string]: generic_record | BaseValue | generic_record[];
 };
 
+type RecordValue = BaseValue | { [key: string]: RecordValue } | RecordValue[];
+
 export type record = {
-  [key: string]: string | number | Date | record | null | undefined;
-} & { id: number };
+  id: number;
+  [key: string]: RecordValue;
+};
 
 export type input_field = {
   value: string | number;

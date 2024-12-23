@@ -1,10 +1,11 @@
 "use client";
-import DataTable from "@/app/components/data_table";
+import { getDataWithSchoolId } from "@/app/api_functions/functions";
+import EditableTable from "@/app/components/editable_table";
 import { useUser } from "@/app/context/user_context";
 import { record } from "@/app/types/types";
-import { flattenObjectIterative } from "@/lib/functions";
 import React, { useCallback, useEffect, useState } from "react";
-
+//
+// Update the fee details for a school
 const FeeUpdate = () => {
   const [fees, set_fees] = useState<record[]>([
     {
@@ -20,35 +21,29 @@ const FeeUpdate = () => {
   ]);
 
   const { school_id } = useUser();
-
   //
   //get the fee details for a school
   const getFeeDetails = useCallback(async () => {
-    const response = await fetch(
-      `http://localhost:3000/api/fee/get?school_id=${school_id}`
-    );
-    if (!response.ok) {
-      alert(`Failed to fetch fees`);
-      throw new Error(`Failed to fetch fees`);
-    }
-    const data = await response.json();
-    console.log(data);
-    const flattened_data = data.map((item: record) =>
-      flattenObjectIterative(item)
-    );
-    if (flattened_data.length === 0) {
-      return;
-    }
-    set_fees(flattened_data);
+    const data = await getDataWithSchoolId("fee", school_id);
+
+    if (data.length === 0) return;
+
+    set_fees(data);
   }, [school_id]);
 
   useEffect(() => {
-    if (school_id) {
-      getFeeDetails();
-    }
-  }, [school_id, getFeeDetails]);
+    getFeeDetails();
+  }, [getFeeDetails]);
 
-  return <DataTable records={fees} title="Fee Details" />;
+  return (
+    <EditableTable
+      records={fees}
+      model_name="fee"
+      title="Fees Table"
+      school_id={school_id}
+      onUpdate={getFeeDetails}
+    />
+  );
 };
 
 export default FeeUpdate;

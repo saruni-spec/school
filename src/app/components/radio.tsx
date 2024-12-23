@@ -1,4 +1,7 @@
 import React from "react";
+import { generic_record } from "../types/types";
+
+
 
 interface RadioGroupProps {
   label?: string;
@@ -59,10 +62,7 @@ const RadioInputs: React.FC<RadioGroupProps> = ({
     );
     //
     onChange(
-      selectedOption as Record<
-        string,
-        string | number | Record<string, string | number>
-      >
+      selectedOption as generic_record
     );
   };
 

@@ -10,7 +10,7 @@ import { fee_type_enum, installment_types } from "@prisma/client";
 import { FieldType, generic_record, record } from "@/app/types/types";
 import RadioInputs from "@/app/components/radio";
 import CheckboxGroup from "@/app/components/check_box_inputs";
-import { getGradeLevels, getStreams } from "@/app/actions/actions";
+import { getGradeLevels } from "@/app/actions/actions";
 import { fetchData, register } from "@/app/api_functions/functions";
 import { useValidation } from "@/app/hooks/validation_hooks";
 import { validInputs } from "@/lib/functions";
@@ -24,9 +24,9 @@ const possibe_payees = [
 ];
 
 const payee_fields = {
-  Department: "for_department",
-  Streams: "for_stream",
-  Grades: "for_stream",
+  Department: "department_id",
+  Streams: "stream_id",
+  Grades: "stream_id",
 };
 
 const department_table = "department";
@@ -147,7 +147,7 @@ const Fee = () => {
             await register({
               data: {
                 fee_id,
-                for_stream: stream.id,
+                stream_id: stream.id,
               },
               model_name: "fee_payee",
             });

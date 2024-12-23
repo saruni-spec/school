@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { console } from "inspector";
 import { NextResponse } from "next/server";
 
 /**
@@ -15,7 +16,6 @@ export async function POST(request: Request) {
   } = await request.json();
 
   const user_name = body.user_name;
-  const display_fields = body.display_fields;
 
   try {
     // Perform partial matching using case-insensitive search
@@ -29,7 +29,8 @@ export async function POST(request: Request) {
       select: {
         id: true,
         name: true,
-        current_school: true,
+        school_id: true,
+        id_code: true,
         student: {
           select: {
             student_code: true,
@@ -45,7 +46,6 @@ export async function POST(request: Request) {
           },
         },
         // Include each field in the display_fields array
-        ...Object.fromEntries(display_fields.map((field) => [field, true])),
       },
       // Limit results to prevent overwhelming responses
       take: 10,
