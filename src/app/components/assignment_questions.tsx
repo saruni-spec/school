@@ -28,6 +28,8 @@ const QuestionCreator = ({
   const [options, setOptions] = useState<Option[]>([]);
   const [currentOption, setCurrentOption] = useState("");
 
+  //
+
   const questionTypeOptions = [
     { id: "open", name: "Open Question" },
     { id: "multiple", name: "Multiple Choice" },
@@ -106,9 +108,12 @@ const QuestionCreator = ({
                 onChange={(e) => setCurrentOption(e.target.value)}
                 placeholder="Enter an option"
               />
-              <Button onClick={addOption} className="mt-6" variant="primary">
-                Add Option
-              </Button>
+              <Button
+                onClick={addOption}
+                className="mt-6"
+                variant="add"
+                size="sm"
+              />
             </div>
 
             {options.length > 0 && (
@@ -120,11 +125,9 @@ const QuestionCreator = ({
                     <Button
                       type="button"
                       onClick={() => removeOption(option.id)}
-                      variant="danger"
+                      variant="delete"
                       size="sm"
-                    >
-                      Remove
-                    </Button>
+                    />
                   </div>
                 ))}
               </div>
@@ -164,11 +167,9 @@ const QuestionCreator = ({
                 <Button
                   type="button"
                   onClick={() => removeQuestion(question.id)}
-                  variant="danger"
+                  variant="delete"
                   size="sm"
-                >
-                  Remove
-                </Button>
+                />
               </div>
             </div>
           ))}

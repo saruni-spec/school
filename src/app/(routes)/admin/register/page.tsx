@@ -115,7 +115,7 @@ const RegisterPage = () => {
     {
       label: "Time Table",
       icon: ShieldCheck,
-      route: "/admin/register/role",
+      route: "/admin/register/time_table",
       description: "Create and manage time tables",
     },
   ];

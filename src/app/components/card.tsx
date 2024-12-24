@@ -6,14 +6,40 @@ interface CardProps {
   className?: string;
 }
 
+interface CardHeaderBaseProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface CardHeaderProps extends CardHeaderBaseProps {
+  onClick?: () => void;
+  clickable?: boolean;
+}
+
 export const Card: React.FC<CardProps> = ({ children, className = "" }) => (
   <div className={`bg-white shadow-md rounded-lg ${className}`}>{children}</div>
 );
 
-export const CardHeader: React.FC<CardProps> = ({
+export const CardHeader: React.FC<CardHeaderProps> = ({
   children,
   className = "",
-}) => <div className={`p-6 pb-0 ${className}`}>{children}</div>;
+  onClick,
+  clickable = false,
+}) => {
+  const clickableClass =
+    clickable || onClick ? "cursor-pointer hover:bg-gray-50" : "";
+
+  return (
+    <div
+      className={`p-6 pb-0 transition-colors duration-200 ${clickableClass} ${className}`}
+      onClick={onClick}
+      role={onClick ? "button" : undefined}
+      tabIndex={onClick ? 0 : undefined}
+    >
+      {children}
+    </div>
+  );
+};
 
 export const CardTitle: React.FC<CardProps> = ({
   children,

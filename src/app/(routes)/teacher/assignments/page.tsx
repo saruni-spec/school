@@ -1,194 +1,90 @@
 "use client";
-import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
-import RadioInputs from "@/app/components/radio";
-import { FieldType, generic_record, record } from "@/app/types/types";
-import React, { useState } from "react";
-import QuestionCreator from "@/app/components/assignment_questions";
-import { useValidation } from "@/app/hooks/validation_hooks";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "@/lib/firebase";
+import { AssignmentCard } from "@/app/components/assignment_card";
+import CreateAssignment from "@/app/components/assignment_creator";
+import { Button } from "@/app/components/button";
 import { useTeacherDetails } from "@/app/context/user_context";
-import { Select } from "@/app/components/select";
-import { validInputs } from "@/lib/functions";
+import { useCallback, useEffect, useState } from "react";
 
-const assignmentOptions = [{ name: "File" }, { name: "Questions" }];
+type AssignmentAttempt = {
+  id: number;
+  student_id: number;
+  date_submitted: string;
+  assignment_content_id: number;
+  date_marked: string | null;
+  remarks: string | null;
+  result: number | null;
+};
+
+type AssignmentContent = {
+  id: number;
+  question: string;
+  options: [];
+  assignment_attempt: AssignmentAttempt[];
+};
+
+type Assignment = {
+  id: number;
+  description: string;
+  subject_allocation_id: number | null;
+  file_path: string | null;
+  assignment_content: AssignmentContent[];
+};
 
 const Assignments = () => {
-  const [assignment, setAssignment] = useState<File | string[]>();
-  const [assignmentType, setAssignmentType] = useState<"File" | "Questions">();
-  const [selectedRadio, setSelectedRadio] = useState<generic_record>({
-    name: "Questions",
-  });
-
-  const file = useValidation({ type: FieldType.Text });
-  const subject = useValidation({ type: FieldType.Text, required: true });
-
+  const [page, setPage] = useState<"view" | "create">("view");
+  const [myAssignments, setMyAssignments] = useState<Assignment[]>([]);
   const { teacherDetails } = useTeacherDetails();
 
-  const handleFileSubmission = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setAssignment(e.target.files[0]);
-      file.handle_value_change(e.target.files[0].name);
-    }
-  };
-
-  const handleRadioChange = (record: generic_record) => {
-    setSelectedRadio(record);
-    setAssignmentType(record["name"] as "File" | "Questions");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const getAssignments = useCallback(async () => {
     try {
-      if (!validInputs([subject])) return;
-
-      if (!assignment) {
-        alert("No assignment content provided");
-        throw new Error("No assignment content provided");
+      const response = await fetch(
+        `/api/teacher/get_assignments/${teacherDetails.id}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch assignments");
       }
-
-      if (assignmentType === "File" && assignment instanceof File) {
-        // Generate a unique filename using timestamp
-        const timestamp = Date.now();
-        const fileExtension = assignment.name.split(".").pop();
-        const filename = `assignments/${timestamp}.${fileExtension}`;
-
-        // Upload file to Firebase Storage
-        const storageRef = ref(storage, filename);
-        await uploadBytes(storageRef, assignment);
-        const fileUrl = await getDownloadURL(storageRef);
-
-        // Create assignment record with file path
-        const assignmentResponse = await fetch("/api/assignments", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            description: file.value || "File Assignment", // Using the filename if no description
-            file_path: fileUrl,
-            teacher_id: teacherDetails?.id,
-            subject_allocation_id: subject.value,
-          }),
-        });
-
-        if (!assignmentResponse.ok) {
-          throw new Error("Failed to create assignment");
-        }
-
-        const assignmentData = await assignmentResponse.json();
-
-        // Create assignment_content record
-        await fetch("/api/assignment-content", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            assignment_id: assignmentData.id,
-            details: fileUrl,
-          }),
-        });
-      } else if (assignmentType === "Questions" && Array.isArray(assignment)) {
-        // Create assignment record for questions
-        const assignmentResponse = await fetch("/api/assignments", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            description: "Question Assignment",
-            teacher_id: teacherDetails?.id,
-            subject_allocation_id: subject.value,
-          }),
-        });
-
-        if (!assignmentResponse.ok) {
-          throw new Error("Failed to create assignment");
-        }
-
-        const assignmentData = await assignmentResponse.json();
-
-        // Create assignment_content record with questions
-        await fetch("/api/assignment-content", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            assignment_id: assignmentData.id,
-            details: JSON.stringify(assignment),
-            options: assignment.reduce(
-              (acc: Record<string, any[]>, question: any) => {
-                if (question.type === "multiple" && question.options) {
-                  acc[question.id] = question.options;
-                }
-                return acc;
-              },
-              {}
-            ),
-          }),
-        });
-      }
-
-      // Handle success (e.g., show success message, redirect, etc.)
-      console.log("Assignment created successfully");
-    } catch (error) {
-      // Handle error (e.g., show error message)
-      console.error("Error creating assignment:", error);
+      const data = await response.json();
+      setMyAssignments(data);
+    } catch (err) {
+      console.error("Error fetching assignments:", err);
+    } finally {
     }
-  };
+  }, [teacherDetails]);
 
-  const handleQuestions = (questions: any[]) => {
-    console.log(questions);
-    setAssignment(questions);
-  };
-
-  const handleSubjectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    console.log(e);
-    subject.handle_value_change(e.target.value);
-  };
+  useEffect(() => {
+    getAssignments();
+  }, [getAssignments]);
 
   return (
-    <Form
-      onSubmit={handleSubmit}
-      title="Create Assignment"
-      submitButtonText="Create Assignment"
-      orientation="vertical"
-    >
-      <Select
-        options={(teacherDetails?.subject_allocation as record[]) || []}
-        label="Subject"
-        show_field={"id"}
-        value={subject.value}
-        onChange={handleSubjectChange}
-        error={subject.error}
-      />
-      <RadioInputs
-        label="File or Questions"
-        options={assignmentOptions}
-        id_field="name"
-        name="radio-group"
-        value={selectedRadio ? (selectedRadio["name"] as string) : undefined}
-        onChange={handleRadioChange}
-        value_field="name"
-        orientation="horizontal"
-      />
+    <div className="container mx-auto p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">My Assignments</h1>
+        <Button
+          onClick={() => setPage(page === "view" ? "create" : "view")}
+          variant="primary"
+        >
+          {page === "view" ? "Create Assignment" : "View Assignments"}
+        </Button>
+      </div>
 
-      {assignmentType === "File" && (
-        <Input
-          label="Assignment"
-          type="file"
-          onChange={handleFileSubmission}
-          error={file.error}
-        />
+      {page === "view" && (
+        <div className="space-y-6">
+          {myAssignments.length === 0 ? (
+            <div className="text-center p-12 bg-gray-50 rounded-lg">
+              <p className="text-gray-600">No assignments created yet.</p>
+              <Button onClick={() => setPage("create")} className="mt-4">
+                Create Your First Assignment
+              </Button>
+            </div>
+          ) : (
+            myAssignments.map((assignment) => (
+              <AssignmentCard key={assignment.id} assignment={assignment} />
+            ))
+          )}
+        </div>
       )}
-
-      {assignmentType === "Questions" && (
-        <QuestionCreator onSubmit={handleQuestions} />
-      )}
-    </Form>
+      {page === "create" && <CreateAssignment />}
+    </div>
   );
 };
 

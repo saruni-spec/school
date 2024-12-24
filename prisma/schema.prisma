@@ -848,7 +848,6 @@ model teacher {
   result                result[]
   review                review[]
   subject_allocation    subject_allocation[]
-  slot_assignment       slot_assignment[]
   assignment            assignment[]
   class_progression     class_progression[]
   assignment_attempt    assignment_attempt[]
@@ -966,7 +965,7 @@ model assignment {
   class_progression_id    Int?
   due_date                DateTime?              @db.Date
   ref                     String?
-  file_path               String?                @db.VarChar(50)
+  file_path               String?                @db.VarChar(250)
 
   created_at              DateTime?              @default(now()) @db.Timestamptz(6)
   updated_at              DateTime?              @default(now()) @db.Timestamptz(6)
@@ -985,20 +984,22 @@ model assignment {
 
 model assignment_content{
   id                    Int                    @id @default(autoincrement())
-  assignment_id         Int?                   @unique
-  details               String?
-  options               Json? 
+  assignment_id         Int?               
+  question              String?
+  options               Json[]
 
-  assignment            assignment?            @relation(fields: [assignment_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  assignment            assignment?            @relation(fields: [assignment_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
   assignment_attempt    assignment_attempt[]
+
+  @@unique([assignment_id,question])
 
 }
 
 model assignment_attempt {
   id                          Int                      @id @default(autoincrement())
   assignment_content_id       Int?
-  submission                  String?
+  answer                      String?
   student_id                  Int?
   date_submitted              DateTime?
   date_marked                 DateTime?
@@ -1092,19 +1093,16 @@ model slot_assignment {
   id                             Int                          @id @default(autoincrement())
   slot_id                        Int
   stream_id                      Int
-  teacher_id                     Int
   subject_allocation_id          Int
   created_at                     DateTime?                    @default(now()) @db.Timestamptz(6)
   updated_at                     DateTime?                    @default(now()) @db.Timestamptz(6)
   deleted_at                     DateTime?                    @db.Timestamptz(6)
 
   slot                           slot                         @relation(fields: [slot_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  teacher                        teacher                      @relation(fields: [teacher_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   subject_allocation             subject_allocation           @relation(fields: [subject_allocation_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   stream                         stream?                      @relation(fields: [stream_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   
-  @@unique([slot_id, teacher_id])
-  @@index([teacher_id])
+  @@unique([slot_id, subject_allocation_id])
   @@index([subject_allocation_id])
 }
 
