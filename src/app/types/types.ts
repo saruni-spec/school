@@ -29,6 +29,31 @@ export type input_field = {
   handle_value_change: (newValue: string | number) => void;
 };
 
+export type Student = {
+  id: number;
+  student_code: string;
+  admission_number: string;
+  users: {
+    id: number;
+    id_code: string;
+  };
+  student_class: {
+    class_progression: {
+      id: number;
+      name: string;
+      teacher: {
+        staff: {
+          users: {
+            name: string;
+            id_code: string;
+          };
+        };
+      };
+      stream_id: number;
+    };
+  }[];
+};
+
 export type date_field = {
   value: string;
   error: string | null;

@@ -47,6 +47,10 @@ enum event_role {
   SUPERVISOR
 }
 
+enum timetable_status {
+  DRAFT
+  PUBLISHED
+}
 
 enum event_scope {
   INTER_SCHOOL
@@ -193,6 +197,16 @@ enum severity {
   PRIOTITY
   INQUIRY
   LOW
+}
+
+enum week_days {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
 }
 
 // Enum for defining broad privilege categories
@@ -358,6 +372,7 @@ model school {
   event                       event[]
   announcement                announcement[]
   gallery                     gallery[]
+  time_table                  time_table[]
 }
 
 // These are the different school levels,ie. LOWER_PRIMARY,UPPER_PRIMARY....that a spefic school has
@@ -475,6 +490,7 @@ model semester {
   award                  award[]
   exam                   exam[]
   subject_allocation     subject_allocation[]
+  time_table             time_table[]
 
   @@unique([academic_year_id,start_date])
 
@@ -504,22 +520,6 @@ model department {
   @@index([school_id])
 }
 
-
-model facility_staff {
-  staff_id                  Int
-  school_facility_id        Int
-
-  role                      role_type?
-
-  created_at                DateTime?               @default(now()) @db.Timestamptz(6)
-  updated_at                DateTime?               @default(now()) @db.Timestamptz(6)
-  deleted_at                DateTime?               @db.Timestamptz(6)
-
-  staff                     staff?                  @relation(fields: [staff_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  school_facility           school_facility?        @relation(fields: [school_facility_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-  @@id([staff_id,school_facility_id])
-}
 
 // Represents the diffrent grades that are currently being offered in a school
 
@@ -603,6 +603,7 @@ model class_progression {
   attendance                  attendance[]
 
   @@unique([stream_id,academic_year_id])
+  @@unique([teacher_id,academic_year_id])
   @@map("class")
   @@index([academic_year_id])
   @@index([is_current])
@@ -635,40 +636,6 @@ model student_class {
 
   @@unique([student_id, class_progression_id])
   @@index([student_id])
-}
-
-model attendance {
-  id                   Int                 @id @default(autoincrement())
-  //
-  // the person attending
-  users_id             Int?
-  //
-  // the staff member checking the attendance
-  staff_id             Int?
- 
-  class_progression_id Int?
-
-  taken_on             DateTime?
-  status               attendance_status?
-  reason_for_absence   absence_reason?
-  notified_on          DateTime?
-  to_miss_on           DateTime?
-  up_to                DateTime?
-  //
-  // the person who approved a absentee
-  school_leader_id     Int?   
-
-  created_at           DateTime            @default(now())
-  updated_at           DateTime            @default(now())
-  deleted_at           DateTime?
-
-  users                users?              @relation(fields: [users_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
-  staff                staff?              @relation(fields: [staff_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
-  school_leader        school_leader?      @relation(fields: [school_leader_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
-  class_progression    class_progression?  @relation(fields: [class_progression_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
-
-  @@unique([users_id,created_at])
-  @@index([users_id])
 }
 
 
@@ -705,14 +672,35 @@ model permission {
   @@index([resource, department_id, school_id, class_progression_id,role_id])
 }
 
+
+
+
+model role {
+  id                        Int                  @id @default(autoincrement())
+  type                      role_type            @unique
+  name                      String
+  description               String?
+  category                  privilege_category?
+  
+  created_at                DateTime             @default(now())
+  updated_at                DateTime             @default(now())
+  deleted_at                DateTime?
+  
+
+  permissions               permission[]
+  users                     users[]
+ 
+  @@unique([type, category])
+}
+
 model users {
   id                                 Int                      @id @default(autoincrement())
-  name                               String?                  @db.VarChar(50)
-  first_name                         String                   @db.VarChar(50)
-  last_name                          String                   @db.VarChar(50)
-  id_code                            String?                  @db.VarChar(30) @unique
-  email                              String                   @unique @db.VarChar(100)
-  phone                              String?                  @db.VarChar(20)
+  name                               String?                  
+  first_name                         String                   
+  last_name                          String                  
+  id_code                            String?                  @unique
+  email                              String                   @unique 
+  phone                              String?                
   date_of_birth                      DateTime?                @db.Date
   address                            String?
   password                           String
@@ -753,31 +741,13 @@ model users {
 }
 
 
-model role {
-  id                        Int                  @id @default(autoincrement())
-  type                      role_type            @unique
-  name                      String
-  description               String?
-  category                  privilege_category?
-  
-  created_at                DateTime             @default(now())
-  updated_at                DateTime             @default(now())
-  deleted_at                DateTime?
-  
-
-  permissions               permission[]
-  users                     users[]
- 
-  @@unique([type, category])
-}
-
 model school_leader {
   id                                 Int                @id @default(autoincrement())
   staff_id                           Int?               @unique
 
   academic_year_id                   Int?
   date_removed                       DateTime?          @db.Date
-  reason_removed                     String?            @db.VarChar(50)
+  reason_removed                     String?          
 
   created_at                         DateTime?          @default(now()) @db.Timestamptz(6)
   updated_at                         DateTime?          @default(now()) @db.Timestamptz(6)
@@ -811,7 +781,7 @@ model admin{
 model staff {
   id                                              Int                 @id @default(autoincrement())
   users_id                                        Int                 @unique
-  school_code                                     String?             @db.VarChar(20)
+  school_code                                     String?             
   department_id                                   Int?
   employment_status                               employment_status   @default(FULL_TIME) 
 
@@ -855,11 +825,27 @@ model teacher {
   @@index([staff_id])
 }
 
+model facility_staff {
+  staff_id                  Int
+  school_facility_id        Int
+
+  role                      role_type?
+
+  created_at                DateTime?               @default(now()) @db.Timestamptz(6)
+  updated_at                DateTime?               @default(now()) @db.Timestamptz(6)
+  deleted_at                DateTime?               @db.Timestamptz(6)
+
+  staff                     staff?                  @relation(fields: [staff_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  school_facility           school_facility?        @relation(fields: [school_facility_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@id([staff_id,school_facility_id])
+}
+
 
 model student {
   id                    Int               @id @default(autoincrement())
-  admission_number      String?           @db.VarChar(20) 
-  student_code          String?           @db.VarChar(20) @unique
+  admission_number      String?           
+  student_code          String?            @unique
   users_id              Int?               @unique
 
   created_at            DateTime?         @default(now()) @db.Timestamptz(6)
@@ -873,6 +859,35 @@ model student {
   student_class         student_class[]
   student_ellectives    student_ellectives[]
   assignment_attempt    assignment_attempt[]
+
+}
+
+model parent_student {
+  parent_id         Int
+  student_id        Int
+
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime? @db.Timestamptz(6)
+
+  parent            parent    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  student           student   @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@id([parent_id, student_id])
+}
+
+
+model parent {
+  id                Int               @id @default(autoincrement())
+  users_id          Int?              @unique
+  relationship_type relationship_type
+
+  created_at        DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime?         @db.Timestamptz(6)
+
+  users             users?            @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  parent_student    parent_student[]
 
 }
 
@@ -917,7 +932,7 @@ model subject_allocation {
   teacher_id                Int?
   subject_grade_id          Int?
   stream_id                 Int
-  semester_id               Int
+  semester_id               Int?
   assigned_date             DateTime?                 @default(dbgenerated("CURRENT_DATE")) @db.Date
 
   created_at                DateTime?                 @default(now()) @db.Timestamptz(6)
@@ -926,7 +941,7 @@ model subject_allocation {
 
 
   stream                    stream                    @relation(fields: [stream_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  semester                  semester                  @relation(fields: [semester_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  semester                  semester?                 @relation(fields: [semester_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   subject_grade             subject_grade?            @relation(fields: [subject_grade_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
   teacher                   teacher?                  @relation(fields: [teacher_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   department                department?               @relation(fields: [department_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
@@ -939,6 +954,111 @@ model subject_allocation {
   
   @@unique([teacher_id, subject_grade_id])
 }
+
+
+model slot_assignment {
+  id                             Int                          @id @default(autoincrement())
+  slot_id                        Int
+  stream_id                      Int
+  subject_allocation_id          Int
+  created_at                     DateTime?                    @default(now()) @db.Timestamptz(6)
+  updated_at                     DateTime?                    @default(now()) @db.Timestamptz(6)
+  deleted_at                     DateTime?                    @db.Timestamptz(6)
+
+  slot                           slot                         @relation(fields: [slot_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  subject_allocation             subject_allocation           @relation(fields: [subject_allocation_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  stream                         stream?                      @relation(fields: [stream_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  
+  @@unique([slot_id, subject_allocation_id])
+  @@index([subject_allocation_id])
+}
+
+
+model slot {
+  id                Int           @id @default(autoincrement())
+  name              String?       @db.VarChar(50)
+  day_of_week       week_days
+  start_time        String        @db.VarChar(30)
+  end_time          String        @db.VarChar(30)
+  room_number       String?       @db.VarChar(20)
+  is_break          Boolean       @default(false)  
+  time_table_id     Int?
+
+  created_at        DateTime?     @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?     @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime?     @db.Timestamptz(6)
+
+  time_table        time_table?   @relation(fields: [time_table_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+ 
+  slot_assignment   slot_assignment[]
+
+  @@unique([day_of_week, start_time, time_table_id])
+}
+
+
+model time_table {
+  id                Int              @id @default(autoincrement())
+  name              String?          @db.VarChar(100)
+  school_id         Int?
+  semester_id       Int?
+  status            timetable_status @default(DRAFT)
+  is_active         Boolean          @default(false)
+  
+ 
+  slot_duration     Int           
+  start_time        String?          @db.VarChar(30)
+  end_time          String?          @db.VarChar(30)
+  days_per_week     Int  
+  breaks            Json?          //[{ startTime: string, duration: number }]
+  
+  created_at        DateTime?        @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?        @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime?        @db.Timestamptz(6)
+  
+  school            school?          @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  semester          semester?        @relation(fields: [semester_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  
+  
+  slots             slot[]
+
+  @@unique([school_id, semester_id, is_active])
+}
+
+
+model attendance {
+  id                   Int                 @id @default(autoincrement())
+  //
+  // the person attending
+  users_id             Int?
+  //
+  // the staff member checking the attendance
+  staff_id             Int?
+ 
+  class_progression_id Int?
+
+  taken_on             DateTime?
+  status               attendance_status?
+  reason_for_absence   absence_reason?
+  notified_on          DateTime?
+  to_miss_on           DateTime?
+  up_to                DateTime?
+  //
+  // the person who approved a absentee
+  school_leader_id     Int?   
+
+  created_at           DateTime            @default(now())
+  updated_at           DateTime            @default(now())
+  deleted_at           DateTime?
+
+  users                users?              @relation(fields: [users_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
+  staff                staff?              @relation(fields: [staff_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
+  school_leader        school_leader?      @relation(fields: [school_leader_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
+  class_progression    class_progression?  @relation(fields: [class_progression_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
+
+  @@unique([users_id,created_at])
+  @@index([users_id])
+}
+
 
 model medical {
   id                                Int                      @id @default(autoincrement())
@@ -1041,70 +1161,7 @@ model student_ellectives {
 }
 
 
-model parent {
-  id                Int               @id @default(autoincrement())
-  users_id          Int?              @unique
-  relationship_type relationship_type
 
-  created_at        DateTime?         @default(now()) @db.Timestamptz(6)
-  updated_at        DateTime?         @default(now()) @db.Timestamptz(6)
-  deleted_at        DateTime?         @db.Timestamptz(6)
-
-  users             users?            @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  parent_student    parent_student[]
-
-}
-
-
-model parent_student {
-  parent_id         Int
-  student_id        Int
-
-  created_at        DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at        DateTime? @default(now()) @db.Timestamptz(6)
-  deleted_at        DateTime? @db.Timestamptz(6)
-
-  parent            parent    @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  student           student   @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  @@id([parent_id, student_id])
-}
-
-
-model slot {
-  id                Int           @id @default(autoincrement())
-  name              String?       @db.VarChar(50)
-  day_of_week       Int
-  start_time        DateTime      @db.Time(6)
-  end_time          DateTime      @db.Time(6)
-  room_number       String?       @db.VarChar(20)
-
-  created_at        DateTime?     @default(now()) @db.Timestamptz(6)
-  updated_at        DateTime?     @default(now()) @db.Timestamptz(6)
-  deleted_at        DateTime?     @db.Timestamptz(6)
-
-  slot_assignments  slot_assignment[]
-
-  @@unique([day_of_week,start_time,end_time,room_number])
-}
-
-
-model slot_assignment {
-  id                             Int                          @id @default(autoincrement())
-  slot_id                        Int
-  stream_id                      Int
-  subject_allocation_id          Int
-  created_at                     DateTime?                    @default(now()) @db.Timestamptz(6)
-  updated_at                     DateTime?                    @default(now()) @db.Timestamptz(6)
-  deleted_at                     DateTime?                    @db.Timestamptz(6)
-
-  slot                           slot                         @relation(fields: [slot_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  subject_allocation             subject_allocation           @relation(fields: [subject_allocation_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  stream                         stream?                      @relation(fields: [stream_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  
-  @@unique([slot_id, subject_allocation_id])
-  @@index([subject_allocation_id])
-}
 
 
 model exam {

@@ -1,6 +1,6 @@
 // store/useUserStore.ts
 import { create } from "zustand";
-import { record } from "@/app/types/types";
+import { record, Student } from "@/app/types/types";
 import { privilege_category, role_type } from "@prisma/client";
 
 type User = {
@@ -29,6 +29,11 @@ interface UserState {
 interface teacherDetailsState {
   teacherDetails: record | undefined;
   setTeacherDetails: (teacherDetails: record) => void;
+}
+
+interface studentDetailsState {
+  studentDetails: Student | undefined;
+  setStudentDetails: (studentDetails: Student) => void;
 }
 
 export const useUser = create<UserState>((set) => ({
@@ -70,5 +75,14 @@ export const useTeacherDetails = create<teacherDetailsState>((set) => ({
   setTeacherDetails: (teacherDetails: record) =>
     set(() => ({
       teacherDetails,
+    })),
+}));
+
+export const useStudentDetails = create<studentDetailsState>((set) => ({
+  studentDetails: undefined,
+
+  setStudentDetails: (studentDetails: Student) =>
+    set(() => ({
+      studentDetails,
     })),
 }));

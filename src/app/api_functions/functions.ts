@@ -1,5 +1,5 @@
 import { flattenObjectIterative } from "@/lib/functions";
-import { record } from "../types/types";
+import { record, Student } from "../types/types";
 
 //
 const REGISTER_ROUTE = "http://localhost:3000/api/register";
@@ -106,4 +106,39 @@ export const getDataWithSchoolId = async (
   );
 
   return flattened_data;
+};
+
+//
+// get teacher specific details
+export const getTeacherDetails = async (
+  users_id: number
+): Promise<record | null> => {
+  try {
+    const response = await fetch(`/api/teacher/${users_id}`);
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+    const data: record = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching teacher details:", error);
+    console.log("Error fetching teacher details. Please try again.");
+    return null;
+  }
+};
+
+export const getStudentDetails = async (users_id: number) => {
+  try {
+    const response = await fetch(`/api/student/${users_id}`);
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+    const data: Student = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching student details:", error);
+    console.log("Error fetching student details. Please try again.");
+    return null;
+  }
 };

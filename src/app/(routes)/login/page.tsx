@@ -5,14 +5,22 @@ import Validation, { required, validatePassword } from "@/app/hooks/validation";
 import React from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useTeacherDetails, useUser } from "@/app/context/user_context";
-import { record } from "@/app/types/types";
+import {
+  useStudentDetails,
+  useTeacherDetails,
+  useUser,
+} from "@/app/context/user_context";
+import {
+  getStudentDetails,
+  getTeacherDetails,
+} from "@/app/api_functions/functions";
 
 //Login component
 const Login = () => {
   const router = useRouter();
   const { setUser, setSchool } = useUser();
   const { setTeacherDetails } = useTeacherDetails();
+  const { setStudentDetails } = useStudentDetails();
   //we require the email and password to login
   const identification = Validation("", [required]);
   const password = Validation("", [validatePassword, required]);
@@ -26,23 +34,6 @@ const Login = () => {
       searchParams.append(key, value ? value : "profile");
     });
     return searchParams.toString();
-  };
-
-  //
-  // get teacher specific details
-  const getTeacherDetails = async (user_id: number): Promise<record | null> => {
-    try {
-      const response = await fetch(`/api/teacher/${user_id}`);
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
-      const data: record = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error fetching teacher details:", error);
-      console.log("Error fetching teacher details. Please try again.");
-      return null;
-    }
   };
 
   //submit the login form
@@ -104,8 +95,15 @@ const Login = () => {
             router.push(`/teacher?${query_string}`);
             break;
           case "STUDENT":
-          case "PARENT":
+            const student_details = await getStudentDetails(session.user.id);
+            if (student_details) {
+              setStudentDetails(student_details);
+            }
+
             router.push(`/student?${query_string}`);
+            break;
+          case "PARENT":
+            router.push(`/parent?${query_string}`);
             break;
           case "SECRETARY":
           case "ADMINISTRATIVE_STAFF":

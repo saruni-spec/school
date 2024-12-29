@@ -58,3 +58,13 @@ export function flattenObjectIterative(obj: record) {
 
   return result;
 }
+
+export const convertToISOTime = (time: string) => {
+  const placeholderDate = "2024-12-25"; // Use a default date
+  return `${placeholderDate}T${time}:00.000Z`;
+};
+export const decodeISOTime = (isoString: string) => {
+  // Use regex to extract the time portion (HH:MM)
+  const match = isoString.match(/T(\d{2}:\d{2}):/);
+  return match ? match[1] : null; // Return the extracted time or null if not a valid ISO string
+};

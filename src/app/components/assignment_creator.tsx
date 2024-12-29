@@ -168,7 +168,8 @@ const CreateAssignment = () => {
       <Select
         options={(teacherDetails?.subject_allocation as record[]) || []}
         label="Subject"
-        show_field={"id"}
+        show_field={"subject_grade.name"}
+        split_show_field={true}
         value={subject.value}
         onChange={handleSubjectChange}
         error={subject.error}

@@ -8,6 +8,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string; // Label for the select input
   id_field?: string | number; // Field to use as the id for the options
   show_field?: string | number; // Field to use as the display value for the options
+  split_show_field?: boolean;
   containerClassName?: string; // Classname for the container div
   labelClassName?: string; // Classname for the label
   errorClassName?: string; // Classname for the error message
@@ -21,6 +22,7 @@ export const Select: React.FC<SelectProps> = ({
   label,
   id_field = "id",
   show_field = "name",
+  split_show_field = false,
   containerClassName = "",
   labelClassName = "",
   errorClassName = "",
@@ -33,6 +35,13 @@ export const Select: React.FC<SelectProps> = ({
   onChange, // what to do when the value changes
   ...props
 }) => {
+  // Utility function to safely access nested properties
+  const getNestedValue = (obj: any, path: string): any => {
+    return path
+      .split(".")
+      .reduce((acc, key) => (acc ? acc[key] : undefined), obj);
+  };
+
   return (
     // The select input field
     <div className={`w-full ${containerClassName}`}>
@@ -88,7 +97,9 @@ export const Select: React.FC<SelectProps> = ({
                 key={option[id_field] as string | number}
                 value={option[id_field] as string | number}
               >
-                {option[show_field] as string}
+                {split_show_field
+                  ? (getNestedValue(option, show_field as string) as string)
+                  : (option[show_field] as string)}
               </option>
             ))}
           {!options && <>No options available</>}

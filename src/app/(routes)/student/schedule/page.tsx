@@ -1,5 +1,5 @@
 "use client";
-import { useTeacherDetails } from "@/app/context/user_context";
+import { useStudentDetails, useUser } from "@/app/context/user_context";
 import React, { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/app/components/card";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
@@ -10,7 +10,8 @@ const Schedule = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [nextSlot, setNextSlot] = useState<record | null>(null);
-  const { teacherDetails } = useTeacherDetails();
+  const { studentDetails } = useStudentDetails();
+  const { school_id } = useUser();
 
   const daysOfWeek = [
     "SUNDAY",
@@ -24,10 +25,11 @@ const Schedule = () => {
   const days_of_week = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
 
   const fetchSlots = useCallback(async () => {
+    console.log(studentDetails);
     try {
       setIsLoading(true);
       const response = await fetch(
-        `/api/teacher/slot?teacher_id=${teacherDetails?.id}`
+        `/api/student/slot?school_id=${school_id}&stream_id=${studentDetails?.student_class[0]?.class_progression?.stream_id}`
       );
       if (!response.ok) {
         throw new Error("Failed to fetch schedule");
@@ -41,7 +43,7 @@ const Schedule = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [teacherDetails]);
+  }, [studentDetails]);
 
   const updateNextSlot = (currentSlots: record[]) => {
     if (currentSlots.length === 0) return;
@@ -106,14 +108,6 @@ const Schedule = () => {
 
     return () => clearInterval(interval);
   }, [fetchSlots]);
-
-  const formatTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
 
   if (isLoading) {
     return (

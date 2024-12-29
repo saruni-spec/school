@@ -8,9 +8,10 @@ export async function GET(request: Request) {
   try {
     // Extract teacher_id name from the URL query parameters
     const { searchParams } = new URL(request.url);
-    const teacher_id = searchParams.get("teacher_id");
+    const school_id = searchParams.get("school_id");
+    const stream_id = searchParams.get("stream_id");
 
-    if (!teacher_id) {
+    if (!school_id || !stream_id) {
       return NextResponse.json(
         {
           error:
@@ -20,9 +21,12 @@ export async function GET(request: Request) {
       );
     }
 
-    // Fetch all teachers from the specified teacher_id
-    const teachers = await prisma.slot_assignment.findMany({
-      where: { subject_allocation: { teacher_id: Number(teacher_id) } },
+    // Fetch all student_schedule from the specified teacher_id
+    const student_schedule = await prisma.slot_assignment.findMany({
+      where: {
+        slot: { time_table: { school_id: Number(school_id) } },
+        AND: [{ subject_allocation: { stream_id: Number(stream_id) } }],
+      },
       select: {
         id: true,
         slot: {
@@ -36,25 +40,28 @@ export async function GET(request: Request) {
           },
         },
         subject_allocation: {
-          select: { subject_grade: { select: { name: true } } },
+          select: {
+            stream_id: true,
+            subject_grade: { select: { name: true } },
+          },
         },
       },
     });
 
-    return NextResponse.json(teachers, { status: 200 }); // OK
+    return NextResponse.json(student_schedule, { status: 200 }); // OK
   } catch (error) {
-    console.error("Error fetching teachers:", error);
+    console.error("Error fetching student_schedule:", error);
 
     if (error instanceof Error) {
       return NextResponse.json(
-        { error: "Error fetching teachers", details: error.message },
+        { error: "Error fetching student_schedule", details: error.message },
         { status: 500 } // Internal Server Error
       );
     }
 
     // Fallback for unexpected error types
     return NextResponse.json(
-      { error: "Unexpected error fetching teachers" },
+      { error: "Unexpected error fetching student_schedule" },
       { status: 500 }
     );
   }

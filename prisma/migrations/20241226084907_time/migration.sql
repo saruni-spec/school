@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "slot" ALTER COLUMN "start_time" SET DATA TYPE VARCHAR(30),
+ALTER COLUMN "end_time" SET DATA TYPE VARCHAR(30);

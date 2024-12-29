@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     // Fetch all teachers from the specified school_id
     const teachers = await prisma.teacher.findMany({
       where: {
-        staff: { department: { school_id: parseInt(school_id) } },
+        staff: { users: { school_id: Number(school_id) } },
       },
       select: {
         id: true,
