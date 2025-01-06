@@ -1,7 +1,7 @@
 import { Form } from "@/app/components/form";
 import { Input } from "@/app/components/input";
 import RadioInputs from "@/app/components/radio";
-import { FieldType, generic_record, record } from "@/app/types/types";
+import { FieldType, generic_record, MyRecord } from "@/app/types/types";
 import React, { useState } from "react";
 import QuestionCreator from "@/app/components/assignment_questions";
 import { useValidation } from "@/app/hooks/validation_hooks";
@@ -15,12 +15,12 @@ import { register } from "@/app/api_functions/functions";
 const assignmentOptions = [{ name: "File" }, { name: "Questions" }];
 
 const CreateAssignment = () => {
-  const [assignment, setAssignment] = useState<File | record[]>();
+  const [assignment, setAssignment] = useState<File | MyRecord[]>();
   const [assignmentType, setAssignmentType] = useState<"File" | "Questions">();
   const [selectedRadio, setSelectedRadio] = useState<generic_record>({
     name: "Questions",
   });
-  const [selectedSubject, setSelectedSubject] = useState<record>();
+  const [selectedSubject, setSelectedSubject] = useState<MyRecord>();
 
   const file = useValidation({ type: FieldType.Text });
   const subject = useValidation({ type: FieldType.Number, required: true });
@@ -166,7 +166,7 @@ const CreateAssignment = () => {
       orientation="vertical"
     >
       <Select
-        options={(teacherDetails?.subject_allocation as record[]) || []}
+        options={(teacherDetails?.subject_allocation as MyRecord[]) || []}
         label="Subject"
         show_field={"subject_grade.name"}
         split_show_field={true}

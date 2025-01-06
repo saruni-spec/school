@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useCallback } from "react";
 import {
-  dateFormat,
+  DateFormat,
   FieldConfig,
   FieldType,
   FieldValidation,
@@ -52,7 +52,7 @@ export function useValidation(config: FieldConfig): FieldValidation {
       // Additional type-specific validations
       if (type === FieldType.Date) {
         const date = date_format
-          ? parseDate(inputValue, date_format as dateFormat)
+          ? parseDate(inputValue, date_format as DateFormat)
           : parseDate(inputValue);
 
         // Required validation for dates
@@ -123,7 +123,7 @@ export function useValidation(config: FieldConfig): FieldValidation {
 // Utility function to parse dates based on format
 const parseDate = (
   dateString: string | Date,
-  format: dateFormat = "YYYY-MM-DD"
+  format: DateFormat = "YYYY-MM-DD"
 ): Date | null => {
   if (!dateString) return null;
   //
@@ -150,7 +150,7 @@ const parseDate = (
   }
 };
 
-const formatDate = (date: Date, format: dateFormat = "YYYY-MM-DD") => {
+const formatDate = (date: Date, format: DateFormat = "YYYY-MM-DD") => {
   const pad = (num: number) => num.toString().padStart(2, "0");
 
   switch (format) {

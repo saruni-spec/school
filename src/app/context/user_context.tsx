@@ -1,15 +1,15 @@
 // store/useUserStore.ts
 import { create } from "zustand";
-import { record, Student } from "@/app/types/types";
+import { MyRecord, Principal, Student } from "@/app/types/types";
 import { privilege_category, role_type } from "@prisma/client";
 
 type User = {
   id: number;
   id_code: string;
   role: role_type;
-  school: record;
+  school: MyRecord;
   role_type: privilege_category;
-  permissions: record[];
+  permissions: MyRecord[];
 } & {
   name?: string | null;
   email?: string | null;
@@ -18,22 +18,27 @@ type User = {
 
 interface UserState {
   user: User | undefined;
-  school: record | undefined;
+  school: MyRecord | undefined;
   school_id: number | undefined;
   roles: string | undefined;
-  permissions: record[] | undefined;
+  permissions: MyRecord[] | undefined;
   setUser: (user: User) => void;
-  setSchool: (school: record) => void;
+  setSchool: (school: MyRecord) => void;
 }
 
-interface teacherDetailsState {
-  teacherDetails: record | undefined;
-  setTeacherDetails: (teacherDetails: record) => void;
+interface TeacherDetailsState {
+  teacherDetails: MyRecord | undefined;
+  setTeacherDetails: (teacherDetails: MyRecord) => void;
 }
 
-interface studentDetailsState {
+interface StudentDetailsState {
   studentDetails: Student | undefined;
   setStudentDetails: (studentDetails: Student) => void;
+}
+
+interface PricipalDetailsState {
+  principalDetails: Principal | undefined;
+  setPrincipalDetails: (principalDetails: Principal) => void;
 }
 
 export const useUser = create<UserState>((set) => ({
@@ -52,7 +57,7 @@ export const useUser = create<UserState>((set) => ({
       permissions: user.permissions,
     })),
 
-  setSchool: (school: record) =>
+  setSchool: (school: MyRecord) =>
     set(() => ({
       school,
       school_id: school.id,
@@ -69,20 +74,45 @@ export const useLoadingState = create<LoadingState>((set) => ({
   setLoading: (loading: boolean) => set({ isLoading: loading }),
 }));
 
-export const useTeacherDetails = create<teacherDetailsState>((set) => ({
+export const useTeacherDetails = create<TeacherDetailsState>((set) => ({
   teacherDetails: undefined,
 
-  setTeacherDetails: (teacherDetails: record) =>
+  setTeacherDetails: (teacherDetails: MyRecord) =>
     set(() => ({
       teacherDetails,
     })),
 }));
 
-export const useStudentDetails = create<studentDetailsState>((set) => ({
+export const useStudentDetails = create<StudentDetailsState>((set) => ({
   studentDetails: undefined,
 
   setStudentDetails: (studentDetails: Student) =>
     set(() => ({
       studentDetails,
     })),
+}));
+
+export const usePrincipalDetails = create<PricipalDetailsState>((set) => ({
+  principalDetails: undefined,
+
+  setPrincipalDetails: (principalDetails: Principal) =>
+    set(() => ({
+      principalDetails,
+    })),
+}));
+
+interface SidebarState {
+  isCollapsed: boolean;
+  isMobileOpen: boolean;
+  toggleCollapsed: () => void;
+  toggleMobile: () => void;
+  setCollapsed: (collapsed: boolean) => void;
+}
+
+export const useSidebarStore = create<SidebarState>((set) => ({
+  isCollapsed: false,
+  isMobileOpen: false,
+  toggleCollapsed: () => set((state) => ({ isCollapsed: !state.isCollapsed })),
+  toggleMobile: () => set((state) => ({ isMobileOpen: !state.isMobileOpen })),
+  setCollapsed: (collapsed) => set({ isCollapsed: collapsed }),
 }));

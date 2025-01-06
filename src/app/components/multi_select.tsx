@@ -1,9 +1,9 @@
 import React from "react";
-import { record } from "../types/types";
+import { MyRecord } from "../types/types";
 
 // Selected item properties
 interface SelectedItemProps {
-  option: record; // Selected option
+  option: MyRecord; // Selected option
   id_field?: string | number; // ID of the option
   onRemove: () => void; // when the remove button is clicked
 }
@@ -28,10 +28,10 @@ export const SelectedItem: React.FC<SelectedItemProps> = ({
 );
 // Check box item properties
 interface CheckBoxItemProps {
-  option: record; // Option to display
+  option: MyRecord; // Option to display
   id_field?: string | number; // ID of the option
   isSelected: boolean; // Whether the option is selected
-  onToggle: (subject: record) => void; // When the option is toggled
+  onToggle: (subject: MyRecord) => void; // When the option is toggled
   selectionLimit?: number | null; // Maximum number of selections
 }
 
@@ -87,12 +87,12 @@ export const CheckBoxItem: React.FC<CheckBoxItemProps> = ({
 interface MultiSelectProps {
   label?: string; // Label for the multi-select
   id_field?: string | number; // ID field of the options
-  options?: record[]; // Options to display
+  options?: MyRecord[]; // Options to display
   maxSelections?: number; // Maximum number of selections
-  onSelectionChange?: (subjects: record[]) => void; // When the selection changes
-  selectedOptions: record[]; // Selected options
-  handleRemoveOption: (subject: record) => void; // When an option is removed
-  handleOptionToggle: (subject: record) => void; // When an option is toggled
+  onSelectionChange?: (subjects: MyRecord[]) => void; // When the selection changes
+  selectedOptions: MyRecord[]; // Selected options
+  handleRemoveOption: (subject: MyRecord) => void; // When an option is removed
+  handleOptionToggle: (subject: MyRecord) => void; // When an option is toggled
 }
 
 // Multi-select component

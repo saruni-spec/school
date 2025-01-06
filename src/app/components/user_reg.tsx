@@ -5,7 +5,12 @@ import { validateEmail } from "@/app/hooks/validation";
 import React, { useCallback, useEffect, useState } from "react";
 import { DatePicker } from "@/app/components/calendar";
 import { Select } from "./select";
-import { record, UserType, RegistrationStep, FieldType } from "../types/types";
+import {
+  MyRecord,
+  UserType,
+  RegistrationStep,
+  FieldType,
+} from "../types/types";
 import { domain_specific_roles } from "@prisma/client";
 import { useUser } from "../context/user_context";
 import { SelectObject } from "./selectobejctitem";
@@ -22,9 +27,9 @@ export const User = ({
   school,
   user_type,
 }: {
-  set_user: (record: record) => void;
+  set_user: (record: MyRecord) => void;
   role_id?: number;
-  school?: record;
+  school?: MyRecord;
   user_type?: UserType;
 }) => {
   // these are the variables that will be used to store the user details
@@ -277,7 +282,7 @@ export const Staff = ({
 
   //
   //get the departments in the school
-  const [departments, setDepartments] = useState<record[]>([]);
+  const [departments, setDepartments] = useState<MyRecord[]>([]);
 
   const getDepartments = useCallback(async () => {
     const response = await fetch(
@@ -352,7 +357,7 @@ export const Student = ({
   student_id: number;
   onSubmit?: () => void;
 }) => {
-  const [streams, setStreams] = useState<record[]>([]);
+  const [streams, setStreams] = useState<MyRecord[]>([]);
   const stream_id = useValidation({ type: FieldType.Text });
   const admission_date = useValidation({ type: FieldType.Date });
   const start_date = useValidation({
@@ -459,7 +464,7 @@ export const UserTypeComponent = ({
   handleAdditionalDetailsSubmit,
 }: {
   user_type: UserType | undefined;
-  user: record | undefined;
+  user: MyRecord | undefined;
   handleAdditionalDetailsSubmit: () => void;
 }) => {
   const excludedRoles = [
@@ -514,7 +519,7 @@ export const CompleteRegistration = ({
 }: {
   user_type: string | undefined;
   setCurrentStep: (step: RegistrationStep) => void;
-  set_user: (user: record | undefined) => void;
+  set_user: (user: MyRecord | undefined) => void;
 }) => {
   return (
     <div className="text-center p-8 bg-gray-50 rounded-lg shadow-md">

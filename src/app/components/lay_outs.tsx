@@ -1,10 +1,9 @@
-import React, { useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MenuLink } from "../types/types";
 import SideMenu from "./side_menu";
 import SchoolSelection from "./school_selection";
 import {
-  useLoadingState,
   useStudentDetails,
   useTeacherDetails,
   useUser,
@@ -23,9 +22,9 @@ import {
   getTeacherDetails,
 } from "../api_functions/functions";
 
-export const Admin_Layout = ({ children }: { children: React.ReactNode }) => {
-  const { isLoading } = useLoadingState();
+const background_color = "bg-gray-50 ";
 
+export const Admin_Layout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const links: MenuLink[] = [
     {
@@ -61,16 +60,14 @@ export const Admin_Layout = ({ children }: { children: React.ReactNode }) => {
   ];
 
   return (
-    <div className="flex">
+    <div className={`flex ${background_color}`}>
       <SideMenu links={links} SchoolSelect={SchoolSelection} />
-      {isLoading && <InspirationLoader isLoading={isLoading} />}
-      {!isLoading && <>{children}</>}
+      <Suspense fallback={<InspirationLoader />}>{children}</Suspense>
     </div>
   );
 };
 
 export const TeacherLayout = ({ children }: { children: React.ReactNode }) => {
-  const { isLoading } = useLoadingState();
   const { setUser, setSchool } = useUser();
   const { status, data: session } = useSession({
     required: true,
@@ -164,14 +161,11 @@ export const TeacherLayout = ({ children }: { children: React.ReactNode }) => {
       },
     },
   ];
-  if (status === "loading" || isLoading) {
-    return <InspirationLoader isLoading={true} />;
-  }
 
   return (
-    <div className="flex">
+    <div className={`flex ${background_color}`}>
       <SideMenu links={links} />
-      {!isLoading && <>{children}</>}
+      <Suspense fallback={<InspirationLoader />}>{children}</Suspense>
     </div>
   );
 };
@@ -181,7 +175,6 @@ export const StaffLayout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const StudentLayout = ({ children }: { children: React.ReactNode }) => {
-  const { isLoading } = useLoadingState();
   const { studentDetails, setStudentDetails } = useStudentDetails();
   const { setUser, setSchool } = useUser();
   const searchParams = useSearchParams();
@@ -276,15 +269,11 @@ export const StudentLayout = ({ children }: { children: React.ReactNode }) => {
     },
   ];
 
-  if (status === "loading" || isLoading) {
-    return <InspirationLoader isLoading={true} />;
-  }
-
   return (
-    <div className="flex">
+    <div className={`flex ${background_color}`}>
       <SideMenu links={links} />
 
-      {!isLoading && <>{children}</>}
+      <Suspense fallback={<InspirationLoader />}>{children}</Suspense>
     </div>
   );
 };
@@ -294,5 +283,46 @@ export const PrinciPalLayout = ({
 }: {
   children: React.ReactNode;
 }) => {
-  return <div className="flex">{children}</div>;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const links: MenuLink[] = [
+    {
+      label: "Dashboard",
+      action: () => {
+        router.push("/admin");
+      },
+    },
+    {
+      label: "Reports",
+      action: () => {
+        router.push("/admin/reports");
+      },
+    },
+    {
+      label: "Schedule",
+      action: () => {
+        router.push("/admin/schedule");
+      },
+    },
+    {
+      label: "Operations",
+      action: () => {
+        router.push("/admin/operations");
+      },
+    },
+    {
+      label: decodeURIComponent(searchParams.get("name") || ""),
+      icon: <User />,
+      action: () => {
+        router.push(`/admin/profile`);
+      },
+    },
+  ];
+
+  return (
+    <div className={`flex ${background_color}`}>
+      <SideMenu links={links} />
+      <Suspense fallback={<InspirationLoader />}>{children}</Suspense>
+    </div>
+  );
 };

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useCallback } from "react";
-import { input_field, record } from "../types/types";
+import { InputField, MyRecord } from "../types/types";
 
 /**
  * A custom React hook for managing form input validation
@@ -12,7 +12,7 @@ import { input_field, record } from "../types/types";
 export default function Validation(
   initialValue = "",
   validators: ((value: string | number) => string | null)[]
-): input_field {
+): InputField {
   // State to store the current input value
   const [value, set_value] = useState<string | number>(initialValue);
 
@@ -220,7 +220,7 @@ export function ListValidation<T>(
  * @param validators - An object containing validator functions for specific keys
  * @returns An object with validation-related state and methods
  */
-export function ObjectValidation<T extends record>(
+export function ObjectValidation<T extends MyRecord>(
   initialValue: T = {} as T,
   validators: {
     [K in keyof T]?: (value: T[K]) => string | null;
@@ -230,7 +230,7 @@ export function ObjectValidation<T extends record>(
   const [object, setObject] = useState<T>(initialValue);
 
   // State to store any validation error messages
-  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
+  const [errors, setErrors] = useState<Partial<MyRecord<keyof T, string>>>({});
 
   /**
    * Validates the entire object against provided validator functions
@@ -238,7 +238,7 @@ export function ObjectValidation<T extends record>(
    * @returns Boolean indicating whether the object passes all validations
    */
   const validate = useCallback(() => {
-    const newErrors: Partial<Record<keyof T, string>> = {};
+    const newErrors: Partial<MyRecord<keyof T, string>> = {};
 
     // Check each key with a validator
     (Object.keys(validators) as Array<keyof T>).forEach((key) => {
@@ -343,7 +343,7 @@ export const required = (value: string | number) =>
  * @param options - Optional configuration for the validator
  * @returns Error message or null if valid
  */
-export const requiredList = <T extends record>(
+export const requiredList = <T extends MyRecord>(
   list: T[],
   options?: {
     minLength?: number;
@@ -375,7 +375,7 @@ export const requiredList = <T extends record>(
  * @param requiredFields - Array of keys that must have non-empty values
  * @returns Error message or null if valid
  */
-export const requiredObject = <T extends record>(
+export const requiredObject = <T extends MyRecord>(
   obj: T,
   requiredFields: Array<keyof T>,
   options?: {
@@ -416,7 +416,7 @@ export const formatEnumLabel = (enumValue: string) =>
     .join(" ");
 
 // Generate select options from an enum
-export const getEnumSelectOptions = <T extends Record<string, string>>(
+export const getEnumSelectOptions = <T extends MyRecord<string, string>>(
   enumType: T
 ) =>
   Object.values(enumType).map((value) => ({
@@ -456,7 +456,7 @@ export const validatePassword = (value: string | number) => {
   return null;
 };
 
-export const ValidateMultipleOptions = <T extends record>({
+export const ValidateMultipleOptions = <T extends MyRecord>({
   initialSelected = [],
   maxSelections,
   minSelections,

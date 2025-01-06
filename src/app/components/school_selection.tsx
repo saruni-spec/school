@@ -1,16 +1,16 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import SearchableList from "./search_bar";
-import { record } from "../types/types";
+import { MyRecord } from "../types/types";
 
 export interface SchoolSelectionProps {
-  onSchoolSelect: (school: record) => void;
+  onSchoolSelect: (school: MyRecord) => void;
 }
 
 const SchoolSelection: React.FC<SchoolSelectionProps> = ({
   onSchoolSelect,
 }) => {
-  const [schools, setSchools] = useState<record[]>([]);
+  const [schools, setSchools] = useState<MyRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

@@ -5,7 +5,7 @@ import { Button } from "@/app/components/button";
 import { Alert, AlertDescription } from "@/app/components/alert";
 import { Check, X } from "lucide-react";
 import { attendance_status } from "@prisma/client";
-import { record } from "@/app/types/types";
+import { MyRecord } from "@/app/types/types";
 
 type student = {
   id: number;
@@ -41,7 +41,7 @@ const Attendance = () => {
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      const data: record[] = await response.json();
+      const data: MyRecord[] = await response.json();
 
       if (data.length > 0) {
         const attendance = {};

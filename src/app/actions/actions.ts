@@ -1,6 +1,7 @@
 "use server";
 import prisma from "@/lib/prisma";
-import { record } from "../types/types";
+import { MyRecord } from "../types/types";
+import { tr } from "@faker-js/faker";
 
 //
 //register
@@ -49,7 +50,7 @@ export async function getStreams(school_id: number | undefined) {
 
 //
 //Get the unpaid fees for a user
-export async function findUnpaidFees(user: record) {
+export async function findUnpaidFees(user: MyRecord) {
   const userStreams = await getUserStreams(user);
   // const userDepartments = await getUserDepartments(user);
   const userSchool = await getUserSchool(user.id);
@@ -133,7 +134,7 @@ export async function findUnpaidFees(user: record) {
 
 //
 //Get the user's streams in their current school
-async function getUserStreams(user: record) {
+async function getUserStreams(user: MyRecord) {
   const userStreams = await prisma.stream.findMany({
     where: {
       school_id: user.school_id as number, // Add constraint for user's current school
@@ -155,12 +156,12 @@ async function getUserStreams(user: record) {
 }
 //
 //Get the user's departments in their current school
-export async function getUserDepartments(user: record) {
+export async function getUserDepartments(user: MyRecord) {
   const userDepartments = await prisma.department.findMany({
     where: {
       school_id: user.school_id as number, // Add constraint for user's current school
-      department_staff: {
-        some: { staff_id: user.id },
+      staff: {
+        some: { users_id: user.id },
       },
     },
     select: { id: true },
@@ -215,3 +216,142 @@ export async function getDepartments(school_id: number | undefined) {
 
   return departments;
 }
+
+export const studentCount = async (school_id: number) =>
+  await prisma.student.count({
+    where: {
+      student_class: {
+        some: {
+          class_progression: {
+            is_current: true,
+            stream: { school_id: school_id },
+          },
+        },
+      },
+    },
+  });
+
+export const teacherCount = async (school_id: number) =>
+  await prisma.teacher.count({
+    where: {
+      staff: {
+        // supposed to use department to find school_id
+        users: { school_id: school_id },
+      },
+    },
+  });
+
+export const attendanceToday = async (school_id: number, date: string) =>
+  await prisma.attendance.count({
+    where: {
+      AND: [
+        {
+          staff: { users: { school_id: school_id } },
+          taken_on: date,
+        },
+      ],
+    },
+  });
+
+export const getUpcomingSchoolEvents = async (schoolId: number) => {
+  const events = await prisma.event.findMany({
+    where: {
+      school_id: schoolId,
+      end_date: {
+        gte: new Date(), // Only get events that haven't ended yet
+      },
+      deleted_at: null, // Exclude deleted events
+    },
+    orderBy: {
+      start_date: "asc", // Order by start date ascending
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      location: true,
+      start_date: true,
+      end_date: true,
+      scope: true,
+      users: { select: { id_code: true } },
+      event_class_participant: {
+        select: {
+          class_progression: { select: { stream: { select: { name: true } } } },
+        },
+      },
+      event_department_participant: {
+        select: { department: { select: { name: true } } },
+      },
+      event_school_participant: {
+        select: { school: { select: { name: true } } },
+      },
+      event_user_participant: {
+        select: { users: { select: { id_code: true } } },
+      },
+    },
+  });
+
+  return events;
+};
+
+export const getSchedulesItems = async (users_id: number) =>
+  await prisma.schedule_event.findMany({
+    where: { schedule: { users_id: users_id } },
+    select: {
+      id: true,
+      for: true,
+      at_place: true,
+      at_time: true,
+      priority: true,
+      notes: true,
+      recurr_for: true,
+    },
+  });
+
+export const numberOfUpcomingEvents = async (school_id: number) =>
+  await prisma.event.count({
+    where: {
+      school_id: school_id,
+      end_date: {
+        gte: new Date(), // Only get events that haven't ended yet
+      },
+      deleted_at: null, // Exclude deleted events
+    },
+  });
+
+export const getNewMessages = async (user_id: number) =>
+  await prisma.messages.findMany({
+    where: {
+      created_at: {
+        gte: new Date(),
+      },
+      recepient: user_id,
+      deleted_at: null,
+    },
+    select: {
+      id: true,
+      message_details: true,
+      severity: true,
+      sender: true,
+      created_at: true,
+    },
+  });
+
+export const getNewAnnounceMents = async (school_id: number) =>
+  await prisma.announcement.findMany({
+    where: {
+      date_for: {
+        gte: new Date(),
+      },
+      school_id: school_id,
+      deleted_at: null,
+    },
+    select: {
+      id: true,
+      announcement: true,
+      date_for: true,
+      valid_upto: true,
+      scope: true,
+      users: { select: { id_code: true } },
+    },
+  });

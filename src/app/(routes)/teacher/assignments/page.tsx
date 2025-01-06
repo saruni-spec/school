@@ -2,8 +2,9 @@
 import { AssignmentCard } from "@/app/components/assignment_card";
 import CreateAssignment from "@/app/components/assignment_creator";
 import { Button } from "@/app/components/button";
+import { LoadingSpinner } from "@/app/components/loading";
 import { useTeacherDetails } from "@/app/context/user_context";
-import { useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 type AssignmentAttempt = {
   id: number;
@@ -56,35 +57,37 @@ const Assignments = () => {
   }, [getAssignments]);
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">My Assignments</h1>
-        <Button
-          onClick={() => setPage(page === "view" ? "create" : "view")}
-          variant="primary"
-        >
-          {page === "view" ? "Create Assignment" : "View Assignments"}
-        </Button>
-      </div>
-
-      {page === "view" && (
-        <div className="space-y-6">
-          {myAssignments.length === 0 ? (
-            <div className="text-center p-12 bg-gray-50 rounded-lg">
-              <p className="text-gray-600">No assignments created yet.</p>
-              <Button onClick={() => setPage("create")} className="mt-4">
-                Create Your First Assignment
-              </Button>
-            </div>
-          ) : (
-            myAssignments.map((assignment) => (
-              <AssignmentCard key={assignment.id} assignment={assignment} />
-            ))
-          )}
+    <Suspense fallback={<LoadingSpinner />}>
+      <div className="container mx-auto p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">My Assignments</h1>
+          <Button
+            onClick={() => setPage(page === "view" ? "create" : "view")}
+            variant="primary"
+          >
+            {page === "view" ? "Create Assignment" : "View Assignments"}
+          </Button>
         </div>
-      )}
-      {page === "create" && <CreateAssignment />}
-    </div>
+
+        {page === "view" && (
+          <div className="space-y-6">
+            {myAssignments.length === 0 ? (
+              <div className="text-center p-12 bg-gray-50 rounded-lg">
+                <p className="text-gray-600">No assignments created yet.</p>
+                <Button onClick={() => setPage("create")} className="mt-4">
+                  Create Your First Assignment
+                </Button>
+              </div>
+            ) : (
+              myAssignments.map((assignment) => (
+                <AssignmentCard key={assignment.id} assignment={assignment} />
+              ))
+            )}
+          </div>
+        )}
+        {page === "create" && <CreateAssignment />}
+      </div>
+    </Suspense>
   );
 };
 

@@ -23,7 +23,7 @@ enum absence_reason {
 }
 
 enum installment_types{
-  SINGLE_PAYMENT
+  ONCE
   WEEKLY
   MONTHLY
   SEMESTER
@@ -79,6 +79,12 @@ enum exam_type {
   MID_TERM
   FINAL
   ASSIGNMENT
+}
+
+enum assessment_type {
+  CORRECT
+  INCORRECT
+  GOOD_TRIAL
 }
 
 
@@ -735,6 +741,7 @@ model users {
   payment                            payment[]
   attendance                         attendance[]
   gallery                            gallery[]
+  schedule                           schedule[]
 
   @@index([school_id])
   @@index([role_id])
@@ -889,6 +896,39 @@ model parent {
   users             users?            @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   parent_student    parent_student[]
 
+}
+
+model schedule{
+  id                Int               @id @default(autoincrement())
+           
+  users_id          Int? 
+
+  created_at        DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime?         @db.Timestamptz(6)
+
+  users             users?            @relation(fields: [users_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  
+  schedule_event    schedule_event[]
+}
+
+model schedule_event {
+  id                    Int               @id @default(autoincrement())
+  schedule_id           Int?              
+  for                   String            @db.VarChar(100) @unique
+  
+  at_time               DateTime
+  priority              severity
+  at_place              String            @db.VarChar(100) @unique
+  notes                 String            @db.VarChar(100) @unique
+
+  recurr_for            installment_types
+
+  created_at            DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at            DateTime?         @db.Timestamptz(6)
+
+  schedule              schedule?         @relation(fields: [schedule_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
 }
 
 
@@ -1059,24 +1099,6 @@ model attendance {
   @@index([users_id])
 }
 
-
-model medical {
-  id                                Int                      @id @default(autoincrement())
-  users_id                          Int
-  description                       String                   @unique @db.VarChar(100)                              
-  notes                             String                   @unique @db.VarChar(100)
-  medic_id                          Int?
-
-  created_at                        DateTime?                @default(now()) @db.Timestamptz(6)
-  updated_at                        DateTime?                @default(now()) @db.Timestamptz(6)
-  deleted_at                        DateTime?                @db.Timestamptz(6)
-
-  users                             users?                   @relation(fields: [users_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-  @@index([users_id])
-}
-
-
 model assignment {
   id                      Int                    @id @default(autoincrement())
   description             String                 @db.VarChar(100)
@@ -1125,7 +1147,7 @@ model assignment_attempt {
   date_marked                 DateTime?
   teacher_id                  Int?
   result                      Decimal?                  @db.Decimal(5, 2)
-  assessment                  String?                   @db.VarChar(30)                  
+  assessment                  assessment_type?                  
   remarks                     String?                   @db.VarChar(50)
   
 
@@ -1290,6 +1312,24 @@ model payment {
   @@index([users_id])
   @@index([payment_method])
   @@index([status])
+}
+
+
+
+model medical {
+  id                                Int                      @id @default(autoincrement())
+  users_id                          Int
+  description                       String                   @unique @db.VarChar(100)                              
+  notes                             String                   @unique @db.VarChar(100)
+  medic_id                          Int?
+
+  created_at                        DateTime?                @default(now()) @db.Timestamptz(6)
+  updated_at                        DateTime?                @default(now()) @db.Timestamptz(6)
+  deleted_at                        DateTime?                @db.Timestamptz(6)
+
+  users                             users?                   @relation(fields: [users_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([users_id])
 }
 
 

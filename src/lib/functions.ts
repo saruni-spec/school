@@ -1,14 +1,14 @@
 //
 //functions that are used in multiple components
 
-import { FieldValidation, record } from "@/app/types/types";
+import { FieldValidation, MyRecord } from "@/app/types/types";
 
 //check if inputs are valid
 export const validInputs = (inputs: FieldValidation[]): boolean => {
   return inputs.every((input) => input.validate(input.value as string));
 };
 
-export function flattenObjectWithReduce(obj: record, parentKey = "") {
+export function flattenObjectWithReduce(obj: MyRecord, parentKey = "") {
   // Use Object.entries to get an array of key-value pairs from the input object.
   // Reduce iterates over this array and accumulates a flattened object.
   return Object.entries(obj).reduce((acc, [key, value]) => {
@@ -33,7 +33,7 @@ export function flattenObjectWithReduce(obj: record, parentKey = "") {
   }, {}); // Initialize the accumulator (`acc`) as an empty object.
 }
 
-export function flattenObjectIterative(obj: record) {
+export function flattenObjectIterative(obj: MyRecord) {
   const result = {};
   const stack = [{ obj, parentKey: "" }];
 

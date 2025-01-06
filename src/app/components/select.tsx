@@ -1,5 +1,5 @@
 import React from "react";
-import { record } from "../types/types";
+import { MyRecord } from "../types/types";
 
 // Select component
 // This component is a select input field that can be used in forms
@@ -13,7 +13,7 @@ interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   labelClassName?: string; // Classname for the label
   errorClassName?: string; // Classname for the error message
   error?: string | null; // Error message
-  options: record[]; // Array of options to be displayed in the select input
+  options: MyRecord[]; // Array of options to be displayed in the select input
   placeholder?: string; // Placeholder text
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; // Function to run when the value of the select input changes
 }

@@ -13,12 +13,12 @@ export type generic_record = {
 
 type RecordValue = BaseValue | { [key: string]: RecordValue } | RecordValue[];
 
-export type record = {
+export type MyRecord = {
   id: number;
   [key: string]: RecordValue;
 };
 
-export type input_field = {
+export type InputField = {
   value: string | number;
   error: string | null;
   handle_change: (
@@ -54,7 +54,14 @@ export type Student = {
   }[];
 };
 
-export type date_field = {
+export type Principal = {
+  id: number;
+  staff: {
+    school_code: string | null;
+  } | null;
+} | null;
+
+export type DateField = {
   value: string;
   error: string | null;
   handle_change: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -71,7 +78,7 @@ export enum FieldType {
   Number,
   Date,
 }
-export type dateFormat = "YYYY-MM-DD" | "MM/DD/YYYY" | "DD/MM/YYYY";
+export type DateFormat = "YYYY-MM-DD" | "MM/DD/YYYY" | "DD/MM/YYYY";
 // Generic validator function type
 type ValidatorFunction = (value: string | number) => string | null;
 
@@ -85,7 +92,7 @@ export interface FieldConfig {
   // Date-specific options
   minDate?: Date;
   maxDate?: Date;
-  date_format?: dateFormat;
+  date_format?: DateFormat;
 }
 
 export interface FieldValidation {

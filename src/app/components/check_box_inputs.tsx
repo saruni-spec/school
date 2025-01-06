@@ -1,18 +1,18 @@
 import React from "react";
-import { record } from "../types/types";
+import { MyRecord } from "../types/types";
 
 interface CheckboxGroupProps {
   label?: string;
-  options: record[];
+  options: MyRecord[];
   //id field
   id?: string | number;
   // Will be used as the value of the checkbox
   value_field: string;
   // the show fild isthe fild that will be displayed
   show_field?: string;
-  value?: record[];
+  value?: MyRecord[];
   // Modified to accept record[] instead of string[]
-  onChange: (values: record[]) => void;
+  onChange: (values: MyRecord[]) => void;
   error?: string | null;
   containerClassName?: string;
   labelClassName?: string;

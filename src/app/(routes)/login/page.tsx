@@ -6,11 +6,13 @@ import React from "react";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import {
+  usePrincipalDetails,
   useStudentDetails,
   useTeacherDetails,
   useUser,
 } from "@/app/context/user_context";
 import {
+  getPrincipalDetails,
   getStudentDetails,
   getTeacherDetails,
 } from "@/app/api_functions/functions";
@@ -21,6 +23,7 @@ const Login = () => {
   const { setUser, setSchool } = useUser();
   const { setTeacherDetails } = useTeacherDetails();
   const { setStudentDetails } = useStudentDetails();
+  const { setPrincipalDetails } = usePrincipalDetails();
   //we require the email and password to login
   const identification = Validation("", [required]);
   const password = Validation("", [validatePassword, required]);
@@ -84,6 +87,13 @@ const Login = () => {
           case "SYSTEM_ADMINISTRATOR":
           case "SCHOOL_ADMINISTRATOR":
           case "PRINCIPAL":
+            const principal_details = await getPrincipalDetails(
+              session.user.id
+            );
+            if (principal_details) {
+              setPrincipalDetails(principal_details);
+            }
+
             router.push(`/admin?${query_string}`);
             break;
           case "TEACHER":

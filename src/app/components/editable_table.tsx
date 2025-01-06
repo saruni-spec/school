@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { record } from "../types/types";
+import { MyRecord } from "../types/types";
 import { on } from "events";
 
 interface DataTableProps {
-  records: record[];
+  records: MyRecord[];
   title?: string;
   excludeColumns?: string[];
   model_name: string;
@@ -40,7 +40,7 @@ const EditableTable: React.FC<DataTableProps> = ({
     )
   );
 
-  const formatValue = (value: record[keyof record]) => {
+  const formatValue = (value: MyRecord[keyof MyRecord]) => {
     if (value === null || value === undefined) {
       return "-";
     }

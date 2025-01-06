@@ -1,9 +1,9 @@
 import React from "react";
-import { record } from "../types/types";
+import { MyRecord } from "../types/types";
 
 // Define the type for the details prop
 interface DetailsDisplayProps {
-  details: record;
+  details: MyRecord;
   title?: string;
   className?: string;
   actionButton?: {

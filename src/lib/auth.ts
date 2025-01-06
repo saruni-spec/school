@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { compare } from "bcrypt";
 import { DefaultSession, DefaultUser } from "next-auth";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { record } from "@/app/types/types";
+import { MyRecord } from "@/app/types/types";
 import { privilege_category, role_type } from "@prisma/client";
 
 // Extend the default session with custom properties
@@ -14,19 +14,19 @@ declare module "next-auth" {
       id: number;
       id_code: string;
       role: role_type;
-      school: record;
+      school: MyRecord;
       role_type: privilege_category;
-      permissions: record[];
+      permissions: MyRecord[];
     } & DefaultSession["user"];
   }
 
   interface User extends DefaultUser {
     id: number;
     id_code: string;
-    school: record;
+    school: MyRecord;
     role: role_type;
     role_type: privilege_category;
-    permissions: record[];
+    permissions: MyRecord[];
   }
 }
 
@@ -126,10 +126,10 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.id as number;
         session.user.id_code = token.id_code as string;
         session.user.email = token.email as string;
-        session.user.school = token.school as record;
+        session.user.school = token.school as MyRecord;
         session.user.role = token.role as role_type;
         session.user.role_type = token.role_type as privilege_category;
-        session.user.permissions = token.permissions as record[];
+        session.user.permissions = token.permissions as MyRecord[];
       }
       return session;
     },

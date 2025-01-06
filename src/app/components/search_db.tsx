@@ -1,9 +1,9 @@
 // components/TypeOnSearchComponent.tsx
 import React, { useState } from "react";
-import { record } from "../types/types";
+import { MyRecord } from "../types/types";
 
 interface TypeOnSearchProps {
-  onSelect?: (item: record) => void; // Optional callback when an item is selected
+  onSelect?: (item: MyRecord) => void; // Optional callback when an item is selected
 }
 
 type searchResult = {
@@ -55,7 +55,7 @@ export const SearchDb: React.FC<TypeOnSearchProps> = ({ onSelect }) => {
     }
   };
 
-  const handleItemSelect = (item: record) => {
+  const handleItemSelect = (item: MyRecord) => {
     if (onSelect) {
       onSelect(item);
     }

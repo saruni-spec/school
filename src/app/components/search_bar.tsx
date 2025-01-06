@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { record } from "../types/types";
+import { MyRecord } from "../types/types";
 
 interface SearchableListProps {
-  initialData: record[];
+  initialData: MyRecord[];
   id_field: string | number;
-  onItemSelect?: (item: record) => void;
+  onItemSelect?: (item: MyRecord) => void;
 }
 
 const SearchableList: React.FC<SearchableListProps> = ({
@@ -13,7 +13,7 @@ const SearchableList: React.FC<SearchableListProps> = ({
   onItemSelect,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedItem, setSelectedItem] = useState<record>();
+  const [selectedItem, setSelectedItem] = useState<MyRecord>();
   const [data] = useState(initialData);
 
   // Filter data based on search term
@@ -25,7 +25,7 @@ const SearchableList: React.FC<SearchableListProps> = ({
     return false; // Exclude items where name is not a string
   });
 
-  const handleItemSelect = (item: record) => {
+  const handleItemSelect = (item: MyRecord) => {
     setSelectedItem(item);
 
     // Type guard: Ensure item.name is a string before assigning it to searchTerm

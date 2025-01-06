@@ -23,7 +23,8 @@ export async function GET(
             assignment_attempt: {
               select: {
                 id: true,
-                student_id: true,
+                student: { select: { student_code: true } },
+                answer: true,
                 date_submitted: true,
                 assignment_content_id: true,
                 date_marked: true,

@@ -1,5 +1,5 @@
 import { flattenObjectIterative } from "@/lib/functions";
-import { record, Student } from "../types/types";
+import { MyRecord, Principal, Student } from "../types/types";
 
 //
 const REGISTER_ROUTE = "http://localhost:3000/api/register";
@@ -101,7 +101,7 @@ export const getDataWithSchoolId = async (
     throw new Error(`Failed to fetch ${table_name}`);
   }
   const data = await response.json();
-  const flattened_data = data.map((item: record) =>
+  const flattened_data = data.map((item: MyRecord) =>
     flattenObjectIterative(item)
   );
 
@@ -112,13 +112,13 @@ export const getDataWithSchoolId = async (
 // get teacher specific details
 export const getTeacherDetails = async (
   users_id: number
-): Promise<record | null> => {
+): Promise<MyRecord | null> => {
   try {
     const response = await fetch(`/api/teacher/${users_id}`);
     if (!response.ok) {
       throw new Error(response.statusText);
     }
-    const data: record = await response.json();
+    const data: MyRecord = await response.json();
     return data;
   } catch (error) {
     console.error("Error fetching teacher details:", error);
@@ -139,6 +139,22 @@ export const getStudentDetails = async (users_id: number) => {
   } catch (error) {
     console.error("Error fetching student details:", error);
     console.log("Error fetching student details. Please try again.");
+    return null;
+  }
+};
+
+export const getPrincipalDetails = async (users_id: number) => {
+  try {
+    const response = await fetch(`/api/principal/${users_id}`);
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+    const data: Principal = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching principal details:", error);
+    console.log("Error fetching principal details. Please try again.");
     return null;
   }
 };

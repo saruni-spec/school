@@ -1,8 +1,8 @@
 import React from "react";
-import { record } from "../types/types";
+import { MyRecord } from "../types/types";
 
 interface DataTableProps {
-  records: record[];
+  records: MyRecord[];
   title?: string;
   excludeColumns?: string[];
 }
@@ -27,7 +27,7 @@ const DataTable: React.FC<DataTableProps> = ({
     )
   );
 
-  const formatValue = (value: record[keyof record]) => {
+  const formatValue = (value: MyRecord[keyof MyRecord]) => {
     if (value === null || value === undefined) {
       return "-";
     }

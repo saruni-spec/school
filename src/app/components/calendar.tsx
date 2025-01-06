@@ -1,6 +1,6 @@
 "use client";
 import React, { useCallback, useState } from "react";
-import { date_field } from "../types/types";
+import { DateField } from "../types/types";
 
 type dateFormat = "YYYY-MM-DD" | "MM/DD/YYYY" | "DD/MM/YYYY";
 
@@ -131,7 +131,7 @@ export const useDateValidation = (
   maxDate?: Date,
   dateFormat: dateFormat = "YYYY-MM-DD",
   customValidator?: (date: Date) => string | null
-): date_field => {
+): DateField => {
   const [value, set_value] = useState(initialValue);
   const [error, setError] = useState<string | null>(null);
 
