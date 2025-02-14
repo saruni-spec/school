@@ -10,14 +10,18 @@ export async function GET(
 
     const records = await prisma.school_leader.findFirst({
       where: {
-        staff: { users_id: Number(id), users: { role: { type: "PRINCIPAL" } } },
+        staff: {
+          users_id: Number(id),
+          users: { role: { type: { in: ["PRINCIPAL", "VICE_PRINCIPAL"] } } },
+        },
         date_removed: null,
-        academic_year: { is_current: true },
+        // academic_year: { is_current: true },
       },
       select: {
         id: true,
         staff: {
           select: {
+            id: true,
             school_code: true,
           },
         },

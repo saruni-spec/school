@@ -1,23 +1,20 @@
-import React, { Suspense, useEffect } from "react";
+import React, { ReactNode, Suspense, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MenuLink } from "../types/types";
 import SideMenu from "./side_menu";
 import SchoolSelection from "./school_selection";
 import {
+  usePrincipalDetails,
+  useSecretaryDetails,
   useStudentDetails,
   useTeacherDetails,
   useUser,
 } from "@/app/context/user_context";
 import InspirationLoader from "@/app/components/loading";
-import {
-  User,
-  ClipboardList,
-  NotebookTabs,
-  CheckSquare,
-  NotepadTextIcon,
-} from "lucide-react";
+import { User, ClipboardList, NotebookTabs, CheckSquare } from "lucide-react";
 import { useSession } from "next-auth/react";
 import {
+  getPrincipalDetails as getSecretaryDetails,
   getStudentDetails,
   getTeacherDetails,
 } from "../api_functions/functions";
@@ -25,36 +22,37 @@ import {
 const background_color = "bg-gray-50 ";
 
 export const Admin_Layout = ({ children }: { children: React.ReactNode }) => {
+  const route = "/root";
   const router = useRouter();
   const links: MenuLink[] = [
     {
       label: "Dashboard",
       action: () => {
-        router.push("/admin");
+        router.push(`${route}`);
       },
     },
     {
       label: "Register",
       action: () => {
-        router.push("/admin/register");
+        router.push(`${route}/register`);
       },
     },
     {
       label: "View",
       action: () => {
-        router.push("/admin/view");
+        router.push(`${route}/view`);
       },
     },
     {
       label: "Update",
       action: () => {
-        router.push("/admin/update");
+        router.push(`${route}/update`);
       },
     },
     {
       label: "Review",
       action: () => {
-        router.push("/admin/review");
+        router.push(`${route}/review`);
       },
     },
   ];
@@ -89,11 +87,13 @@ export const TeacherLayout = ({ children }: { children: React.ReactNode }) => {
       const fetchTeacherDetails = async () => {
         try {
           const teacher = await getTeacherDetails(session.user.id);
-          if (teacher) {
-            setUser(session.user);
-            setSchool(session.user.school);
-            setTeacherDetails(teacher);
+          if (!teacher) {
+            router.push("/login");
+            return;
           }
+          setUser(session.user);
+          setSchool(session.user.school);
+          setTeacherDetails(teacher);
         } catch (error) {
           console.error("Failed to fetch teacher details:", error);
         }
@@ -101,7 +101,15 @@ export const TeacherLayout = ({ children }: { children: React.ReactNode }) => {
 
       fetchTeacherDetails();
     }
-  }, [session, status, teacherDetails, setTeacherDetails, setSchool, setUser]);
+  }, [
+    session,
+    status,
+    teacherDetails,
+    setTeacherDetails,
+    setSchool,
+    setUser,
+    router,
+  ]);
 
   // Get the base path (e.g., /teacher)
   const basePath = pathname.split("/")[1];
@@ -146,13 +154,7 @@ export const TeacherLayout = ({ children }: { children: React.ReactNode }) => {
         router.push(createUrl(`/${basePath}/take_attendance`));
       },
     },
-    {
-      label: "Summary",
-      icon: <NotepadTextIcon />,
-      action: () => {
-        router.push(createUrl(`/${basePath}/summary`));
-      },
-    },
+
     {
       label: decodeURIComponent(searchParams.get("name") || ""),
       icon: <User />,
@@ -196,11 +198,13 @@ export const StudentLayout = ({ children }: { children: React.ReactNode }) => {
       const fetchstudentDetails = async () => {
         try {
           const student = await getStudentDetails(session.user.id);
-          if (student) {
-            setUser(session.user);
-            setSchool(session.user.school);
-            setStudentDetails(student);
+          if (!student) {
+            router.push("/login");
+            return;
           }
+          setUser(session.user);
+          setSchool(session.user.school);
+          setStudentDetails(student);
         } catch (error) {
           console.error("Failed to fetch teacher details:", error);
         }
@@ -208,7 +212,15 @@ export const StudentLayout = ({ children }: { children: React.ReactNode }) => {
 
       fetchstudentDetails();
     }
-  }, [session, status, studentDetails, setStudentDetails, setSchool, setUser]);
+  }, [
+    session,
+    status,
+    studentDetails,
+    setStudentDetails,
+    setSchool,
+    setUser,
+    router,
+  ]);
 
   // Get the base path (e.g., /teacher)
   const basePath = pathname.split("/")[1];
@@ -253,13 +265,7 @@ export const StudentLayout = ({ children }: { children: React.ReactNode }) => {
         router.push(createUrl(`/${basePath}/attendance`));
       },
     },
-    {
-      label: "Summary",
-      icon: <NotepadTextIcon />,
-      action: () => {
-        router.push(createUrl(`/${basePath}/summary`));
-      },
-    },
+
     {
       label: decodeURIComponent(searchParams.get("name") || ""),
       icon: <User />,
@@ -283,38 +289,200 @@ export const PrinciPalLayout = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const router = useRouter();
+  const { principalDetails, setPrincipalDetails } = usePrincipalDetails();
+  const { setUser, setSchool } = useUser();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  const { status, data: session } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/login");
+    },
+  });
+
+  //
+  //cehck if the teacher details are present,if not,fetch them
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (!principalDetails && session?.user?.id) {
+      const fetchPrincipalDetails = async () => {
+        try {
+          const principal = await getSecretaryDetails(session.user.id);
+          if (!principal) {
+            router.push("/login");
+            return;
+          }
+          setUser(session.user);
+          setSchool(session.user.school);
+          setPrincipalDetails(principal);
+        } catch (error) {
+          console.error("Failed to fetch teacher details:", error);
+        }
+      };
+
+      fetchPrincipalDetails();
+    }
+  }, [
+    session,
+    status,
+    setSchool,
+    setUser,
+    principalDetails,
+    setPrincipalDetails,
+    router,
+  ]);
+
+  // Get the base path (e.g., /teacher)
+  const basePath = pathname.split("/")[1];
+
+  // Create a function to preserve and encode query parameters
+  const createUrl = (path: string) => {
+    const params = new URLSearchParams();
+
+    // Preserve all existing query parameters
+    searchParams.forEach((value, key) => {
+      params.append(key, value);
+    });
+
+    return `${path}?${params.toString()}`;
+  };
+
   const links: MenuLink[] = [
     {
       label: "Dashboard",
       action: () => {
-        router.push("/admin");
+        router.push(createUrl(`/${basePath}`));
       },
     },
     {
       label: "Reports",
       action: () => {
-        router.push("/admin/reports");
+        router.push(createUrl(`/${basePath}/reports`));
       },
     },
     {
       label: "Schedule",
       action: () => {
-        router.push("/admin/schedule");
+        router.push(createUrl(`/${basePath}/schedule`));
       },
     },
     {
       label: "Operations",
       action: () => {
-        router.push("/admin/operations");
+        router.push(createUrl(`/${basePath}/operations`));
       },
     },
     {
       label: decodeURIComponent(searchParams.get("name") || ""),
       icon: <User />,
       action: () => {
-        router.push(`/admin/profile`);
+        router.push(createUrl(`/${basePath}/profile`));
+      },
+    },
+  ];
+
+  return (
+    <div className={`flex ${background_color}`}>
+      <SideMenu links={links} />
+      <Suspense fallback={<InspirationLoader />}>{children}</Suspense>
+    </div>
+  );
+};
+
+export const SecretaryLayout = ({ children }: { children: ReactNode }) => {
+  const { secretaryDetails, setSecretaryDetails } = useSecretaryDetails();
+  const { setUser, setSchool } = useUser();
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const router = useRouter();
+  const { status, data: session } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/login");
+    },
+  });
+
+  //
+  //cehck if the teacher details are present,if not,fetch them
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (!secretaryDetails && session?.user?.id) {
+      const fetchSecretaryDetails = async () => {
+        try {
+          const secretary = await getSecretaryDetails(session.user.id);
+          // if (!secretary) {
+          //   router.push("/login");
+          //   return;
+          // }
+          setUser(session.user);
+          setSchool(session.user.school);
+          setSecretaryDetails(secretary);
+        } catch (error) {
+          console.error("Failed to fetch teacher details:", error);
+        }
+      };
+
+      fetchSecretaryDetails();
+    }
+  }, [
+    session,
+    status,
+    setSchool,
+    setUser,
+    secretaryDetails,
+    setSecretaryDetails,
+    router,
+  ]);
+
+  // Get the base path (e.g., /teacher)
+  const basePath = pathname.split("/")[1];
+
+  // Create a function to preserve and encode query parameters
+  const createUrl = (path: string) => {
+    const params = new URLSearchParams();
+
+    // Preserve all existing query parameters
+    searchParams.forEach((value, key) => {
+      params.append(key, value);
+    });
+
+    return `${path}?${params.toString()}`;
+  };
+
+  const links: MenuLink[] = [
+    {
+      label: "Dashboard",
+      action: () => {
+        router.push(createUrl(`/${basePath}`));
+      },
+    },
+    {
+      label: "Operations",
+      action: () => {
+        router.push(createUrl(`/${basePath}/operations`));
+      },
+    },
+    {
+      label: "Reports",
+      action: () => {
+        router.push(createUrl(`/${basePath}/reports`));
+      },
+    },
+    {
+      label: "Schedule",
+      action: () => {
+        router.push(createUrl(`/${basePath}/schedule`));
+      },
+    },
+
+    {
+      label: decodeURIComponent(searchParams.get("name") || ""),
+      icon: <User />,
+      action: () => {
+        router.push(createUrl(`/${basePath}/profile`));
       },
     },
   ];

@@ -23,7 +23,7 @@ export async function GET(request: Request) {
     // Fetch all records from the specified table
     const records = await prisma.semester.findFirst({
       where: {
-        academic_year: { school_id: Number(school_id) },
+        academic_year: { school_id: Number(school_id), is_current: true },
         is_current: true,
       },
       select: { id: true, name: true },

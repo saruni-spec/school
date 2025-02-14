@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import Validation, { required } from "@/app/hooks/validation";
 
 const Stream = () => {
@@ -36,7 +36,7 @@ const Stream = () => {
       onSubmit={handleSubmit}
       submitButtonText="Submit"
     >
-      <Input
+      <MyInput
         label="Stream Name"
         placeholder="Enter Stream Name"
         required
@@ -44,7 +44,7 @@ const Stream = () => {
         onChange={stream_name.handle_change}
         error={stream_name.error}
       />
-      <Input
+      <MyInput
         label="Capacity"
         placeholder="Enter Capacity (Optional)"
         type="number"

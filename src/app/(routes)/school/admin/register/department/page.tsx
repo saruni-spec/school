@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import Validation, { required } from "@/app/hooks/validation";
 
 const Department = () => {
@@ -38,7 +38,7 @@ const Department = () => {
       onSubmit={handleSubmit}
       submitButtonText="Submit"
     >
-      <Input
+      <MyInput
         label="Department Name"
         placeholder="Enter Department Name"
         required
@@ -46,14 +46,14 @@ const Department = () => {
         onChange={name.handle_change}
         error={name.error}
       />
-      <Input
+      <MyInput
         label="Description"
         placeholder="Enter Description (Optional)"
         value={description.value}
         onChange={description.handle_change}
         error={description.error}
       />
-      <Input
+      <MyInput
         label="Head of Department"
         placeholder="Enter Head of Department ID (Optional)"
         value={head_of_department.value}

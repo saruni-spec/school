@@ -36,6 +36,14 @@ export const register = async ({
   }
 };
 
+export const getDataFromApi = async (api_route: string) => {
+  const response = await fetch(api_route);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch from ${api_route}`);
+  }
+  return response.json();
+};
+
 //
 // fetch data from th database given a model name and school id
 export const fetchData = async (

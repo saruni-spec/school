@@ -1,6 +1,6 @@
 "use client";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import React, { useCallback } from "react";
 import { facility_type as my_facilities } from "@prisma/client";
 import { register } from "@/app/api_functions/functions";
@@ -42,7 +42,7 @@ const Facility = () => {
       onSubmit={handleSubmit}
       submitButtonText="Add Facility"
     >
-      <Input
+      <MyInput
         label="Facility Name"
         placeholder="Enter the name of the facility"
         value={name.value}
@@ -59,7 +59,7 @@ const Facility = () => {
         options={options}
         required
       />
-      <Input
+      <MyInput
         label="Describe the facility"
         placeholder="This facility is used for..."
         value={description.value}

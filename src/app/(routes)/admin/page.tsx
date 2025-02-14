@@ -32,18 +32,30 @@ import {
   studentCount,
 } from "@/app/actions/actions";
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 const AdminDashboard = async () => {
-  const total_students = await studentCount(1);
-  const upcoming_events = await getUpcomingSchoolEvents(1);
-  const total_teachers = await teacherCount(1);
+  const session = await getServerSession(authOptions);
+
+  if (!session || !session.user?.school) {
+    // Redirect to the login page
+
+    redirect("/login");
+  }
+
+  const school_id = session.user.school.id;
+  const total_students = await studentCount(school_id);
+  const upcoming_events = await getUpcomingSchoolEvents(school_id);
+  const total_teachers = await teacherCount(school_id);
   const attendance_today = `${(
     ((await attendanceToday(1, new Date().toISOString())) * 100) /
     total_students
   ).toFixed(2)}%`;
 
-  const new_messages = await getNewMessages(1);
-  const new_announcements = await getNewAnnounceMents(1);
+  const new_messages = await getNewMessages(school_id);
+  const new_announcements = await getNewAnnounceMents(school_id);
 
   return (
     <div className="p-8  min-h-screen">

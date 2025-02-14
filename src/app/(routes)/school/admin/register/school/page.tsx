@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback, useState } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import validation, {
   required,
   validateKey,
@@ -52,7 +52,7 @@ const School: React.FC = () => {
       submitButtonText="Register School"
     >
       {/* Name Field */}
-      <Input
+      <MyInput
         label="School Name"
         placeholder="Enter the school name"
         required
@@ -60,7 +60,7 @@ const School: React.FC = () => {
         onChange={name_field.handle_change}
         error={name_field.error}
       />
-      <Input
+      <MyInput
         label="School Type"
         placeholder="Enter the school type (e.g., Primary, Secondary)"
         required
@@ -68,7 +68,7 @@ const School: React.FC = () => {
         onChange={type_field.handle_change}
         error={type_field.error}
       />
-      <Input
+      <MyInput
         label="Address"
         placeholder="Enter the school address"
         value={address_field.value}

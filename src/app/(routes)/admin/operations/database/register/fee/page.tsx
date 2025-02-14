@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { ListValidation, requiredList } from "@/app/hooks/validation";
 import { DatePicker } from "@/app/components/calendar";
 import { useUser } from "@/app/context/user_context";
@@ -188,14 +188,14 @@ const Fee = () => {
         onChange={fee_for.handle_change}
         error={fee_for.error}
       />
-      <Input
+      <MyInput
         label="Description"
         placeholder="Enter Fee Description"
         value={description.value}
         onChange={description.handle_change}
         error={description.error}
       />
-      <Input
+      <MyInput
         label="Amount"
         placeholder="Enter Fee Amount"
         required

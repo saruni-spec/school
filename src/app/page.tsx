@@ -22,6 +22,7 @@ const HomePage = () => {
       path: "/about",
       color: "bg-purple-100",
       iconColor: "text-purple-600",
+      shadowColor: "shadow-purple-500/20",
     },
     {
       title: "Our Schools",
@@ -30,6 +31,7 @@ const HomePage = () => {
       path: "/schools",
       color: "bg-blue-100",
       iconColor: "text-blue-600",
+      shadowColor: "shadow-blue-500/20",
     },
     {
       title: "Academic Calendar",
@@ -38,6 +40,7 @@ const HomePage = () => {
       path: "/calendar",
       color: "bg-green-100",
       iconColor: "text-green-600",
+      shadowColor: "shadow-green-500/20",
     },
     {
       title: "Announcements",
@@ -46,6 +49,7 @@ const HomePage = () => {
       path: "/announcements",
       color: "bg-yellow-100",
       iconColor: "text-yellow-600",
+      shadowColor: "shadow-yellow-500/20",
     },
   ];
 
@@ -57,6 +61,7 @@ const HomePage = () => {
       path: "/admin",
       color: "bg-pink-100",
       iconColor: "text-pink-600",
+      shadowColor: "shadow-pink-500/20",
     },
     {
       title: "Portal",
@@ -65,6 +70,7 @@ const HomePage = () => {
       path: "/login",
       color: "bg-indigo-100",
       iconColor: "text-indigo-600",
+      shadowColor: "shadow-indigo-500/20",
     },
     {
       title: "Reports",
@@ -73,6 +79,7 @@ const HomePage = () => {
       path: "/reports",
       color: "bg-cyan-100",
       iconColor: "text-cyan-600",
+      shadowColor: "shadow-cyan-500/20",
     },
     {
       title: "Settings",
@@ -81,15 +88,19 @@ const HomePage = () => {
       path: "/settings",
       color: "bg-orange-100",
       iconColor: "text-orange-600",
+      shadowColor: "shadow-orange-500/20",
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      <header
-        className={`bg-white shadow-md fixed w-full top-0 z-50 transition-all duration-300 $`}
-      >
-        <div className="absolute inset-0 bg-blue-50 opacity-50"></div>
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-96 -left-96 w-192 h-192 bg-blue-100 rounded-full opacity-20 blur-3xl"></div>
+        <div className="absolute -bottom-96 -right-96 w-192 h-192 bg-purple-100 rounded-full opacity-20 blur-3xl"></div>
+      </div>
+
+      <header className="bg-white/80 backdrop-blur-lg shadow-lg fixed w-full top-0 z-50 transition-all duration-300">
         <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex justify-between items-center relative">
           <h1 className="text-4xl font-bold text-gray-900 font-display">
             <span className="text-blue-600">Soma</span>Nasi
@@ -97,7 +108,7 @@ const HomePage = () => {
           {!isLoggedIn && (
             <Link
               href="/login"
-              className="px-6 py-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+              className="px-6 py-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl hover:shadow-blue-500/20"
             >
               Login
             </Link>
@@ -105,8 +116,8 @@ const HomePage = () => {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 pt-32 pb-12 sm:px-6 lg:px-8">
-        <div className="text-center mb-16 transform hover:scale-[1.01] transition-transform">
+      <main className="max-w-7xl mx-auto px-4 pt-32 pb-12 sm:px-6 lg:px-8 relative">
+        <div className="text-center mb-16 ">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">
             Welcome to the{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">
@@ -119,7 +130,7 @@ const HomePage = () => {
           </p>
         </div>
 
-        <section className="mb-16">
+        <section className="mb-16 relative">
           <h3 className="text-2xl font-bold text-gray-900 mb-8 text-center">
             Quick Access
           </h3>
@@ -127,19 +138,24 @@ const HomePage = () => {
             {quickAccessFeatures.map((feature) => (
               <Link href={feature.path} key={feature.title}>
                 <div
-                  className={`rounded-xl p-6 ${feature.color} hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer h-full`}
+                  className={`rounded-xl p-6 ${feature.color} hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2  cursor-pointer h-full ${feature.shadowColor} shadow-lg relative overflow-hidden group`}
                 >
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div
-                      className={`p-3 rounded-full ${feature.iconColor} bg-white`}
-                    >
-                      <feature.icon className="h-6 w-6" />
-                    </div>
-                    <h4 className="text-lg font-semibold text-gray-900">
-                      {feature.title}
-                    </h4>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
                   </div>
-                  <p className="text-gray-700">{feature.description}</p>
+                  <div className="relative z-10">
+                    <div className="flex items-center space-x-4 mb-4">
+                      <div
+                        className={`p-3 rounded-full ${feature.iconColor} bg-white shadow-md transform group-hover:scale-110 transition-transform duration-300`}
+                      >
+                        <feature.icon className="h-6 w-6" />
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-900">
+                        {feature.title}
+                      </h4>
+                    </div>
+                    <p className="text-gray-700">{feature.description}</p>
+                  </div>
                 </div>
               </Link>
             ))}
@@ -154,27 +170,33 @@ const HomePage = () => {
             {adminFeatures.map((feature) => (
               <Link href={feature.path} key={feature.title}>
                 <div
-                  className={`rounded-xl p-6 ${feature.color} hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 cursor-pointer h-full`}
+                  className={`rounded-xl p-6 ${feature.color} hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2  cursor-pointer h-full ${feature.shadowColor} shadow-lg relative overflow-hidden group`}
                 >
-                  <div className="flex items-center space-x-4 mb-4">
-                    <div
-                      className={`p-3 rounded-full ${feature.iconColor} bg-white`}
-                    >
-                      <feature.icon className="h-6 w-6" />
-                    </div>
-                    <h4 className="text-lg font-semibold text-gray-900">
-                      {feature.title}
-                    </h4>
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
                   </div>
-                  <p className="text-gray-700">{feature.description}</p>
+                  <div className="relative z-10">
+                    <div className="flex items-center space-x-4 mb-4">
+                      <div
+                        className={`p-3 rounded-full ${feature.iconColor} bg-white shadow-md transform group-hover:scale-110 transition-transform duration-300`}
+                      >
+                        <feature.icon className="h-6 w-6" />
+                      </div>
+                      <h4 className="text-lg font-semibold text-gray-900">
+                        {feature.title}
+                      </h4>
+                    </div>
+                    <p className="text-gray-700">{feature.description}</p>
+                  </div>
                 </div>
               </Link>
             ))}
           </div>
         </section>
 
-        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-2xl p-12 shadow-xl">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <div className="bg-gradient-to-br from-blue-50 via-white to-purple-50 rounded-2xl p-12 shadow-2xl relative overflow-hidden group hover:shadow-blue-500/20 transition-shadow duration-300">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/0 via-white/30 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center relative z-10">
             <div className="text-left">
               <h3 className="text-3xl font-bold mb-4 text-gray-900">
                 Join Our Educational Community
@@ -188,13 +210,13 @@ const HomePage = () => {
                 <div className="space-x-4">
                   <Link
                     href="/login"
-                    className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl hover:shadow-blue-500/20"
                   >
                     Login
                   </Link>
                   <Link
                     href="/learn-more"
-                    className="inline-block px-6 py-3 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="inline-block px-6 py-3 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors shadow-md hover:shadow-lg"
                   >
                     Learn More
                   </Link>
@@ -202,36 +224,30 @@ const HomePage = () => {
               )}
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-white p-4 rounded-lg shadow-md">
-                <div className="text-blue-600 font-bold text-2xl mb-2">
-                  1000+
+              {[
+                { value: "1000+", label: "Students Enrolled", color: "blue" },
+                { value: "50+", label: "Expert Teachers", color: "purple" },
+                { value: "100%", label: "Success Rate", color: "green" },
+                { value: "24/7", label: "Support Available", color: "orange" },
+              ].map((stat, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 "
+                >
+                  <div
+                    className={`text-${stat.color}-600 font-bold text-2xl mb-2`}
+                  >
+                    {stat.value}
+                  </div>
+                  <div className="text-gray-600">{stat.label}</div>
                 </div>
-                <div className="text-gray-600">Students Enrolled</div>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow-md">
-                <div className="text-purple-600 font-bold text-2xl mb-2">
-                  50+
-                </div>
-                <div className="text-gray-600">Expert Teachers</div>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow-md">
-                <div className="text-green-600 font-bold text-2xl mb-2">
-                  100%
-                </div>
-                <div className="text-gray-600">Success Rate</div>
-              </div>
-              <div className="bg-white p-4 rounded-lg shadow-md">
-                <div className="text-orange-600 font-bold text-2xl mb-2">
-                  24/7
-                </div>
-                <div className="text-gray-600">Support Available</div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
       </main>
 
-      <footer className="bg-white border-t border-gray-200 mt-12">
+      <footer className="bg-white/80 backdrop-blur-lg border-t border-gray-200 mt-12 relative z-10">
         <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
           <p className="text-center text-gray-600">
             © {new Date().getFullYear()} SomaNasi. All rights reserved.

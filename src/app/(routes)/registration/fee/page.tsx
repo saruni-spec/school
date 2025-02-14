@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import Validation, { required } from "@/app/hooks/validation";
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
 
@@ -42,14 +42,14 @@ const Fee = () => {
       onSubmit={handleSubmit}
       submitButtonText="Submit"
     >
-      <Input
+      <MyInput
         label="Fee Type ID"
         placeholder="Enter Fee Type ID (Optional)"
         value={fee_type_id.value}
         onChange={fee_type_id.handle_change}
         error={fee_type_id.error}
       />
-      <Input
+      <MyInput
         label="Amount"
         placeholder="Enter Fee Amount"
         required
@@ -67,7 +67,7 @@ const Fee = () => {
         onChange={due_date.handle_change}
         error={due_date.error}
       />
-      <Input
+      <MyInput
         label="Semester ID"
         placeholder="Enter Semester ID"
         required
@@ -75,7 +75,7 @@ const Fee = () => {
         onChange={semester_id.handle_change}
         error={semester_id.error}
       />
-      <Input
+      <MyInput
         label="Class ID"
         placeholder="Enter Class ID (Optional)"
         value={class_id.value}

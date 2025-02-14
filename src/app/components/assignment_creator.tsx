@@ -1,5 +1,5 @@
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import RadioInputs from "@/app/components/radio";
 import { FieldType, generic_record, MyRecord } from "@/app/types/types";
 import React, { useState } from "react";
@@ -186,7 +186,7 @@ const CreateAssignment = () => {
       />
 
       {assignmentType === "File" && (
-        <Input
+        <MyInput
           label="Assignment"
           type="file"
           onChange={handleFileSubmission}

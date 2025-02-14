@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import Validation, { required } from "@/app/hooks/validation";
 
 const ClassLevel = () => {
@@ -36,7 +36,7 @@ const ClassLevel = () => {
       onSubmit={handleSubmit}
       submitButtonText="Submit"
     >
-      <Input
+      <MyInput
         label="Class Name"
         placeholder="Enter Class Name"
         required
@@ -44,7 +44,7 @@ const ClassLevel = () => {
         onChange={name.handle_change}
         error={name.error}
       />
-      <Input
+      <MyInput
         label="Grade Level"
         placeholder="Enter Grade Level"
         required

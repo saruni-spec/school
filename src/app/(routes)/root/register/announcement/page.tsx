@@ -1,7 +1,7 @@
 "use client";
 import { Form } from "@/app/components/form";
 import React from "react";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { SelectList } from "@/app/components/select_list";
 import { event_scope } from "@prisma/client";
 import { useUser } from "@/app/context/user_context";
@@ -51,7 +51,7 @@ const Announcement = () => {
 
   return (
     <Form title="Event" onSubmit={handleSubmit} submitButtonText="Submit">
-      <Input
+      <MyInput
         label="Announcement"
         placeholder="Enter Announcement"
         required
@@ -59,7 +59,7 @@ const Announcement = () => {
         onChange={name.handle_change}
         error={name.error}
       />
-      <Input
+      <MyInput
         label="Description"
         placeholder="Enter Description"
         required

@@ -91,7 +91,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
       <div
         className={`
           fixed top-0 left-0 h-full z-40
-          bg-gradient-to-b from-indigo-600 to-indigo-900
+          bg-gradient-to-b from-blue-200 to-blue-400
           text-white
           shadow-lg
           transition-all duration-300 ease-in-out
@@ -125,7 +125,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
                 )}
               </div>
               <div className="min-w-0">
-                <h1 className="text-lg font-semibold leading-tight break-words text-white">
+                <h1 className="text-lg font-semibold leading-tight break-words text-gray-600/80">
                   {school ? (school.name as string) : schoolName}
                 </h1>
               </div>
@@ -160,7 +160,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
                     ${
                       link.active
                         ? "bg-white/10 text-white shadow-md backdrop-blur-sm"
-                        : "text-white/80 hover:bg-white/5 hover:text-white"
+                        : "text-gray-600/80 hover:bg-white/5 hover:text-white"
                     }
                   `}
                 >
@@ -185,7 +185,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
             className={`
               flex items-center space-x-3 
               p-2 rounded-lg cursor-pointer
-              text-white/80 hover:bg-white/5 hover:text-white
+              text-gray-600/80 hover:bg-white/5 hover:text-white
               transition-colors duration-200
             `}
           >

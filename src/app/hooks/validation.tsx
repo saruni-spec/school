@@ -416,7 +416,7 @@ export const formatEnumLabel = (enumValue: string) =>
     .join(" ");
 
 // Generate select options from an enum
-export const getEnumSelectOptions = <T extends MyRecord<string, string>>(
+export const getEnumSelectOptions = <T extends Record<string, string>>(
   enumType: T
 ) =>
   Object.values(enumType).map((value) => ({

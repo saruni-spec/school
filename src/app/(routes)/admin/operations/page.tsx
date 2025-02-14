@@ -25,16 +25,16 @@ const Operations = () => {
       icon: Users,
       operations: [
         {
-          href: "operations/database/register",
+          href: "operations/database/register/user",
           icon: UserPlus,
           title: "New Student Registration",
           description: "Enroll new students and create their academic profiles",
         },
         {
-          href: "operations/database/update",
+          href: "operations/database/update/student_class",
           icon: RefreshCw,
           title: "Update Student Information",
-          description: "Modify existing student records and academic details",
+          description: "Modify existing records and academic details",
         },
         {
           href: "operations/database/review",
@@ -47,7 +47,7 @@ const Operations = () => {
           href: "operations/database/view",
           icon: ClipboardList,
           title: "View Student Database",
-          description: "Access and browse complete student records",
+          description: "Access and browse complete school records",
         },
       ],
     },
@@ -56,7 +56,7 @@ const Operations = () => {
       icon: GraduationCap,
       operations: [
         {
-          href: "operations/database/register",
+          href: "operations/database/register/user",
           icon: UserPlus,
           title: "Staff Registration",
           description: "Add new teachers and administrative staff",
@@ -86,7 +86,7 @@ const Operations = () => {
       icon: Building2,
       operations: [
         {
-          href: "operations/database/register",
+          href: "operations/database/register/school_facility",
           icon: UserPlus,
           title: "Add Facilities",
           description: "Register new classrooms, labs, or equipment",

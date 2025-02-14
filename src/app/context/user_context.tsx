@@ -41,6 +41,11 @@ interface PricipalDetailsState {
   setPrincipalDetails: (principalDetails: Principal) => void;
 }
 
+interface SecretaryDetails {
+  secretaryDetails: Secretary | undefined;
+  setSecretaryDetails: (secretaryDetails: Secretary) => void;
+}
+
 export const useUser = create<UserState>((set) => ({
   user: undefined,
   school: undefined,
@@ -98,6 +103,15 @@ export const usePrincipalDetails = create<PricipalDetailsState>((set) => ({
   setPrincipalDetails: (principalDetails: Principal) =>
     set(() => ({
       principalDetails,
+    })),
+}));
+
+export const useSecretaryDetails = create<SecretaryDetails>((set) => ({
+  secretaryDetails: undefined,
+
+  setSecretaryDetails: (secretaryDetails: Secretary) =>
+    set(() => ({
+      secretaryDetails,
     })),
 }));
 

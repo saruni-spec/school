@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/app/components/button";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import RadioInputs from "@/app/components/radio";
 import { generic_record } from "@/app/types/types";
 
@@ -90,7 +90,7 @@ const QuestionCreator = ({
           orientation="horizontal"
         />
 
-        <Input
+        <MyInput
           label="Question"
           type="text"
           value={currentQuestion}
@@ -101,7 +101,7 @@ const QuestionCreator = ({
         {questionType === "multiple" && (
           <div className="space-y-4">
             <div className="flex gap-2">
-              <Input
+              <MyInput
                 label="Option"
                 type="text"
                 value={currentOption}

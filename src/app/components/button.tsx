@@ -22,7 +22,8 @@ interface ExtendedButtonProps
     | "link"
     | "subtle"
     | "add"
-    | "delete";
+    | "delete"
+    | "destructive";
   size?: "sm" | "md" | "lg";
 }
 
@@ -39,6 +40,7 @@ export const Button: React.FC<ExtendedButtonProps> = ({
     secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300",
     success: "bg-green-500 text-white hover:bg-green-600",
     danger: "bg-red-500 text-white hover:bg-red-600",
+    destructive: "bg-red-500 text-white hover:bg-red-600",
 
     // Outline variants
     outline: "border-2 border-gray-300 text-gray-700 hover:bg-gray-50",

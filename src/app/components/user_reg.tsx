@@ -1,6 +1,6 @@
 "use client";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { validateEmail } from "@/app/hooks/validation";
 import React, { useCallback, useEffect, useState } from "react";
 import { DatePicker } from "@/app/components/calendar";
@@ -164,33 +164,33 @@ export const User = ({
   return (
     <>
       <Form onSubmit={handleSubmit} submitButtonText="Sign Up">
-        <Input
+        <MyInput
           label="First Name"
           onChange={first_name.handle_change}
           value={first_name.value}
           error={first_name.error}
         />
-        <Input
+        <MyInput
           label="Last Name"
           onChange={last_name.handle_change}
           value={last_name.value}
           error={last_name.error}
         />
-        <Input
+        <MyInput
           type="email"
           label="Email"
           onChange={email.handle_change}
           value={email.value}
           error={email.error}
         />
-        <Input
+        <MyInput
           label="Phone Number"
           onChange={phone.handle_change}
           value={phone.value}
           error={phone.error}
         />
         {user_type === "STUDENT" && (
-          <Input
+          <MyInput
             label="Admission Number"
             onChange={admission_number.handle_change}
             value={admission_number.value}
@@ -252,7 +252,7 @@ export const SchoolAdmin = ({
       onSubmit={handleSubmit}
       submitButtonText="Complete Registration"
     >
-      <Input
+      <MyInput
         label="Academic Year"
         placeholder="Enter the academic year"
         value={academic_year.value}

@@ -3,14 +3,14 @@
 "use client";
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { SelectList } from "@/app/components/select_list";
 import Validation, { required } from "@/app/hooks/validation";
 import { useUser } from "@/app/context/user_context";
 import CheckBoxToggle from "@/app/components/checkbox_toggle";
 import { grade_levels, MyRecord } from "@/app/types/types";
 import { grade_level_type } from "@prisma/client";
-import { register } from "@/app/api_functions/functions";
+import { getDataFromApi, register } from "@/app/api_functions/functions";
 
 //
 // Register a class level
@@ -78,10 +78,9 @@ const ClassLevel = () => {
         const class_group_response: MyRecord = await createClassGroup();
         //
         // Fetch academic year
-        const academic_year_response = await fetch(
-          `http://localhost:3000/api/fetch_record?table_name=academic_year&school_id=${school_id}&year=${class_year.value}`
+        const academic_year: MyRecord[] = await getDataFromApi(
+          `/api/fetch_record?table_name=academic_year&school_id=${school_id}&year=${class_year.value}`
         );
-        const academic_year: MyRecord[] = await academic_year_response.json();
         //
         // Create class
         await createClassProgression(class_group_response, academic_year[0]);
@@ -142,7 +141,7 @@ const ClassLevel = () => {
         error={current.error}
       />
 
-      <Input
+      <MyInput
         label="Year"
         placeholder="Year eg, 2021..."
         required

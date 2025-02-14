@@ -31,7 +31,7 @@ const ReviewPage = () => {
   const searchParams = useSearchParams();
   const selectedTable = searchParams.get("table");
 
-  const path_name = "/admin/review";
+  const path_name = "/root/review";
   const registerItems = [
     {
       label: "Academic Years",

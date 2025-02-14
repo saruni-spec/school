@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useCallback, useState } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { validateKey, validateValue } from "@/app/hooks/validation";
 import { MultiInput } from "@/app/components/multi_input";
 import { useUser } from "@/app/context/user_context";
@@ -20,12 +20,8 @@ import { fetchTable, register } from "@/app/api_functions/functions";
 const School: React.FC = () => {
   const name_field = useValidation({ type: FieldType.Text, required: true });
   const address_field = useValidation({ type: FieldType.Text });
-  const [contact_info, set_contact_info] = useState<MyRecord<string, string>>(
-    {}
-  );
-  const [license_info, set_license_info] = useState<MyRecord<string, string>>(
-    {}
-  );
+  const [contact_info, set_contact_info] = useState<Record<string, string>>({});
+  const [license_info, set_license_info] = useState<Record<string, string>>({});
   const [school_levels, set_school_levels] = useState<MyRecord[]>([]);
   const [selected_levels, set_selected_levels] = useState<MyRecord[]>([]);
   const [levels_error, set_levels_error] = useState<string | null>(null);
@@ -141,7 +137,7 @@ const School: React.FC = () => {
       submitButtonText="Register School"
     >
       {/* Name Field */}
-      <Input
+      <MyInput
         label="School Name"
         placeholder="Enter the school name"
         required
@@ -150,7 +146,7 @@ const School: React.FC = () => {
         error={name_field.error}
       />
 
-      <Input
+      <MyInput
         label="Address"
         placeholder="Enter the school address"
         value={address_field.value}

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useCallback, useState } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { validateKey, validateValue } from "@/app/hooks/validation";
 import { MultiInput } from "@/app/components/multi_input";
 import { useUser } from "@/app/context/user_context";
@@ -16,12 +16,8 @@ import { fetchData, fetchTable } from "@/app/api_functions/functions";
 // allow editing of school details
 const SchoolUpdate: React.FC = () => {
   // Ensure all hooks are initialized, even when `school` is undefined.
-  const [contact_info, set_contact_info] = useState<MyRecord<string, string>>(
-    {}
-  );
-  const [license_info, set_license_info] = useState<MyRecord<string, string>>(
-    {}
-  );
+  const [contact_info, set_contact_info] = useState<Record<string, string>>({});
+  const [license_info, set_license_info] = useState<Record<string, string>>({});
   const [school_levels, set_school_levels] = useState<MyRecord[]>([]);
   const [selected_levels, set_selected_levels] = useState<MyRecord[]>([]);
   const [levels_error, set_levels_error] = useState<string | null>(null);
@@ -45,8 +41,8 @@ const SchoolUpdate: React.FC = () => {
 
     if (school_details.name === name_field.value) return;
 
-    set_contact_info(school_details.contact_info as MyRecord<string, string>);
-    set_license_info(school_details.license_info as MyRecord<string, string>);
+    set_contact_info(school_details.contact_info as Record<string, string>);
+    set_license_info(school_details.license_info as Record<string, string>);
     name_field.handle_value_change(school_details.name as string);
     address_field.handle_value_change(school_details.address as string);
   }, [school]);
@@ -148,14 +144,14 @@ const SchoolUpdate: React.FC = () => {
       onSubmit={handleSubmit}
       submitButtonText="Update School"
     >
-      <Input
+      <MyInput
         label="School Name"
         placeholder="Enter the school name"
         value={name_field.value}
         onChange={name_field.handle_change}
         error={name_field.error}
       />
-      <Input
+      <MyInput
         label="Address"
         placeholder="Enter the school address"
         value={address_field.value}

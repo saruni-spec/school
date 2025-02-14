@@ -3,7 +3,7 @@ import React from "react";
 import { useCallback } from "react";
 import Validation, { required } from "@/app/hooks/validation";
 import { useDateValidation } from "@/app/components/calendar";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { DatePicker } from "@/app/components/calendar";
 
 const Payment = () => {
@@ -48,7 +48,7 @@ const Payment = () => {
 
   return (
     <Form title="Payment" onSubmit={handleSubmit} submitButtonText="Submit">
-      <Input
+      <MyInput
         label="Fee ID"
         placeholder="Enter Fee ID"
         required
@@ -56,7 +56,7 @@ const Payment = () => {
         onChange={fee_id.handle_change}
         error={fee_id.error}
       />
-      <Input
+      <MyInput
         label="Amount"
         placeholder="Enter Amount"
         required
@@ -73,7 +73,7 @@ const Payment = () => {
         onChange={payment_date.handle_change}
         error={payment_date.error}
       />
-      <Input
+      <MyInput
         label="Payment Method"
         placeholder="Enter Payment Method"
         required
@@ -81,7 +81,7 @@ const Payment = () => {
         onChange={payment_method.handle_change}
         error={payment_method.error}
       />
-      <Input
+      <MyInput
         label="Status"
         placeholder="Enter Status"
         required
@@ -90,7 +90,7 @@ const Payment = () => {
         error={status.error}
       />
 
-      <Input
+      <MyInput
         label="Reference Number"
         placeholder="Enter Reference Number"
         required

@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import Validation, { required } from "@/app/hooks/validation";
 
 const SchoolFacility = () => {
@@ -31,7 +31,7 @@ const SchoolFacility = () => {
       onSubmit={handleSubmit}
       submitButtonText="Register"
     >
-      <Input
+      <MyInput
         label="Description"
         placeholder="Enter Description (Optional)"
         value={description.value}

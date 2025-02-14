@@ -11,7 +11,7 @@ export default function AdminLayout({
     <SessionProvider>
       <TeacherLayout>
         {" "}
-        <div className="ml-64 flex-grow">{children} </div>
+        <div className="ml-64 flex-grow min-h-screen">{children} </div>
       </TeacherLayout>
     </SessionProvider>
   );

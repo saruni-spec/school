@@ -1,10 +1,27 @@
 "use client";
 import { useTeacherDetails } from "@/app/context/user_context";
-import React, { useState, useEffect, useCallback, Suspense } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  Suspense,
+  Fragment,
+} from "react";
 import { Card, CardContent } from "@/app/components/card";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
 import { MyRecord } from "@/app/types/types";
 import { LoadingSpinner } from "@/app/components/loading";
+
+const daysOfWeek = [
+  "SUNDAY",
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+];
+const days_of_week = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
 
 const Schedule = () => {
   const [slots, setSlots] = useState<MyRecord[]>([]);
@@ -12,35 +29,7 @@ const Schedule = () => {
   const [nextSlot, setNextSlot] = useState<MyRecord | null>(null);
   const { teacherDetails } = useTeacherDetails();
 
-  const daysOfWeek = [
-    "SUNDAY",
-    "MONDAY",
-    "TUESDAY",
-    "WEDNESDAY",
-    "THURSDAY",
-    "FRIDAY",
-    "SATURDAY",
-  ];
-  const days_of_week = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
-
-  const fetchSlots = useCallback(async () => {
-    try {
-      const response = await fetch(
-        `/api/teacher/slot?teacher_id=${teacherDetails?.id}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch schedule");
-      }
-      const data = await response.json();
-      console.log(data);
-      setSlots(data);
-      updateNextSlot(data);
-    } catch (err) {
-      setError(err.message);
-    }
-  }, [teacherDetails]);
-
-  const updateNextSlot = (currentSlots: MyRecord[]) => {
+  const updateNextSlot = useCallback((currentSlots: MyRecord[]) => {
     if (currentSlots.length === 0) return;
 
     const now = new Date();
@@ -93,7 +82,25 @@ const Schedule = () => {
 
     // If no slots found in the next week
     setNextSlot(null);
-  };
+  }, []);
+
+  const fetchSlots = useCallback(async () => {
+    try {
+      const response = await fetch(
+        `/api/teacher/slot?teacher_id=${teacherDetails?.id}`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch schedule");
+      }
+      const data = await response.json();
+      console.log(data);
+      setSlots(data);
+      updateNextSlot(data);
+    } catch (err) {
+      setError(err.message);
+    }
+  }, [teacherDetails, updateNextSlot]);
+
   useEffect(() => {
     fetchSlots();
     // Update next slot every minute
@@ -163,60 +170,55 @@ const Schedule = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {daysOfWeek.map((day) => (
-            <>
+            <Fragment key={day}>
               {days_of_week.includes(day) && (
-                <>
-                  <Card key={day} className="overflow-hidden">
-                    <div className="bg-blue-500 p-3">
-                      <h2 className="text-white font-semibold">{day}</h2>
-                    </div>
-                    <CardContent className="p-4">
-                      {slots.length > 0 ? (
-                        <div className="space-y-3">
-                          {slots.map((item) => (
-                            <>
-                              {(
-                                item?.slot?.day_of_week as string
-                              ).toLowerCase() === day.toLowerCase() && (
-                                <div
-                                  key={item?.slot?.id}
-                                  className="border rounded p-3 hover:bg-gray-50 transition-colors"
-                                >
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <Clock className="h-4 w-4 text-blue-500" />
-                                    <span className="text-sm font-medium">
-                                      {item?.slot?.start_time} -{" "}
-                                      {item?.slot?.end_time}
-                                    </span>
-                                  </div>
-
-                                  <div className="text-sm text-gray-600">
-                                    {
-                                      item?.subject_allocation?.subject_grade
-                                        .name
-                                    }
-                                  </div>
-
-                                  {item?.slot?.room_number && (
-                                    <div className="text-sm text-gray-500">
-                                      Room: {item?.slot?.room_number}
-                                    </div>
-                                  )}
+                <Card key={day} className="overflow-hidden">
+                  <div className="bg-blue-500 p-3">
+                    <h2 className="text-white font-semibold">{day}</h2>
+                  </div>
+                  <CardContent className="p-4">
+                    {slots.length > 0 ? (
+                      <div className="space-y-3">
+                        {slots.map((item) => (
+                          <>
+                            {(
+                              item?.slot?.day_of_week as string
+                            ).toLowerCase() === day.toLowerCase() && (
+                              <div
+                                key={item?.slot?.id}
+                                className="border rounded p-3 hover:bg-gray-50 transition-colors"
+                              >
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Clock className="h-4 w-4 text-blue-500" />
+                                  <span className="text-sm font-medium">
+                                    {item?.slot?.start_time} -{" "}
+                                    {item?.slot?.end_time}
+                                  </span>
                                 </div>
-                              )}
-                            </>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center text-gray-500 py-4">
-                          No classes scheduled
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </>
+
+                                <div className="text-sm text-gray-600">
+                                  {item?.subject_allocation?.subject_grade.name}
+                                </div>
+
+                                {item?.slot?.room_number && (
+                                  <div className="text-sm text-gray-500">
+                                    Room: {item?.slot?.room_number}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center text-gray-500 py-4">
+                        No classes scheduled
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               )}
-            </>
+            </Fragment>
           ))}
         </div>
       </div>

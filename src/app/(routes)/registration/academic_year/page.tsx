@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
 import Validation, { required } from "@/app/hooks/validation";
 
@@ -34,7 +34,7 @@ const AcademicYear = () => {
       onSubmit={handleSubmit}
       submitButtonText="Register"
     >
-      <Input
+      <MyInput
         label="Academic Year Name"
         placeholder="Enter Name"
         required

@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { DatePicker, useDateValidation } from "@/app/components/calendar";
 import Validation, {
   required,
@@ -43,7 +43,7 @@ const Staff = () => {
   );
   return (
     <Form title="" onSubmit={handleSubmit} submitButtonText="">
-      <Input
+      <MyInput
         label="Current School Name"
         placeholder="Your Current School"
         required

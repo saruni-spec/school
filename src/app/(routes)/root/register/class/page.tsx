@@ -3,13 +3,15 @@
 "use client";
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { SelectList } from "@/app/components/select_list";
 import Validation, { required } from "@/app/hooks/validation";
 import { useUser } from "@/app/context/user_context";
 import CheckBoxToggle from "@/app/components/checkbox_toggle";
 import { grade_levels, MyRecord } from "@/app/types/types";
 import { grade_level_type } from "@prisma/client";
+import { getDataFromApi, register } from "@/app/api_functions/functions";
+
 //
 // Register a class level
 const ClassLevel = () => {
@@ -25,61 +27,38 @@ const ClassLevel = () => {
   //handle default stream creation
   const createDefaultStream = async (class_id: number) => {
     // Create default stream
-    await fetch("http://localhost:3000/api/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    await register({
+      data: {
+        class_group_id: class_id,
+        name: "Default Stream",
       },
-      body: JSON.stringify({
-        data: {
-          class_group_id: class_id,
-          name: "Default Stream",
-        },
-        model_name: "stream",
-      }),
+      model_name: "stream",
     });
   };
-
   //
   //create a class_group
   const createClassGroup = useCallback(async () => {
     // Create default stream
-    const response = await fetch("http://localhost:3000/api/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    return await register({
+      data: {
+        name: `${grade_level.value}-${class_year.value}-${school_id}`,
       },
-      body: JSON.stringify({
-        data: {
-          name: `${grade_level.value}-${class_year.value}-${school_id}`,
-        },
-        model_name: "class_group",
-      }),
+      model_name: "class_group",
     });
-
-    return await response.json();
   }, [grade_level, class_year, school_id]);
 
   const createClassProgression = useCallback(
     async (class_group_response: MyRecord, academic_year?: MyRecord) => {
       // Create class
-      const class_response = await fetch("http://localhost:3000/api/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      return await register({
+        data: {
+          class_group_id: class_group_response.id,
+          academic_year_id: academic_year?.id,
+          grade_level_id: grade_levels[grade_level.value as grade_level_type],
+          is_current: current.value === "on",
         },
-        body: JSON.stringify({
-          data: {
-            class_group_id: class_group_response.id,
-            academic_year_id: academic_year?.id,
-            grade_level_id: grade_levels[grade_level.value as grade_level_type],
-            is_current: current.value === "on",
-          },
-          model_name: "class_progression",
-        }),
+        model_name: "class_progression",
       });
-
-      return await class_response.json();
     },
     [grade_level, current]
   );
@@ -97,29 +76,18 @@ const ClassLevel = () => {
         //
         //create the class group
         const class_group_response: MyRecord = await createClassGroup();
-
         //
         // Fetch academic year
-        const academic_year_response = await fetch(
-          `http://localhost:3000/api/fetch_record?table_name=academic_year&school_id=${school_id}&year=${class_year.value}`
+        const academic_year: MyRecord[] = await getDataFromApi(
+          `/api/fetch_record?table_name=academic_year&school_id=${school_id}&year=${class_year.value}`
         );
-        const academic_year: MyRecord[] = await academic_year_response.json();
-
         //
         // Create class
-        const class_result = await createClassProgression(
-          class_group_response,
-          academic_year[0]
-        );
-
-        if (class_result.error) {
-          console.error("Error creating class:", class_result.error);
-          return;
-        }
+        await createClassProgression(class_group_response, academic_year[0]);
         //
         // Create default stream
         await createDefaultStream(class_group_response.id);
-
+        //
         // Handle successful creation (e.g., show success message, reset form)
       } catch (error) {
         console.error("Error creating class or stream:", error);
@@ -173,7 +141,7 @@ const ClassLevel = () => {
         error={current.error}
       />
 
-      <Input
+      <MyInput
         label="Year"
         placeholder="Year eg, 2021..."
         required

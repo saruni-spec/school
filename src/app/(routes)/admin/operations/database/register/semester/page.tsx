@@ -1,12 +1,12 @@
 "use client";
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
-import { DatePicker, useDateValidation } from "@/app/components/calendar";
+import { DatePicker } from "@/app/components/calendar";
 import { useUser } from "@/app/context/user_context";
 import { useValidation } from "@/app/hooks/validation_hooks";
 import { FieldType } from "@/app/types/types";
 import { validInputs } from "@/lib/functions";
-import { register } from "@/app/api_functions/functions";
+import { getDataFromApi, register } from "@/app/api_functions/functions";
 const table_name = "academic_year";
 //
 // Semester Registration Component
@@ -39,16 +39,11 @@ const Semester = () => {
       //use the school_id from the selected school
       //?table_name=users&name=John&age=30
       const year = start_date.value.toString().split("-")[0];
-      const response = await fetch(
-        `http://localhost:3000/api/fetch_record?table_name=${table_name}&school_id=${school_id}&year=${year}`
-      );
-      if (!response.ok) {
-        alert(`Failed to fetch ${table_name}`);
-        throw new Error(`Failed to fetch ${table_name}`);
-      }
       //
       //get the academic year id
-      const academic_year_id = await response.json();
+      const academic_year_id = await getDataFromApi(
+        `/api/fetch_record?table_name=${table_name}&school_id=${school_id}&year=${year}`
+      );
       //
       //generate a name for the semester
       // use the start_month and end_month from the start_date and end_date value

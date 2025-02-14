@@ -10,7 +10,7 @@ export default function AdminLayout({
   return (
     <SessionProvider>
       <StudentLayout>
-        <div className="ml-64 flex-grow">{children} </div>
+        <div className="ml-64 flex-grow min-h-screen">{children} </div>
       </StudentLayout>
     </SessionProvider>
   );

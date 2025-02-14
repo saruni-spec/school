@@ -3,7 +3,7 @@ import React from "react";
 
 interface AlertProps {
   children: React.ReactNode;
-  variant?: "success" | "error" | "warning";
+  variant?: "success" | "error" | "warning" | "destructive";
   className?: string;
 }
 
@@ -16,6 +16,7 @@ export const Alert: React.FC<AlertProps> = ({
     success: "bg-green-50 border-green-500 text-green-700",
     error: "bg-red-50 border-red-500 text-red-700",
     warning: "bg-yellow-50 border-yellow-500 text-yellow-700",
+    destructive: "bg-red-50 border-red-500 text-red-700",
   };
 
   return (

@@ -1,5 +1,5 @@
 "use client";
-import { PrinciPalLayout } from "@/app/components/lay_outs";
+import { Admin_Layout } from "@/app/components/lay_outs";
 import { useSidebarStore } from "@/app/context/user_context";
 import { SessionProvider } from "next-auth/react";
 
@@ -11,7 +11,7 @@ export default function AdminLayout({
   const { isCollapsed } = useSidebarStore();
   return (
     <SessionProvider>
-      <PrinciPalLayout>
+      <Admin_Layout>
         <div
           className={`
             transition-all duration-300 ease-in-out
@@ -22,7 +22,7 @@ export default function AdminLayout({
         >
           {children}
         </div>
-      </PrinciPalLayout>
+      </Admin_Layout>
     </SessionProvider>
   );
 }

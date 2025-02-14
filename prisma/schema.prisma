@@ -563,8 +563,6 @@ model stream {
   grade_level                  grade_level?                 @relation(fields: [grade_level_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
   school                       school?                      @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-  exam_sitting                 exam_sitting[]
-  
   subject_allocation           subject_allocation[]
   
   slot_assignment              slot_assignment[]
@@ -1031,6 +1029,7 @@ model slot {
   time_table        time_table?   @relation(fields: [time_table_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
  
   slot_assignment   slot_assignment[]
+  exam_sitting      exam_sitting[]
 
   @@unique([day_of_week, start_time, time_table_id])
 }
@@ -1214,24 +1213,21 @@ model exam_sitting {
   //the supervisor of the sitting
   teacher_id            Int?
   subject_allocation_id Int?
-  stream_id             Int?
-  out_of                Decimal?                   @db.Decimal(5, 2)
-  remarks               String?
   sitting_date          DateTime                   @db.Date
+
+  slot_id               Int?
 
   created_at            DateTime?                  @default(now()) @db.Timestamptz(6)
   updated_at            DateTime?                  @default(now()) @db.Timestamptz(6)
   deleted_at            DateTime?                  @db.Timestamptz(6)
 
-  total_marks           Int
-
   exam                  exam?                      @relation(fields: [exam_id], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  stream                stream?                    @relation(fields: [stream_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   subject_allocation    subject_allocation?        @relation(fields: [subject_allocation_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   teacher               teacher?                   @relation(fields: [teacher_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  slot                  slot?                      @relation(fields: [slot_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   result                result[]
 
-  @@unique([stream_id, subject_allocation_id, exam_id, sitting_date])
+  @@unique([subject_allocation_id,slot_id,sitting_date])
   @@index([sitting_date])
 }
 

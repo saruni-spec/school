@@ -2,7 +2,7 @@
 import { Form } from "@/app/components/form";
 import React from "react";
 import { useCallback, useState } from "react";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { DatePicker } from "@/app/components/calendar";
 import { SearchDb } from "@/app/components/search_db";
 import { FieldType, MyRecord } from "@/app/types/types";
@@ -160,7 +160,7 @@ const Payment = () => {
         onChange={handleFeeSelection}
         error={fee_id.error}
       />
-      <Input
+      <MyInput
         label="Amount"
         placeholder="Enter Amount"
         required
@@ -186,7 +186,7 @@ const Payment = () => {
         error={pay_method.error}
       />
 
-      <Input
+      <MyInput
         label="Reference Number"
         placeholder="Enter Reference Number"
         required

@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback, useState, useEffect } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { useUser } from "@/app/context/user_context";
 import { Select } from "@/app/components/select";
 import { FieldType, MyRecord } from "@/app/types/types";
@@ -58,7 +58,7 @@ const SchoolFacility = () => {
         onChange={facility_id.handle_change}
         error={facility_id.error}
       />
-      <Input
+      <MyInput
         label="Description"
         placeholder="Enter Description (Optional)"
         value={description.value}

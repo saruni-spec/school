@@ -6,7 +6,7 @@ import {
   picture_category,
 } from "@prisma/client";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { SelectList } from "@/app/components/select_list";
 import { useUser } from "@/app/context/user_context";
 import { register } from "@/app/api_functions/functions";
@@ -67,14 +67,14 @@ const Gallery = () => {
       submitButtonText="Save Gallery"
       title="Create Gallery"
     >
-      <Input
+      <MyInput
         label="Gallery Name"
         placeholder="Name"
         value={name.value}
         onChange={name.handle_change}
         error={name.error}
       />
-      <Input
+      <MyInput
         label="Description"
         placeholder="Description"
         value={description.value}
@@ -104,14 +104,14 @@ const Gallery = () => {
         error={category.error}
         options={categories}
       />
-      <Input
+      <MyInput
         label="Where are the pictures taken?"
         placeholder="Location"
         value={location.value}
         onChange={location.handle_change}
         error={location.error}
       />
-      <Input
+      <MyInput
         label="Tags"
         placeholder="Tags"
         value={tags.value}

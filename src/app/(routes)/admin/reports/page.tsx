@@ -65,14 +65,6 @@ const Reports = () => {
     fetchAttendance();
   }, [total_students]);
 
-  const attendanceData = [
-    { month: "Jan", attendance: 95 },
-    { month: "Feb", attendance: 93 },
-    { month: "Mar", attendance: 94 },
-    { month: "Apr", attendance: 92 },
-    { month: "May", attendance: 96 },
-  ];
-
   const examPerformance = [
     { subject: "Mathematics", avgScore: 78, passRate: 85 },
     { subject: "English", avgScore: 82, passRate: 88 },
@@ -227,7 +219,7 @@ const Reports = () => {
               <CardContent>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={attendanceData}>
+                    <LineChart data={attendance}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" />
                       <YAxis />
@@ -254,7 +246,7 @@ const Reports = () => {
             <CardContent>
               <div className="h-96">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={attendanceData}>
+                  <LineChart data={attendance}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis domain={[85, 100]} />

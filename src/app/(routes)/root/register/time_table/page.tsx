@@ -1,15 +1,19 @@
 "use client";
-import { fetchTable, register } from "@/app/api_functions/functions";
+import {
+  fetchTable,
+  getDataFromApi,
+  register,
+} from "@/app/api_functions/functions";
 import { Alert, AlertDescription } from "@/app/components/alert";
 import { Button } from "@/app/components/button";
 import { Card, CardContent } from "@/app/components/card";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { Select } from "@/app/components/select";
 import { useUser } from "@/app/context/user_context";
 import { MyRecord } from "@/app/types/types";
 import { flattenObjectIterative } from "@/lib/functions";
 import { AlertCircle } from "lucide-react";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useState } from "react";
 //
 // Timetable Creator
 // This component is used to create a timetable for a school
@@ -102,7 +106,7 @@ const TimetableCreator = () => {
   const [selected_stream, setSelectedStream] = useState<number | null>(null);
 
   // Assignment state
-  const [assignments, setAssignments] = useState<MyRecord<string, Assignment>>(
+  const [assignments, setAssignments] = useState<Record<string, Assignment>>(
     {}
   );
   //
@@ -161,28 +165,11 @@ const TimetableCreator = () => {
 
   //get slots saved in db
   const getSlotsInDb = useCallback(async () => {
-    const response = await fetch(
+    const data = await getDataFromApi(
       `/api/time_table/get_slots?school_id=${school_id}&semester_id=${current_semester}`
     );
-    if (!response.ok) {
-      return;
-    }
 
-    const data = await response.json();
-
-    if (!data) {
-      const skeleton = {
-        slot_duration: 40,
-        start_time: "08:00",
-        end_time: "16:00",
-        days_per_week: 5,
-        breaks: [],
-        school_id: school_id,
-        semester_id: current_semester,
-      };
-      setSkeletonConfig(skeleton);
-      return;
-    }
+    if (!data || data.length === 0) return;
 
     const formatted_slots = formatDBSlotsToTempSlots(data.slots);
 
@@ -199,7 +186,7 @@ const TimetableCreator = () => {
 
     setSkeletonConfig(skeleton);
     // Create a new assignments object based on the formatted slots
-    const new_assignments: MyRecord<string, Assignment> = {};
+    const new_assignments: Record<string, Assignment> = {};
 
     formatted_slots.forEach((slot) => {
       // Convert the time to slot index
@@ -232,14 +219,12 @@ const TimetableCreator = () => {
   }, [getSlotsInDb]);
 
   const getCurrentSemester = useCallback(async () => {
-    const response = await fetch(
+    const data = await getDataFromApi(
       `/api/semester/current?school_id=${school_id}`
     );
-    if (!response.ok) {
-      console.error("Failed to fetch current semester");
-      return;
-    }
-    const data = await response.json();
+
+    if (!data || data.length === 0) return;
+
     setCurrentSemester(data.id);
   }, [school_id]);
 
@@ -248,13 +233,12 @@ const TimetableCreator = () => {
   }, [getCurrentSemester]);
 
   const getStreams = useCallback(async () => {
-    const response = await fetch(`/api/school/streams?school_id=${school_id}`);
-    if (!response.ok) {
-      console.error("Failed to fetch streams");
-      return;
-    }
+    const data = await getDataFromApi(
+      `/api/school/streams?school_id=${school_id}`
+    );
 
-    const data = await response.json();
+    if (!data || data.length === 0) return;
+
     setStreams(data);
   }, [school_id]);
 
@@ -263,8 +247,11 @@ const TimetableCreator = () => {
   }, [getStreams]);
 
   const getSubjects = async () => {
-    const response = await fetchTable("subject_grade");
-    setSubjects(response);
+    const data = await fetchTable("subject_grade");
+
+    if (!data || data.length === 0) return;
+
+    setSubjects(data);
   };
 
   useEffect(() => {
@@ -272,13 +259,12 @@ const TimetableCreator = () => {
   }, []);
 
   const getTeachers = useCallback(async () => {
-    const response = await fetch(`/api/school/teachers?school_id=${school_id}`);
-    if (!response.ok) {
-      console.error("Failed to fetch teachers");
-      return;
-    }
+    const data = await getDataFromApi(
+      `/api/school/teachers?school_id=${school_id}`
+    );
 
-    const data = await response.json();
+    if (!data || data.length === 0) return;
+
     const flattened_data = data.map((item: MyRecord) =>
       flattenObjectIterative(item)
     );
@@ -570,7 +556,7 @@ const TimetableCreator = () => {
                 <label className="block text-sm font-medium mb-1">
                   Slot Duration (minutes)
                 </label>
-                <Input
+                <MyInput
                   type="number"
                   value={skeleton_config.slot_duration}
                   onChange={(e) =>
@@ -586,7 +572,7 @@ const TimetableCreator = () => {
                 <label className="block text-sm font-medium mb-1">
                   Start Time
                 </label>
-                <Input
+                <MyInput
                   type="time"
                   value={skeleton_config.start_time}
                   onChange={(e) =>
@@ -601,7 +587,7 @@ const TimetableCreator = () => {
                 <label className="block text-sm font-medium mb-1">
                   End Time
                 </label>
-                <Input
+                <MyInput
                   type="time"
                   value={skeleton_config.end_time}
                   onChange={(e) =>
@@ -620,7 +606,7 @@ const TimetableCreator = () => {
                   key={index}
                   className="grid grid-cols-3 gap-4 items-center"
                 >
-                  <Input
+                  <MyInput
                     type="time"
                     value={breakItem.startTime}
                     onChange={(e) =>
@@ -634,7 +620,7 @@ const TimetableCreator = () => {
                       })
                     }
                   />
-                  <Input
+                  <MyInput
                     type="number"
                     value={breakItem.duration}
                     onChange={(e) =>

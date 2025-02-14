@@ -1,14 +1,14 @@
 "use client";
 import React, { useCallback, useEffect, useState } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { useUser } from "@/app/context/user_context";
 import { getGradeLevels } from "@/app/actions/actions";
 import { FieldType, MyRecord } from "@/app/types/types";
 import { Select } from "@/app/components/select";
 import { useValidation } from "@/app/hooks/validation_hooks";
 import { validInputs } from "@/lib/functions";
-import { register } from "@/app/api_functions/functions";
+import { getDataFromApi, register } from "@/app/api_functions/functions";
 //
 // Stream Registration Component
 const Stream = () => {
@@ -38,10 +38,7 @@ const Stream = () => {
   //
   //fetch current academic year
   const currentAcademicYear = useCallback(async () => {
-    const respone = await fetch(
-      `/api/academic_year/current?school_id=${school_id}`
-    );
-    return await respone.json();
+    return getDataFromApi(`/api/academic_year/current?school_id=${school_id}`);
   }, [school_id]);
 
   //
@@ -90,7 +87,7 @@ const Stream = () => {
         onChange={grade_level_id.handle_change}
         error={grade_level_id.error}
       />
-      <Input
+      <MyInput
         label="Stream Name"
         placeholder="Enter Stream Name"
         required
@@ -98,7 +95,7 @@ const Stream = () => {
         onChange={stream_name.handle_change}
         error={stream_name.error}
       />
-      <Input
+      <MyInput
         label="Capacity"
         placeholder="Enter Capacity (Optional)"
         type="number"

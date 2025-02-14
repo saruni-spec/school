@@ -11,7 +11,9 @@ const UpdateClass = () => {
 
   const getClassDetails = useCallback(async () => {
     const data = await getDataWithSchoolId("class", school_id);
+
     if (data.length === 0) return;
+
     set_classes(data);
   }, [school_id]);
 

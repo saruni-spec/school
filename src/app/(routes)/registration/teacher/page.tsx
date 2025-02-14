@@ -1,6 +1,6 @@
 import { Form } from "@/app/components/form";
 import React, { useCallback } from "react";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import Validation from "@/app/hooks/validation";
 
 const Teacher = () => {
@@ -26,7 +26,7 @@ const Teacher = () => {
       onSubmit={handleSubmit}
       submitButtonText="Sign Up"
     >
-      <Input
+      <MyInput
         label="Specializations"
         placeholder="Enter any specializations"
         value={specializations.value}

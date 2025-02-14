@@ -19,104 +19,105 @@ import {
 import { Screen } from "@/app/components/screen";
 
 const ViewPage = () => {
+  const root = "/root";
   const registerItems = [
     {
       label: "School",
       icon: School,
-      route: "/admin/view/school",
+      route: `${root}/view/school`,
       description: "Update school details",
     },
     {
       label: "Dates",
       icon: Calendar,
-      route: "/admin/view/dates",
+      route: `${root}/view/dates`,
       description: "Manage academic years and semesters",
     },
 
     {
       label: "Department",
       icon: Building,
-      route: "/admin/view/department",
+      route: `${root}/view/department`,
       description: "Update current departments",
     },
 
     {
       label: "User",
       icon: UserPlus,
-      route: "/admin/view/user",
+      route: `${root}/view/user`,
       description: "Update user details",
     },
     {
       label: "Class",
       icon: BookOpenCheck,
-      route: "/admin/view/class",
+      route: `${root}/view/class`,
       description: "Manage classes and streams",
     },
     {
       label: "Time Table",
       icon: Clock,
-      route: "/admin/view/role",
+      route: `${root}/view/role`,
       description: "Manage time tables",
     },
     {
       label: "Exam",
       icon: FileSpreadsheet,
-      route: "/admin/view/exam",
+      route: `${root}/view/exam`,
       description: "Update exam details",
     },
     {
       label: "Subject Allocation",
       icon: ClipboardCheck,
-      route: "/admin/view/subject",
+      route: `${root}/view/subject`,
       description: "Allocate subjects ",
     },
     {
       label: "Fee",
       icon: CreditCard,
-      route: "/admin/view/fee",
+      route: `${root}/view/fee`,
       description: "Update fee details",
     },
 
     {
       label: "Payment",
       icon: Receipt,
-      route: "/admin/view/payment",
+      route: `${root}/view/payment`,
       description: "Update payment details",
     },
     {
       label: "Course Material",
       icon: MapPin,
-      route: "/admin/view/course_material",
+      route: `${root}/view/course_material`,
       description: "Manage course materials",
     },
     {
       label: "School Facility",
       icon: Building,
-      route: "/admin/view/school_facility",
+      route: `${root}/view/school_facility`,
       description: "Manage school facilities",
     },
     {
       label: "Event",
       icon: Newspaper,
-      route: "/admin/view/event",
+      route: `${root}/view/event`,
       description: "Manage events",
     },
     {
       label: "Announcement",
       icon: Newspaper,
-      route: "/admin/view/announcement",
+      route: `${root}/view/announcement`,
       description: "Manage announcements",
     },
     {
       label: "Award",
       icon: Award,
-      route: "/admin/view/award",
+      route: `${root}/view/award`,
       description: "Manage awards",
     },
     {
       label: "Files and Photos",
       icon: Image,
-      route: "/admin/view/gallery",
+      route: `${root}/view/gallery`,
       description: "Manage photos and files",
     },
   ];

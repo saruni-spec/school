@@ -31,7 +31,7 @@ interface TextAreaElementProps
 // Combined type for all possible props
 type InputProps = BaseInputProps & (InputElementProps | TextAreaElementProps);
 
-export const Input: React.FC<InputProps> = ({
+export const MyInput: React.FC<InputProps> = ({
   type = "text",
   label,
   error,

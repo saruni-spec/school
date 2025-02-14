@@ -1,6 +1,6 @@
 "use client";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import validation, {
   getEnumSelectOptions,
   required,
@@ -40,7 +40,7 @@ const Facility = () => {
       onSubmit={handleSubmit}
       submitButtonText="Add Facility"
     >
-      <Input
+      <MyInput
         label="facility name"
         placeholder="Enter a new facility"
         value={facility_name.value}

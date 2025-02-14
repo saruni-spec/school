@@ -1,7 +1,7 @@
 "use client";
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { useUser } from "@/app/context/user_context";
 import { useValidation } from "@/app/hooks/validation_hooks";
 import { FieldType } from "@/app/types/types";
@@ -40,7 +40,7 @@ const Department = () => {
       onSubmit={handleSubmit}
       submitButtonText="Submit"
     >
-      <Input
+      <MyInput
         label="Department Name"
         placeholder="Enter Department Name"
         required
@@ -48,7 +48,7 @@ const Department = () => {
         onChange={name.handle_change}
         error={name.error}
       />
-      <Input
+      <MyInput
         label="Description"
         placeholder="Enter Description (Optional)"
         value={description.value}

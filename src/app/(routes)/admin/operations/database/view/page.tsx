@@ -2,7 +2,6 @@
 import React from "react";
 import {
   UserPlus,
-  School,
   Building,
   Calendar,
   BookOpenCheck,
@@ -19,98 +18,99 @@ import {
 import { Screen } from "@/app/components/screen";
 
 const ViewPage = () => {
+  const admin = "/admin";
   const registerItems = [
     {
       label: "Dates",
       icon: Calendar,
-      route: "/admin/view/dates",
+      route: `${admin}/view/dates`,
       description: "Manage academic years and semesters",
     },
 
     {
       label: "Department",
       icon: Building,
-      route: "/admin/view/department",
+      route: `${admin}/view/department`,
       description: "Update current departments",
     },
 
     {
       label: "User",
       icon: UserPlus,
-      route: "/admin/view/user",
+      route: `${admin}/view/user`,
       description: "Update user details",
     },
     {
       label: "Class",
       icon: BookOpenCheck,
-      route: "/admin/view/class",
+      route: `${admin}/view/class`,
       description: "Manage classes and streams",
     },
     {
       label: "Time Table",
       icon: Clock,
-      route: "/admin/view/role",
+      route: `${admin}/view/role`,
       description: "Manage time tables",
     },
     {
       label: "Exam",
       icon: FileSpreadsheet,
-      route: "/admin/view/exam",
+      route: `${admin}/view/exam`,
       description: "Update exam details",
     },
     {
       label: "Subject Allocation",
       icon: ClipboardCheck,
-      route: "/admin/view/subject",
+      route: `${admin}/view/subject`,
       description: "Allocate subjects ",
     },
     {
       label: "Fee",
       icon: CreditCard,
-      route: "/admin/view/fee",
+      route: `${admin}/view/fee`,
       description: "Update fee details",
     },
 
     {
       label: "Payment",
       icon: Receipt,
-      route: "/admin/view/payment",
+      route: `${admin}/view/payment`,
       description: "Update payment details",
     },
     {
       label: "Course Material",
       icon: MapPin,
-      route: "/admin/view/course_material",
+      route: `${admin}/view/course_material`,
       description: "Manage course materials",
     },
     {
       label: "School Facility",
       icon: Building,
-      route: "/admin/view/school_facility",
+      route: `${admin}/view/school_facility`,
       description: "Manage school facilities",
     },
     {
       label: "Event",
       icon: Newspaper,
-      route: "/admin/view/event",
+      route: `${admin}/view/event`,
       description: "Manage events",
     },
     {
       label: "Announcement",
       icon: Newspaper,
-      route: "/admin/view/announcement",
+      route: `${admin}/view/announcement`,
       description: "Manage announcements",
     },
     {
       label: "Award",
       icon: Award,
-      route: "/admin/view/award",
+      route: `${admin}/view/award`,
       description: "Manage awards",
     },
     {
       label: "Files and Photos",
       icon: Image,
-      route: "/admin/view/gallery",
+      route: `${admin}/view/gallery`,
       description: "Manage photos and files",
     },
   ];

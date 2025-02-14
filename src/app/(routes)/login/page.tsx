@@ -1,6 +1,6 @@
 "use client";
 import { Form } from "@/app/components/form";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import Validation, { required, validatePassword } from "@/app/hooks/validation";
 import React from "react";
 import { signIn, getSession } from "next-auth/react";
@@ -130,14 +130,14 @@ const Login = () => {
 
   return (
     <Form title="Sign In" onSubmit={handlesubmit} submitButtonText="Sign In">
-      <Input
+      <MyInput
         label="Identification"
         value={identification.value}
         onChange={identification.handle_change}
         error={identification.error}
         placeholder="Enter your id code"
       />
-      <Input
+      <MyInput
         label="Password"
         value={password.value}
         onChange={password.handle_change}

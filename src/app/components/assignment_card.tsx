@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Button } from "./button";
 import { FieldType, MyRecord } from "../types/types";
-import { Input } from "./input";
+import { MyInput } from "./input";
 import { useValidation } from "../hooks/validation_hooks";
 import { useTeacherDetails } from "../context/user_context";
 
@@ -195,7 +195,7 @@ const StudentAttempt = ({ attempt }) => {
                 <label className="text-sm font-medium text-gray-700">
                   Remarks
                 </label>
-                <Input
+                <MyInput
                   placeholder="Add remarks..."
                   value={remarks.value}
                   onChange={remarks.handle_change}
@@ -207,7 +207,7 @@ const StudentAttempt = ({ attempt }) => {
                 <label className="text-sm font-medium text-gray-700">
                   Result (%)
                 </label>
-                <Input
+                <MyInput
                   placeholder="Total marks..."
                   value={result.value}
                   onChange={result.handle_change}

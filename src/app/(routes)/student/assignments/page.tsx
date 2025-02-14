@@ -14,7 +14,7 @@ import { MyRecord } from "@/app/types/types";
 import RadioInputs from "@/app/components/radio";
 import { Card, CardTitle } from "@/app/components/card";
 import { register } from "@/app/api_functions/functions";
-import { Input } from "@/app/components/input";
+import { MyInput } from "@/app/components/input";
 import { LoadingSpinner } from "@/app/components/loading";
 
 const Assignments = () => {
@@ -184,7 +184,7 @@ const AssignmentAttemptView: React.FC<AssignmentAttemptViewProps> = ({
             {Object.values(selectedAssignment.options[0]).includes(
               "no options"
             ) ? (
-              <Input
+              <MyInput
                 isTextArea
                 label="Your Answer"
                 value={currentAnswer}
