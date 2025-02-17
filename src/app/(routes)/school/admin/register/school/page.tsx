@@ -8,9 +8,10 @@ import validation, {
   validateValue,
 } from "@/app/hooks/validation";
 import { MultiInput } from "@/app/components/multi_input";
+import { register } from "@/app/api_functions/functions";
 
 // School Registration Component
-const School: React.FC = () => {
+const School = () => {
   const name_field = validation("", [required]);
   const type_field = validation("", [required]);
   const address_field = validation("", []);
@@ -37,8 +38,8 @@ const School: React.FC = () => {
         license_info: license_info,
       };
 
-      await register({ data: school_data, model_name: "school" }),
-      });
+      await register({ data: school_data, model_name: "school" });
+
       // Add your submission logic here
     },
     [name_field, type_field, address_field, contact_info, license_info]

@@ -71,11 +71,6 @@ const DateUpdates = () => {
     }));
   };
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-  };
-
   return (
     <div className="space-y-12 w-full">
       {academic_years.map((academic_year) => (

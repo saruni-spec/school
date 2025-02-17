@@ -13,7 +13,7 @@ import { useUser } from "@/app/context/user_context";
 import { MyRecord } from "@/app/types/types";
 import { flattenObjectIterative } from "@/lib/functions";
 import { AlertCircle } from "lucide-react";
-import React, { Suspense, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 //
 // Timetable Creator
 // This component is used to create a timetable for a school

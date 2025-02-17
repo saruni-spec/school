@@ -2,7 +2,6 @@
 import React from "react";
 import {
   UserPlus,
-  School,
   Building,
   Calendar,
   BookOpenCheck,

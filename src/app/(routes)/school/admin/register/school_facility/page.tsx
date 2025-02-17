@@ -1,18 +1,25 @@
+"use client";
 import React, { useCallback } from "react";
 import { Form } from "@/app/components/form";
 import { MyInput } from "@/app/components/input";
-import Validation, { required } from "@/app/hooks/validation";
+import Validation from "@/app/hooks/validation";
+import { useUser } from "@/app/context/user_context";
 
 const SchoolFacility = () => {
   const description = Validation("", []);
 
+  const { school } = useUser();
+
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      const is_form_valid = [school_id, facility_id, description].every(
-        (field) => field.validate(field.value)
+      const is_form_valid = [description].every((field) =>
+        field.validate(field.value)
       );
       if (!is_form_valid) return;
+      const school_id = school?.id;
+      //
+      const facility_id = 1;
 
       await fetch("", {
         method: "POST",
@@ -22,7 +29,7 @@ const SchoolFacility = () => {
         }),
       });
     },
-    [description]
+    [description, school]
   );
 
   return (

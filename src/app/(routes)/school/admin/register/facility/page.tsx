@@ -8,6 +8,7 @@ import validation, {
 import React, { useCallback } from "react";
 import { facility_type as my_facilities } from "@prisma/client";
 import { Select } from "@/app/components/select";
+import { register } from "@/app/api_functions/functions";
 
 const Facility = () => {
   //add the validation functions for each input
@@ -27,9 +28,8 @@ const Facility = () => {
 
       //collect the inputs and send them to the server
       await register({
-          data: { facility_name: facility_name.value, type: type.value },
-          model_name: "facility",
-        }),
+        data: { facility_name: facility_name.value, type: type.value },
+        model_name: "facility",
       });
     },
     [facility_name, type]

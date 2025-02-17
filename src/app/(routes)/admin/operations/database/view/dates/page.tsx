@@ -9,7 +9,7 @@ import React, { useState, useEffect, useCallback } from "react";
 // Upadate academic year and semester dates
 const DateUpdates = () => {
   const [academic_years, setAcademicYears] = useState<MyRecord[]>([]);
-  const [semesters, setSemesters] = useState<MyRecord<number, MyRecord[]>>({});
+  const [semesters, setSemesters] = useState<Record<number, MyRecord[]>>({});
   const { school_id } = useUser();
 
   // Validation hooks for academic year dates
@@ -36,7 +36,7 @@ const DateUpdates = () => {
   const getSemesters = useCallback(async () => {
     if (academic_years.length === 0) return;
 
-    const semestersByYear: MyRecord<number, MyRecord[]> = {};
+    const semestersByYear: Record<number, MyRecord[]> = {};
     for (const academic_year of academic_years) {
       const sem_response = await fetchData(
         "semester",
@@ -69,11 +69,6 @@ const DateUpdates = () => {
         semester.id === semesterId ? { ...semester, [field]: value } : semester
       ),
     }));
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
   };
 
   return (
