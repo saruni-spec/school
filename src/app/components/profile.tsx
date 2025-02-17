@@ -26,7 +26,7 @@ const UserProfile = () => {
 
   return (
     <Suspense>
-      <Card className="w-full max-w-md mx-auto">
+      <Card className="w-full max-w-2xl mx-auto mt-6">
         {userData && (
           <>
             <CardHeader className="flex flex-col items-center">
