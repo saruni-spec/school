@@ -6,8 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "postinstall": "npm install --legacy-peer-deps"
+    "lint": "next lint"
+  },
+  "installConfig": {
+      "legacy-peer-deps": true
   },
   "dependencies": {
     "@faker-js/faker": "^9.3.0",
