@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "@faker-js/faker": "^9.3.0",
+    "@neondatabase/serverless": "^0.10.4",
     "@next-auth/prisma-adapter": "^1.0.7",
+    "@prisma/adapter-neon": "^6.3.1",
     "@prisma/client": "^6.0.0",
     "@reduxjs/toolkit": "^2.4.0",
     "@types/bcrypt": "^5.0.2",
