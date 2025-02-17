@@ -10,8 +10,9 @@ import {
   UserType,
   RegistrationStep,
   FieldType,
+  roles_id,
 } from "../types/types";
-import { domain_specific_roles } from "@prisma/client";
+import { domain_specific_roles, role_type } from "@prisma/client";
 import { useUser } from "../context/user_context";
 import { SelectObject } from "./selectobejctitem";
 import { getCurrentClassProgressions } from "../actions/actions";
@@ -23,12 +24,10 @@ import { register } from "../api_functions/functions";
 //the main component for user registration
 export const User = ({
   set_user,
-  role_id,
   school,
   user_type,
 }: {
   set_user: (record: MyRecord) => void;
-  role_id?: number;
   school?: MyRecord;
   user_type?: UserType;
 }) => {
@@ -41,6 +40,7 @@ export const User = ({
   });
   const phone = useValidation({ type: FieldType.Text });
   const admission_number = useValidation({ type: FieldType.Text });
+  const role = useValidation({ type: FieldType.Text, initialValue: user_type });
 
   // the function to handle the form submission
   const handleSubmit = useCallback(
@@ -53,6 +53,8 @@ export const User = ({
       }
       //check if all the fields are valid
       if (!validInputs([first_name, last_name, email, phone])) return;
+      const user_type = role.value as role_type;
+      const role_id = user_type ? roles_id[user_type] : 26;
 
       //
       //generate id code
@@ -81,6 +83,7 @@ export const User = ({
       });
 
       let additional_user_details;
+
       //
       //save the user in the user specific table
       if (user_type === "STUDENT") {
@@ -121,7 +124,12 @@ export const User = ({
       }
 
       set_user(additional_user_details);
-      if (user_type === "STUDENT" || user_type === "PARENT") return;
+      if (
+        user_type === "STUDENT" ||
+        user_type === "PARENT" ||
+        user_type == "SECRETARY"
+      )
+        return;
 
       switch (user_type) {
         case "PRINCIPAL":
@@ -155,12 +163,12 @@ export const User = ({
       email,
       phone,
       set_user,
-      role_id,
       school,
-      user_type,
       admission_number,
+      role.value,
     ]
   );
+
   return (
     <>
       <Form onSubmit={handleSubmit} submitButtonText="Sign Up">
@@ -195,6 +203,16 @@ export const User = ({
             onChange={admission_number.handle_change}
             value={admission_number.value}
             error={admission_number.error}
+          />
+        )}
+        {user_type === "FACULTY_MEMBER" && (
+          <SelectObject
+            options={role_type}
+            label="Role"
+            value={role.value}
+            onChange={role.handle_change}
+            error={role.error}
+            placeholder="Select Role"
           />
         )}
       </Form>

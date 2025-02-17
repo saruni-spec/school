@@ -17,7 +17,7 @@ export default function AdminLayout({
             transition-all duration-300 ease-in-out
             ml-${isCollapsed ? "60" : "64"} flex-grow
             ${isCollapsed ? "pl-14" : ""}
-            pt-16 md:pt-0
+            pt-16 md:pt-0 min-h-screen
           `}
         >
           {children}

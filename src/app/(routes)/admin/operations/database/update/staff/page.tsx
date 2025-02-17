@@ -7,30 +7,30 @@ import React, { useCallback, useEffect, useState } from "react";
 //
 // Update the department staff table
 const UpdateDepartmentStaff = () => {
-  const [department_staff, setDepartmentStaff] = useState<MyRecord[]>([]);
+  const [staff, setStaff] = useState<MyRecord[]>([]);
 
   const { school_id } = useUser();
   //
   //get the department staff
-  const getDepartmentStaff = useCallback(async () => {
-    const data = await getDataWithSchoolId("department_staff", school_id);
+  const getStaff = useCallback(async () => {
+    const data = await getDataWithSchoolId("staff", school_id);
 
     if (data.length === 0) return;
 
-    setDepartmentStaff(data);
+    setStaff(data);
   }, [school_id]);
 
   useEffect(() => {
-    getDepartmentStaff();
-  }, [getDepartmentStaff]);
+    getStaff();
+  }, [getStaff]);
 
   return (
     <EditableTable
-      records={department_staff}
+      records={staff}
       model_name="department_staff"
       title="Department Staff Table"
       school_id={school_id}
-      onUpdate={getDepartmentStaff}
+      onUpdate={getStaff}
     />
   );
 };

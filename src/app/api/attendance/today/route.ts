@@ -21,17 +21,18 @@ export async function GET(request: Request) {
       );
     }
 
-    // Parse the date and calculate start and end of the day
     const dateObj = new Date(date);
-    const startOfDay = new Date(dateObj.setHours(0, 0, 0, 0));
-    const endOfDay = new Date(dateObj.setHours(23, 59, 59, 999));
+    // Use UTC methods instead of local time methods
+    const startOfDay = new Date(dateObj);
+    startOfDay.setUTCHours(0, 0, 0, 0);
+    const endOfDay = new Date(dateObj);
+    endOfDay.setUTCHours(23, 59, 59, 999);
 
-    // Fetch all records from the specified table
     const records = await prisma.attendance.findMany({
       where: {
         taken_on: {
-          gte: startOfDay, // Greater than or equal to start of the day
-          lte: endOfDay, // Less than or equal to end of the day
+          gte: startOfDay,
+          lte: endOfDay,
         },
         class_progression_id: Number(class_progression_id),
       },

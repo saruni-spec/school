@@ -746,29 +746,6 @@ model users {
 }
 
 
-model school_leader {
-  id                                 Int                @id @default(autoincrement())
-  staff_id                           Int?               @unique
-
-  academic_year_id                   Int?
-  date_removed                       DateTime?          @db.Date
-  reason_removed                     String?          
-
-  created_at                         DateTime?          @default(now()) @db.Timestamptz(6)
-  updated_at                         DateTime?          @default(now()) @db.Timestamptz(6)
-  deleted_at                         DateTime?          @db.Timestamptz(6)
-
-  staff                              staff?             @relation(fields: [staff_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  academic_year                      academic_year?     @relation(fields: [academic_year_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
-
-  fee                                fee[]
-  attendance                         attendance[]
-
-  @@index([academic_year_id])
- 
-}
-
-
 model admin{
   id                                 Int                @id @default(autoincrement())
   users_id                           Int                @unique
@@ -804,6 +781,48 @@ model staff {
   attendance                                      attendance[]
 
   @@index([users_id])
+}
+
+model student {
+  id                    Int               @id @default(autoincrement())
+  admission_number      String?           
+  student_code          String?            @unique
+  users_id              Int?               @unique
+
+  created_at            DateTime?         @default(now()) @db.Timestamptz(6)
+  updated_at            DateTime?         @default(now()) @db.Timestamptz(6)
+  deleted_at            DateTime?         @db.Timestamptz(6)
+          
+  users                 users?            @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  parent_student        parent_student[]
+  result                result[]
+  student_class         student_class[]
+  student_ellectives    student_ellectives[]
+  assignment_attempt    assignment_attempt[]
+
+}
+
+model school_leader {
+  id                                 Int                @id @default(autoincrement())
+  staff_id                           Int?               @unique
+
+  academic_year_id                   Int?
+  date_removed                       DateTime?          @db.Date
+  reason_removed                     String?          
+
+  created_at                         DateTime?          @default(now()) @db.Timestamptz(6)
+  updated_at                         DateTime?          @default(now()) @db.Timestamptz(6)
+  deleted_at                         DateTime?          @db.Timestamptz(6)
+
+  staff                              staff?             @relation(fields: [staff_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  academic_year                      academic_year?     @relation(fields: [academic_year_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  fee                                fee[]
+  attendance                         attendance[]
+
+  @@index([academic_year_id])
+ 
 }
 
 
@@ -847,25 +866,6 @@ model facility_staff {
 }
 
 
-model student {
-  id                    Int               @id @default(autoincrement())
-  admission_number      String?           
-  student_code          String?            @unique
-  users_id              Int?               @unique
-
-  created_at            DateTime?         @default(now()) @db.Timestamptz(6)
-  updated_at            DateTime?         @default(now()) @db.Timestamptz(6)
-  deleted_at            DateTime?         @db.Timestamptz(6)
-          
-  users                 users?            @relation(fields: [users_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
-
-  parent_student        parent_student[]
-  result                result[]
-  student_class         student_class[]
-  student_ellectives    student_ellectives[]
-  assignment_attempt    assignment_attempt[]
-
-}
 
 model parent_student {
   parent_id         Int
@@ -1094,7 +1094,7 @@ model attendance {
   school_leader        school_leader?      @relation(fields: [school_leader_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
   class_progression    class_progression?  @relation(fields: [class_progression_id], references: [id], onDelete: SetNull,onUpdate: Cascade)
 
-  @@unique([users_id,created_at])
+  @@unique([users_id,taken_on])
   @@index([users_id])
 }
 

@@ -1,7 +1,6 @@
 "use server";
 import prisma from "@/lib/prisma";
 import { MyRecord } from "../types/types";
-import { tr } from "@faker-js/faker";
 
 //
 //register
@@ -217,7 +216,7 @@ export async function getDepartments(school_id: number | undefined) {
   return departments;
 }
 
-export const studentCount = async (school_id: number) =>
+export const studentCount = async (school_id: number | undefined) =>
   await prisma.student.count({
     where: {
       student_class: {
@@ -231,7 +230,7 @@ export const studentCount = async (school_id: number) =>
     },
   });
 
-export const teacherCount = async (school_id: number) =>
+export const teacherCount = async (school_id: number | undefined) =>
   await prisma.teacher.count({
     where: {
       staff: {
@@ -241,17 +240,29 @@ export const teacherCount = async (school_id: number) =>
     },
   });
 
-export const attendanceToday = async (school_id: number, date: string) =>
-  await prisma.attendance.count({
+export const attendanceToday = async (school_id: number, date: string) => {
+  const dateObj = new Date(date);
+  // Use UTC methods instead of local time methods
+  const startOfDay = new Date(dateObj);
+  startOfDay.setUTCHours(0, 0, 0, 0);
+  const endOfDay = new Date(dateObj);
+  endOfDay.setUTCHours(23, 59, 59, 999);
+
+  const attendance = await prisma.attendance.count({
     where: {
       AND: [
         {
           staff: { users: { school_id: school_id } },
-          taken_on: date,
+          taken_on: {
+            gte: startOfDay,
+            lte: endOfDay,
+          },
         },
       ],
     },
   });
+  return attendance;
+};
 
 export const getUpcomingSchoolEvents = async (schoolId: number) => {
   const events = await prisma.event.findMany({

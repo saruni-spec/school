@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { MyRecord } from "../types/types";
-import { on } from "events";
 
 interface DataTableProps {
   records: MyRecord[];

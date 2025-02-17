@@ -32,35 +32,46 @@ import {
   studentCount,
   teacherCount,
 } from "@/app/actions/actions";
+import { useUser } from "@/app/context/user_context";
+import { useRouter } from "next/navigation";
 
 const Reports = () => {
-  const [total_students, setTotalStudents] = useState(0);
-  const [attendance, setAttendance] = useState(0);
-  const [total_teachers, setTotalTeachers] = useState(0);
+  const [total_students, setTotalStudents] = useState<number>();
+  const [attendance, setAttendance] = useState<[number]>();
+  const [total_teachers, setTotalTeachers] = useState<number>();
+
+  const { user } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!user) router.push("/login");
+  }, [user, router]);
 
   useEffect(() => {
     const fetchTotalStudents = async () => {
-      const students = await studentCount(1);
+      const students = await studentCount(user?.school.id);
       setTotalStudents(students);
     };
 
     const fetchTotalTeachers = async () => {
-      const teachers = await teacherCount(1);
+      const teachers = await teacherCount(user?.school.id);
       setTotalTeachers(teachers);
     };
 
     fetchTotalStudents();
     fetchTotalTeachers();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     const fetchAttendance = async () => {
+      if (!total_students) return;
+
       const attendance_today = await attendanceToday(
         1,
         new Date().toISOString()
       );
       const attendance = (attendance_today * 100) / total_students;
-      setAttendance(attendance);
+      setAttendance([attendance.toFixed(2)]);
     };
     fetchAttendance();
   }, [total_students]);
@@ -105,7 +116,7 @@ const Reports = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-blue-600">
-                  {attendance}
+                  {attendance ?? 0}
                 </div>
                 <p className="text-sm text-gray-500">+2% from last month</p>
               </CardContent>
@@ -127,7 +138,7 @@ const Reports = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-purple-600">
-                  {total_students}
+                  {total_students ?? 0}
                 </div>
                 <p className="text-sm text-gray-500">+15 new enrollments</p>
               </CardContent>
@@ -139,7 +150,7 @@ const Reports = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-orange-600">
-                  {total_teachers}
+                  {total_teachers ?? 0}
                 </div>
                 <p className="text-sm text-gray-500">98% retention rate</p>
               </CardContent>
@@ -155,7 +166,7 @@ const Reports = () => {
             <CardContent>
               <div className="h-96">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={examPerformance}>
+                  <BarChart data={examPerformance ?? 0}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="subject" />
                     <YAxis />
@@ -270,7 +281,9 @@ const Reports = () => {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-blue-600">96%</div>
-                <p className="text-sm text-gray-500">Today's attendance rate</p>
+                <p className="text-sm text-gray-500">
+                  Today&apos;s attendance rate
+                </p>
               </CardContent>
             </Card>
 

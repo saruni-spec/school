@@ -1,14 +1,38 @@
 "use client";
 import React from "react";
 import { UserType } from "../types/types";
+import { useUser } from "../context/user_context";
+import { role_type } from "@prisma/client";
 
 interface UserTypeSelectionProps {
   onUserTypeSelect: (type: UserType) => void;
 }
+//
+// Inlude on role types we need that can register users
+type RolePermissions = {
+  [key in Partial<role_type>]?: UserType[];
+};
+
+// Define which user types each role can register
+const rolePermissions: RolePermissions = {
+  SCHOOL_ADMINISTRATOR: [
+    "SCHOOL_ADMINISTRATOR",
+    "PRINCIPAL",
+    "VICE_PRINCIPAL",
+    "TEACHER",
+    "STUDENT",
+    "FACULTY_MEMBER",
+  ],
+  SECRETARY: ["TEACHER", "STUDENT", "FACULTY_MEMBER"],
+  PRINCIPAL: ["VICE_PRINCIPAL", "TEACHER", "STUDENT", "FACULTY_MEMBER"],
+  VICE_PRINCIPAL: ["TEACHER", "STUDENT", "FACULTY_MEMBER"],
+} as const;
 
 const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({
   onUserTypeSelect,
 }) => {
+  const { user } = useUser();
+
   const userTypes: {
     type: UserType;
     label: string;
@@ -168,44 +192,67 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({
     },
   ];
 
+  const getallowedUserTypes = () => {
+    if (!user) return [];
+    if (!user.role) return [];
+
+    if (user.role === "SYSTEM_ADMINISTRATOR") return userTypes;
+
+    if (!rolePermissions[user.role]) return [];
+
+    return userTypes.filter((userType) =>
+      rolePermissions[user.role]?.includes(userType.type)
+    );
+  };
+
+  const allowedUserTypes = getallowedUserTypes();
+
   return (
     <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-lg">
-      <div className="grid gap-4">
-        {userTypes.map((userType) => (
-          <button
-            key={userType.type}
-            onClick={() => onUserTypeSelect(userType.type)}
-            className="w-full p-4 flex items-center justify-between 
-              border rounded-lg transition-all duration-300 ease-in-out
-              hover:bg-blue-50 hover:border-blue-300 
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-          >
-            <div className="flex items-center space-x-4">
-              <div className="text-blue-500">{userType.icon}</div>
-              <div className="text-left">
-                <h3 className="font-semibold text-gray-800">
-                  {userType.label}
-                </h3>
-                <p className="text-sm text-gray-500">{userType.description}</p>
-              </div>
-            </div>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-gray-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
+      {allowedUserTypes.length === 0 || !allowedUserTypes ? (
+        <p className="text-center text-gray-500">
+          You don&apos;t have permission to register new users.
+        </p>
+      ) : (
+        <div className="grid gap-4">
+          {allowedUserTypes.map((userType) => (
+            <button
+              key={userType.type}
+              onClick={() => onUserTypeSelect(userType.type)}
+              className="w-full p-4 flex items-center justify-between 
+                border rounded-lg transition-all duration-300 ease-in-out
+                hover:bg-blue-50 hover:border-blue-300 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 5l7 7-7 7"
-              />
-            </svg>
-          </button>
-        ))}
-      </div>
+              <div className="flex items-center space-x-4">
+                <div className="text-blue-500">{userType.icon}</div>
+                <div className="text-left">
+                  <h3 className="font-semibold text-gray-800">
+                    {userType.label}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {userType.description}
+                  </p>
+                </div>
+              </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-gray-400"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

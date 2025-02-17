@@ -178,9 +178,9 @@ const Schedule = () => {
                   </div>
                   <CardContent className="p-4">
                     {slots.length > 0 ? (
-                      <div className="space-y-3">
+                      <>
                         {slots.map((item) => (
-                          <>
+                          <div className="space-y-3" key={item?.slot?.id}>
                             {(
                               item?.slot?.day_of_week as string
                             ).toLowerCase() === day.toLowerCase() && (
@@ -207,9 +207,9 @@ const Schedule = () => {
                                 )}
                               </div>
                             )}
-                          </>
+                          </div>
                         ))}
-                      </div>
+                      </>
                     ) : (
                       <div className="text-center text-gray-500 py-4">
                         No classes scheduled

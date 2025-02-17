@@ -11,7 +11,7 @@ export async function POST(request: Request) {
 
       for (const slot of temp_slots) {
         const exam_sittings = [];
-        for (const exam_sitting_slot of slot.slot_assignment) {
+        for (const exam_sitting_slot of slot.sitting) {
           exam_sittings.push({
             teacher_id: exam_sitting_slot.teacher_id,
             subject_allocation_id: exam_sitting_slot.subject_allocation_id,
@@ -58,7 +58,7 @@ export async function POST(request: Request) {
             include: {
               exam_sitting: {
                 include: {
-                  subject_allocation: true,
+                  subject_allocation: { select: { id: true } },
                 },
               },
             },
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
             include: {
               exam_sitting: {
                 include: {
-                  subject_allocation: true,
+                  subject_allocation: { select: { id: true } },
                 },
               },
             },

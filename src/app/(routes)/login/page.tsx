@@ -16,6 +16,46 @@ import {
   getStudentDetails,
   getTeacherDetails,
 } from "@/app/api_functions/functions";
+import { role_type } from "@prisma/client";
+
+type Route =
+  | "admin"
+  | "root"
+  | "student"
+  | "secretary"
+  | "teacher"
+  | "parent"
+  | "staff"
+  | "administative";
+const routes: Record<Route, Array<role_type>> = {
+  admin: [
+    "SYSTEM_ADMINISTRATOR",
+    "PRINCIPAL",
+    "VICE_PRINCIPAL",
+    "SCHOOL_ADMINISTRATOR",
+  ],
+  root: ["SYSTEM_ADMINISTRATOR"],
+  student: ["STUDENT", "PARENT"],
+  secretary: ["SECRETARY", "ADMINISTRATIVE_STAFF"],
+  teacher: ["TEACHER"],
+  parent: ["PARENT"],
+  staff: ["ADMINISTRATIVE_STAFF", "FACULTY_MEMBER"],
+  administative: [
+    "ADMINISTRATIVE_STAFF",
+    "ACADEMIC_REGISTRAR",
+    "ADMISSIONS_OFFICER",
+    "CURRICULUM_COORDINATOR",
+    "EVENT_COORDINATOR",
+    "EXAM_CONTROLLER",
+    "FACILITY_MANAGER",
+    "FINANCIAL_OFFICER",
+    "HEAD_OF_DEPARTMENT",
+    "HUMAN_RESOURCES_MANAGER",
+    "INVENTORY_MANAGER",
+    "LIBRARIAN",
+    "SCHOOL_ADMINISTRATOR",
+  ],
+};
 
 //Login component
 const Login = () => {
@@ -84,9 +124,9 @@ const Login = () => {
         const query_string = createQueryString(base_params);
 
         switch (session.user.role) {
-          case "SYSTEM_ADMINISTRATOR":
           case "SCHOOL_ADMINISTRATOR":
           case "PRINCIPAL":
+          case "VICE_PRINCIPAL":
             const principal_details = await getPrincipalDetails(
               session.user.id
             );
@@ -116,6 +156,8 @@ const Login = () => {
             router.push(`/parent?${query_string}`);
             break;
           case "SECRETARY":
+            router.push(`/secretary?${query_string}`);
+            break;
           case "ADMINISTRATIVE_STAFF":
             router.push(`/administative?${query_string}`);
           default:

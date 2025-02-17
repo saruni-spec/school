@@ -315,23 +315,25 @@ const AssignmentContent: React.FC<{ content: AssignmentContent }> = ({
               <p className="text-gray-700 font-medium">{content.question}</p>
 
               {/* Options Grid */}
-              {content.options && content.options.length > 0 && (
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {content.options.map((option, index) => (
-                    <div
-                      key={option.id}
-                      className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 border border-gray-100"
-                    >
-                      <span className="text-sm font-medium text-gray-500">
-                        {String.fromCharCode(65 + index)}.
-                      </span>
-                      <span className="text-sm text-gray-700">
-                        {option.text}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                {content.options && content.options.length > 0 && (
+                  <>
+                    {content.options.map((option, index) => (
+                      <div
+                        key={option.id}
+                        className="flex items-center gap-2 p-3 rounded-lg bg-gray-50 border border-gray-100"
+                      >
+                        <span className="text-sm font-medium text-gray-500">
+                          {String.fromCharCode(65 + index)}.
+                        </span>
+                        <span className="text-sm text-gray-700">
+                          {option.text}
+                        </span>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Statistics Pills */}

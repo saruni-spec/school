@@ -1,9 +1,10 @@
 "use client";
 import { getDataWithSchoolId } from "@/app/api_functions/functions";
 import EditableTable from "@/app/components/editable_table";
+import { LoadingSpinner } from "@/app/components/loading";
 import { useUser } from "@/app/context/user_context";
 import { MyRecord } from "@/app/types/types";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { Suspense, useCallback, useEffect, useState } from "react";
 //
 // Update the student class table
 const UpdateStudentClass = () => {
@@ -25,13 +26,15 @@ const UpdateStudentClass = () => {
   }, [getStudentClass]);
 
   return (
-    <EditableTable
-      records={student_class}
-      model_name="student_class"
-      title="Student Class Table"
-      school_id={school_id}
-      onUpdate={getStudentClass}
-    />
+    <Suspense fallback={<LoadingSpinner />}>
+      <EditableTable
+        records={student_class}
+        model_name="student_class"
+        title="Student Class Table"
+        school_id={school_id}
+        onUpdate={getStudentClass}
+      />
+    </Suspense>
   );
 };
 

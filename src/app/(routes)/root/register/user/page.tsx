@@ -8,12 +8,7 @@ import React, { useState } from "react";
 import UserTypeSelection from "@/app/components/select_user_type";
 import { RenderProgressIndicator } from "@/app/components/progress_indicator";
 import { RenderContent } from "@/app/components/conditional_render";
-import {
-  MyRecord,
-  UserType,
-  RegistrationStep,
-  roles_id,
-} from "@/app/types/types";
+import { MyRecord, UserType, RegistrationStep } from "@/app/types/types";
 import { useUser } from "@/app/context/user_context";
 
 //
@@ -61,7 +56,6 @@ const UserRegistration = () => {
       value: (
         <User
           set_user={handleUserRegistration}
-          role_id={user_type ? roles_id[user_type] : 26}
           school={school}
           user_type={user_type}
         />

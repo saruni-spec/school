@@ -66,7 +66,7 @@ export const Admin_Layout = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const TeacherLayout = ({ children }: { children: React.ReactNode }) => {
-  const { setUser, setSchool } = useUser();
+  const { setUser, setSchool, user } = useUser();
   const { status, data: session } = useSession({
     required: true,
     onUnauthenticated() {
@@ -156,7 +156,7 @@ export const TeacherLayout = ({ children }: { children: React.ReactNode }) => {
     },
 
     {
-      label: decodeURIComponent(searchParams.get("name") || ""),
+      label: user ? (user.name as string) : "",
       icon: <User />,
       action: () => {
         router.push(createUrl(`/${basePath}/profile`));
@@ -178,7 +178,7 @@ export const StaffLayout = ({ children }: { children: React.ReactNode }) => {
 
 export const StudentLayout = ({ children }: { children: React.ReactNode }) => {
   const { studentDetails, setStudentDetails } = useStudentDetails();
-  const { setUser, setSchool } = useUser();
+  const { setUser, setSchool, user } = useUser();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -267,7 +267,7 @@ export const StudentLayout = ({ children }: { children: React.ReactNode }) => {
     },
 
     {
-      label: decodeURIComponent(searchParams.get("name") || ""),
+      label: user ? (user.name as string) : "",
       icon: <User />,
       action: () => {
         router.push(createUrl(`/${basePath}/profile`));
@@ -290,7 +290,7 @@ export const PrinciPalLayout = ({
   children: React.ReactNode;
 }) => {
   const { principalDetails, setPrincipalDetails } = usePrincipalDetails();
-  const { setUser, setSchool } = useUser();
+  const { setUser, setSchool, user } = useUser();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -375,7 +375,7 @@ export const PrinciPalLayout = ({
       },
     },
     {
-      label: decodeURIComponent(searchParams.get("name") || ""),
+      label: user ? (user.name as string) : "",
       icon: <User />,
       action: () => {
         router.push(createUrl(`/${basePath}/profile`));
@@ -393,7 +393,7 @@ export const PrinciPalLayout = ({
 
 export const SecretaryLayout = ({ children }: { children: ReactNode }) => {
   const { secretaryDetails, setSecretaryDetails } = useSecretaryDetails();
-  const { setUser, setSchool } = useUser();
+  const { setUser, setSchool, user } = useUser();
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
@@ -460,9 +460,9 @@ export const SecretaryLayout = ({ children }: { children: ReactNode }) => {
       },
     },
     {
-      label: "Operations",
+      label: "Registration",
       action: () => {
-        router.push(createUrl(`/${basePath}/operations`));
+        router.push(createUrl(`/${basePath}/register`));
       },
     },
     {
@@ -479,7 +479,7 @@ export const SecretaryLayout = ({ children }: { children: ReactNode }) => {
     },
 
     {
-      label: decodeURIComponent(searchParams.get("name") || ""),
+      label: user ? (user.name as string) : "",
       icon: <User />,
       action: () => {
         router.push(createUrl(`/${basePath}/profile`));

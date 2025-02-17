@@ -1,10 +1,5 @@
 import Image from "next/image";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/app/components/card";
+import { Card, CardContent, CardHeader } from "@/app/components/card";
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { MyRecord } from "../types/types";
@@ -31,130 +26,133 @@ const UserProfile = () => {
 
   return (
     <Suspense>
-      {!userData && <div>No user data found</div>}
-      {userData && (
-        <Card className="w-full max-w-md mx-auto">
-          <CardHeader className="flex flex-col items-center">
-            <div className="relative w-32 h-32 mb-4">
-              <Image
-                src={userData.picture?.[0]?.url || "/default-avatar.png"}
-                alt={`${userData.first_name} ${userData.last_name}`}
-                fill
-                className="rounded-full object-cover"
-              />
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <p>
-                <strong>Email:</strong> {userData.email}
-              </p>
-              {userData.phone && (
+      <Card className="w-full max-w-md mx-auto">
+        {userData && (
+          <>
+            <CardHeader className="flex flex-col items-center">
+              <div className="relative w-32 h-32 mb-4">
+                <Image
+                  src={userData.picture?.[0]?.url || "/default-avatar.png"}
+                  alt={`${userData.first_name} ${userData.last_name}`}
+                  fill
+                  className="rounded-full object-cover"
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
                 <p>
-                  <strong>Phone:</strong> {userData.phone}
+                  <strong>Email:</strong> {userData.email}
                 </p>
-              )}
-              {userData.date_of_birth && (
-                <p>
-                  <strong>Date of Birth:</strong>{" "}
-                  {new Date(userData.date_of_birth).toLocaleDateString()}
-                </p>
-              )}
-              {userData.address && (
-                <p>
-                  <strong>Address:</strong> {userData.address}
-                </p>
-              )}
-            </div>
-
-            {userData.student && userData.student[0] && (
-              <>
-                <div className="mt-4">
-                  <h3 className="font-semibold">Student Details</h3>
+                {userData.phone && (
                   <p>
-                    Admission Number:{" "}
-                    {userData?.student?.[0]?.admission_number || "N/A"}
+                    <strong>Phone:</strong> {userData.phone}
                   </p>
-                  <p>
-                    Student Code:{" "}
-                    {userData?.student?.[0]?.student_code || "N/A"}
-                  </p>
-                </div>
-              </>
-            )}
-
-            {userData.staff && userData.staff[0] && (
-              <>
-                <div className="mt-4">
-                  <h3 className="font-semibold">Staff Details</h3>
-                  <p>
-                    Department: {userData.staff[0].department?.name || "N/A"}
-                  </p>
-                  <p>
-                    Employment Status: {userData.staff[0].employment_status}
-                  </p>
-                  <p>Domain Role: {userData.staff[0].domain_role}</p>
-                </div>
-                {userData.staff[0].teacher[0] && (
-                  <>
-                    <div className="mt-4">
-                      <h3 className="font-semibold">Teacher Details</h3>
-                      <p>
-                        Active:{" "}
-                        {userData.staff[0].teacher[0].is_active ? "Yes" : "No"}
-                      </p>
-                    </div>
-                  </>
                 )}
-                {userData.staff[0].school_leader[0] && (
-                  <>
-                    <div className="mt-4">
-                      <h3 className="font-semibold">School Leader Details</h3>
-                      <p>
-                        {userData.staff[0].school_leader[0].academic_year && (
-                          <>
-                            Academic Year:{" "}
-                            userData.staff[0].school_leader[0].academic_year[0]
-                            ?.year
-                          </>
-                        )}
-                      </p>
-                      {userData.staff[0].school_leader[0].date_removed && (
+                {userData.date_of_birth && (
+                  <p>
+                    <strong>Date of Birth:</strong>{" "}
+                    {new Date(userData.date_of_birth).toLocaleDateString()}
+                  </p>
+                )}
+                {userData.address && (
+                  <p>
+                    <strong>Address:</strong> {userData.address}
+                  </p>
+                )}
+              </div>
+
+              {userData.student && userData.student[0] && (
+                <>
+                  <div className="mt-4">
+                    <h3 className="font-semibold">Student Details</h3>
+                    <p>
+                      Admission Number:{" "}
+                      {userData?.student?.[0]?.admission_number || "N/A"}
+                    </p>
+                    <p>
+                      Student Code:{" "}
+                      {userData?.student?.[0]?.student_code || "N/A"}
+                    </p>
+                  </div>
+                </>
+              )}
+
+              {userData.staff && userData.staff[0] && (
+                <>
+                  <div className="mt-4">
+                    <h3 className="font-semibold">Staff Details</h3>
+                    <p>
+                      Department: {userData.staff[0].department?.name || "N/A"}
+                    </p>
+                    <p>
+                      Employment Status: {userData.staff[0].employment_status}
+                    </p>
+                    <p>Domain Role: {userData.staff[0].domain_role}</p>
+                  </div>
+                  {userData.staff[0].teacher[0] && (
+                    <>
+                      <div className="mt-4">
+                        <h3 className="font-semibold">Teacher Details</h3>
                         <p>
-                          Removed Date:{" "}
-                          {new Date(
-                            userData.staff[0].school_leader[0].date_removed
-                          ).toLocaleDateString()}
+                          Active:{" "}
+                          {userData.staff[0].teacher[0].is_active
+                            ? "Yes"
+                            : "No"}
                         </p>
-                      )}
-                    </div>
-                  </>
-                )}
-              </>
-            )}
+                      </div>
+                    </>
+                  )}
+                  {userData.staff[0].school_leader[0] && (
+                    <>
+                      <div className="mt-4">
+                        <h3 className="font-semibold">School Leader Details</h3>
+                        <p>
+                          {userData.staff[0].school_leader[0].academic_year && (
+                            <>
+                              Academic Year:{" "}
+                              userData.staff[0].school_leader[0].academic_year[0]
+                              ?.year
+                            </>
+                          )}
+                        </p>
+                        {userData.staff[0].school_leader[0].date_removed && (
+                          <p>
+                            Removed Date:{" "}
+                            {new Date(
+                              userData.staff[0].school_leader[0].date_removed
+                            ).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
 
-            {userData.parent && userData.parent[0] && (
-              <>
-                <div className="mt-4">
-                  <h3 className="font-semibold">Parent Details</h3>
-                  <p>
-                    Relationship Type: {userData.parent[0].relationship_type}
-                  </p>
-                </div>
-              </>
-            )}
+              {userData.parent && userData.parent[0] && (
+                <>
+                  <div className="mt-4">
+                    <h3 className="font-semibold">Parent Details</h3>
+                    <p>
+                      Relationship Type: {userData.parent[0].relationship_type}
+                    </p>
+                  </div>
+                </>
+              )}
 
-            {userData.admin && userData.admin[0] && (
-              <>
-                <div className="mt-4">
-                  <h3 className="font-semibold">Admin Details</h3>
-                  <p>Admin Account</p>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
+              {userData.admin && userData.admin[0] && (
+                <>
+                  <div className="mt-4">
+                    <h3 className="font-semibold">Admin Details</h3>
+                    <p>Admin Account</p>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </>
+        )}
+      </Card>
     </Suspense>
   );
 };

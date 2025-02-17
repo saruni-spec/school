@@ -61,9 +61,6 @@ const AdminDashboard = async () => {
     <div className="p-8  min-h-screen">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">
-          Principal&apos;s Dashboard
-        </h1>
         <p className="text-gray-600">
           Welcome back! Here&apos;s what&apos;s happening at your school today.
         </p>
@@ -314,12 +311,12 @@ const AdminDashboard = async () => {
           <CardHeader>
             <CardTitle className="text-lg font-bold flex items-center">
               <BookOpen className="w-5 h-5 mr-2 text-blue-500" />
-              Teacher Engagement
+              Student Engagement
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-500">92%</div>
-            <p className="text-sm text-gray-600">Course completion rate</p>
+            <p className="text-sm text-gray-600">Student Retention</p>
           </CardContent>
         </Card>
 
@@ -332,7 +329,7 @@ const AdminDashboard = async () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-500">78%</div>
-            <p className="text-sm text-gray-600">Facility usage efficiency</p>
+            <p className="text-sm text-gray-600">Facility usage</p>
           </CardContent>
         </Card>
       </div>

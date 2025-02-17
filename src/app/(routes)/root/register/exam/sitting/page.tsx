@@ -45,6 +45,7 @@ interface TempSlot {
   day_of_week: number;
   start_time: string;
   end_time: string;
+  sitting_date?: string;
   room_number?: string;
   time_table_id?: number;
   sitting: TempSlotAssignment[];
@@ -54,7 +55,7 @@ interface TempSlot {
 interface TempSlotAssignment {
   teacher_id: number;
   subject_allocation_id: number;
-  sitting_date: Date;
+  sitting_date: string;
 }
 
 type SaveItem = {
@@ -64,6 +65,7 @@ type SaveItem = {
   room_number: string | undefined;
   time_table_id?: number;
   slot_assignment: {
+    sitting_date: string;
     stream_id: number;
     teacher_id: number;
     semester_id: number;
@@ -176,6 +178,8 @@ const TimetableCreator = () => {
       slot_duration: data.slot_duration,
       start_time: data.start_time,
       end_time: data.end_time,
+      start_date: data.start_date,
+      end_date: data.end_date,
       days_per_week: data.days_per_week,
       breaks: data.breaks,
       school_id: data.school_id,
@@ -586,29 +590,6 @@ const TimetableCreator = () => {
     }
   };
 
-  // Generate array of dates between start and end date
-  const generateDateRange = (start_date, end_date) => {
-    const dates = [];
-    const currentDate = new Date(start_date);
-    const endDate = new Date(end_date);
-
-    while (currentDate <= endDate) {
-      dates.push({
-        date: currentDate.toISOString().split("T")[0],
-        day: currentDate
-          .toLocaleDateString("en-US", { weekday: "long" })
-          .toUpperCase(),
-      });
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    return dates;
-  };
-
-  const dates = generateDateRange(
-    skeleton_config.start_date,
-    skeleton_config.end_date
-  );
-
   return (
     <div className="p-4 space-y-6">
       {/* Phase Indicator */}
@@ -811,12 +792,11 @@ const TimetableCreator = () => {
                   <thead>
                     <tr>
                       <th className="p-2 border">Time</th>
-                      {dates.map((dateObj, index) => (
-                        <th key={index} className="p-2 border text-center">
-                          <div>{dateObj.date}</div>
-                          <div className="text-sm text-gray-600">
-                            {dateObj.day}
-                          </div>
+                      {Array.from({
+                        length: skeleton_config.days_per_week,
+                      }).map((_, index) => (
+                        <th key={index} className="p-2 border">
+                          {days_of_week[index]}
                         </th>
                       ))}
                     </tr>
@@ -824,12 +804,14 @@ const TimetableCreator = () => {
                   <tbody>
                     {time_slots.map((slot, slot_index) => (
                       <tr key={slot_index}>
-                        <td className="p-2 border whitespace-nowrap">
+                        <td className="p-2 border">
                           {slot.start_time} - {slot.end_time}
                         </td>
-                        {dates.map((dateObj, date_index) => (
+                        {Array.from({
+                          length: skeleton_config.days_per_week,
+                        }).map((_, day_index) => (
                           <td
-                            key={`${slot_index}-${date_index}`}
+                            key={`${slot_index}-${day_index}`}
                             className="p-2 border"
                           >
                             {slot.type === "break" ? (
@@ -841,51 +823,48 @@ const TimetableCreator = () => {
                                 <Select
                                   options={subjects}
                                   value={assignments[
-                                    `${slot_index}-${dateObj.date}-${selected_stream}`
+                                    `${slot_index}-${day_index}-${selected_stream}`
                                   ]?.subject_allocation_id?.toString()}
                                   onChange={(e) =>
                                     handleAssignment(
-                                      `${slot_index}-${dateObj.date}`,
+                                      `${slot_index}-${day_index}`,
                                       "subject_allocation_id",
                                       parseInt(e.target.value)
                                     )
                                   }
                                   placeholder="Select subject"
-                                  id={`subject-${slot_index}-${dateObj.date}`}
+                                  id={`subject-${slot_index}-${day_index}`}
                                 />
 
                                 <Select
                                   options={teachers}
                                   value={assignments[
-                                    `${slot_index}-${dateObj.date}-${selected_stream}`
+                                    `${slot_index}-${day_index}-${selected_stream}`
                                   ]?.teacher_id?.toString()}
                                   onChange={(e) =>
                                     handleAssignment(
-                                      `${slot_index}-${dateObj.date}`,
+                                      `${slot_index}-${day_index}`,
                                       "teacher_id",
                                       parseInt(e.target.value)
                                     )
                                   }
                                   show_field={"staff.school_code"}
                                   placeholder="Select teacher"
-                                  id={`teacher-${slot_index}-${dateObj.date}`}
+                                  id={`teacher-${slot_index}-${day_index}`}
                                 />
 
                                 <MyInput
-                                  type="text"
-                                  placeholder="Room number"
-                                  value={
-                                    assignments[
-                                      `${slot_index}-${dateObj.date}-${selected_stream}`
-                                    ]?.room_number || ""
-                                  }
+                                  type="date"
+                                  value={assignments[
+                                    `${slot_index}-${day_index}-${selected_stream}`
+                                  ]?.sitting_date?.toString()}
                                   onChange={(e) => {
-                                    const assignment_key = `${slot_index}-${dateObj.date}-${selected_stream}`;
+                                    const assignment_key = `${slot_index}-${day_index}-${selected_stream}`;
                                     setAssignments((prev) => ({
                                       ...prev,
                                       [assignment_key]: {
                                         ...prev[assignment_key],
-                                        room_number: e.target.value,
+                                        sitting_date: new Date(e.target.value),
                                       },
                                     }));
                                   }}
