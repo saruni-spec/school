@@ -32,7 +32,7 @@ const Payment = () => {
   const payment_methods = Object.keys(payment_method);
 
   const [payed_by, setPayedBy] = useState<MyRecord | null>(null);
-  const [fees, setFees] = useState<unknown>();
+  const [fees, setFees] = useState<MyRecord[]>();
   const [selectedFee, setSelectedFee] = useState<MyRecord>();
   //
   // Handle the selection of the user to pay fees for

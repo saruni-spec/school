@@ -2,20 +2,12 @@ import React, { useState } from "react";
 import { Button } from "@/app/components/button";
 import { MyInput } from "@/app/components/input";
 import RadioInputs from "@/app/components/radio";
-import { generic_record } from "@/app/types/types";
-
-type QuestionType = "open" | "multiple";
-type Option = {
-  id: string;
-  text: string;
-};
-
-type Question = {
-  id: string;
-  text: string;
-  type: QuestionType;
-  options?: Option[];
-};
+import {
+  generic_record,
+  Question,
+  QuestionType,
+  Option,
+} from "@/app/types/types";
 
 const QuestionCreator = ({
   onSubmit,

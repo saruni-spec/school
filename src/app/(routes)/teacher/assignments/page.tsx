@@ -4,32 +4,8 @@ import CreateAssignment from "@/app/components/assignment_creator";
 import { Button } from "@/app/components/button";
 import { LoadingSpinner } from "@/app/components/loading";
 import { useTeacherDetails } from "@/app/context/user_context";
+import { Assignment } from "@/app/types/types";
 import { Suspense, useCallback, useEffect, useState } from "react";
-
-type AssignmentAttempt = {
-  id: number;
-  student_id: number;
-  date_submitted: string;
-  assignment_content_id: number;
-  date_marked: string | null;
-  remarks: string | null;
-  result: number | null;
-};
-
-type AssignmentContent = {
-  id: number;
-  question: string;
-  options: [];
-  assignment_attempt: AssignmentAttempt[];
-};
-
-type Assignment = {
-  id: number;
-  description: string;
-  subject_allocation_id: number | null;
-  file_path: string | null;
-  assignment_content: AssignmentContent[];
-};
 
 const Assignments = () => {
   const [page, setPage] = useState<"view" | "create">("view");

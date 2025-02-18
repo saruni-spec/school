@@ -157,7 +157,7 @@ const Fee = () => {
       }
 
       default: {
-        const payee_field = payee_fields[selectedRadio.name];
+        const payee_field = payee_fields[selectedRadio.name as string];
 
         await Promise.all(
           payees.list.map(async (payee) => {

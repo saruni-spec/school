@@ -1,4 +1,5 @@
 "use client";
+import { Slots, TimeTableType } from "@/app/api_functions/api_types";
 import {
   fetchTable,
   getDataFromApi,
@@ -13,7 +14,7 @@ import { useUser } from "@/app/context/user_context";
 import { MyRecord } from "@/app/types/types";
 import { flattenObjectIterative } from "@/lib/functions";
 import { AlertCircle } from "lucide-react";
-import React, { Suspense, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 //
 // Timetable Creator
 // This component is used to create a timetable for a school
@@ -133,43 +134,46 @@ const TimetableCreator = () => {
     return days_of_week.indexOf(day);
   };
   // Function to format slots
-  const formatDBSlotsToTempSlots = useCallback((dbSlots: any): TempSlot[] => {
-    return dbSlots.map((slot) => {
-      // Format assignments
-      const assignments: TempSlotAssignment[] = slot.slot_assignment.map(
-        (assignment) => ({
-          subject_allocation: {
-            stream_id: assignment.stream_id,
-            teacher_id: assignment.subject_allocation.teacher_id || 0, // Provide default value if null
-            subject_id: assignment.subject_allocation.subject_grade_id || 0, // Provide default value if null
-          },
-        })
-      );
+  const formatDBSlotsToTempSlots = useCallback(
+    (dbSlots: Slots[]): TempSlot[] => {
+      return dbSlots.map((slot) => {
+        // Format assignments
+        const assignments: TempSlotAssignment[] = slot.slot_assignment.map(
+          (assignment) => ({
+            subject_allocation: {
+              stream_id: assignment.stream_id,
+              teacher_id: assignment.subject_allocation.teacher_id || 0, // Provide default value if null
+              subject_id: assignment.subject_allocation.subject_grade_id || 0, // Provide default value if null
+            },
+          })
+        );
 
-      // Create formatted slot
-      const tempSlot: TempSlot = {
-        day_of_week: dayOfWeekToNumber(slot.day_of_week),
-        start_time: slot.start_time,
-        end_time: slot.end_time,
-        assignments,
-      };
+        // Create formatted slot
+        const tempSlot: TempSlot = {
+          day_of_week: dayOfWeekToNumber(slot.day_of_week),
+          start_time: slot.start_time,
+          end_time: slot.end_time,
+          assignments,
+        };
 
-      // Add room_number if it exists
-      if (slot.room_number) {
-        tempSlot.room_number = slot.room_number;
-      }
+        // Add room_number if it exists
+        if (slot.room_number) {
+          tempSlot.room_number = slot.room_number;
+        }
 
-      return tempSlot;
-    });
-  }, []);
+        return tempSlot;
+      });
+    },
+    []
+  );
 
   //get slots saved in db
   const getSlotsInDb = useCallback(async () => {
-    const data = await getDataFromApi(
+    const data: TimeTableType = await getDataFromApi(
       `/api/time_table/get_slots?school_id=${school_id}&semester_id=${current_semester}`
     );
 
-    if (!data || data.length === 0) return;
+    if (!data) return;
 
     const formatted_slots = formatDBSlotsToTempSlots(data.slots);
 
@@ -179,7 +183,7 @@ const TimetableCreator = () => {
       start_time: data.start_time,
       end_time: data.end_time,
       days_per_week: data.days_per_week,
-      breaks: data.breaks,
+      breaks: data.breaks as { startTime: string; duration: number }[],
       school_id: data.school_id,
       semester_id: data.semester_id,
     };
@@ -466,7 +470,7 @@ const TimetableCreator = () => {
     }));
 
     // If both teacher and subject are assigned, update temp storage
-    const current_assignment = assignments[assignment_key] || {};
+    const current_assignment = assignments[assignment_key];
     if (
       (field === "teacher_id" && current_assignment.subject_id) ||
       (field === "subject_id" && current_assignment.teacher_id)

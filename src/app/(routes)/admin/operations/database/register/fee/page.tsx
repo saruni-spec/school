@@ -119,7 +119,7 @@ const Fee = () => {
       },
       model_name: "fee",
     });
-
+    const payee_list = payees.list as MyRecord[];
     //
     //add a each payee to the fee_payee table
     const fee_id = data.id;
@@ -139,7 +139,7 @@ const Fee = () => {
 
         // Get all the streams in the selected grades
         const selected_streams = streams.filter((stream) =>
-          payees.list.some((payee) => payee.id === stream.grade_level_id)
+          payee_list.some((payee) => payee.id === stream.grade_level_id)
         );
 
         await Promise.all(
@@ -157,10 +157,10 @@ const Fee = () => {
       }
 
       default: {
-        const payee_field = payee_fields[selectedRadio.name];
+        const payee_field = payee_fields[selectedRadio.name as string];
 
         await Promise.all(
-          payees.list.map(async (payee) => {
+          payee_list.map(async (payee) => {
             await register({
               data: {
                 fee_id,
@@ -237,7 +237,7 @@ const Fee = () => {
               label={"Select Payees"}
               options={options}
               onChange={payees.setList}
-              value={payees.list}
+              value={payees.list as MyRecord[]}
               error={payees.error}
               value_field={selectedRadio.name === "Grades" ? "level" : "name"}
               orientation="grid"

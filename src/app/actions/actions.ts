@@ -111,6 +111,7 @@ export async function findUnpaidFees(user: MyRecord) {
   //
   //format the unpaid fees
   const unpaid_fees = unpaidFees.map((fee) => ({
+    id: fee.id,
     fee_payee_id: fee.id,
     fee_id: fee.fee?.id,
     fee_for: fee.fee?.fee_for,

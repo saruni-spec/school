@@ -58,6 +58,7 @@ export const Screen: React.FC<ScreenProps> = ({
             const Icon = item.icon;
             return (
               <Link
+                prefetch={false}
                 key={index}
                 href={
                   path_name

@@ -1,10 +1,8 @@
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
-export async function GET(
-  request: Request,
-  context: { params: { teacher_id: string } }
-) {
+// eslint-disable-next-line
+export async function GET(request: Request, context: any) {
   try {
     const { teacher_id } = await context.params; // Await the context.params object
 

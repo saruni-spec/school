@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useState } from "react";
+import React, { ReactNode, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./card";
 import {
   Award,
@@ -14,42 +14,10 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "./button";
-import { FieldType, MyRecord } from "../types/types";
+import { Assignment, AssignmentDetails, FieldType } from "../types/types";
 import { MyInput } from "./input";
 import { useValidation } from "../hooks/validation_hooks";
 import { useTeacherDetails } from "../context/user_context";
-
-// Types for our components
-type AssignmentAttempt = {
-  id: number;
-  student: MyRecord;
-  answer: string;
-  date_submitted: string;
-  assignment_content_id: number;
-  date_marked: string | null;
-  remarks: string | null;
-  result: number | null;
-};
-
-type Option = {
-  id: string;
-  text: string;
-};
-
-type AssignmentContent = {
-  id: number;
-  question: string;
-  options: Option[]; // Changed from [] to Option[]
-  assignment_attempt: AssignmentAttempt[];
-};
-
-type Assignment = {
-  id: number;
-  description: string;
-  subject_allocation_id: number | null;
-  file_path: string | null;
-  assignment_content: AssignmentContent[];
-};
 
 const AttempItem = ({
   label,
@@ -277,7 +245,7 @@ const StudentAttempt = ({ attempt }) => {
   );
 };
 
-const AssignmentContent: React.FC<{ content: AssignmentContent }> = ({
+const AssignmentContent: React.FC<{ content: AssignmentDetails }> = ({
   content,
 }) => {
   const [showAttempts, setShowAttempts] = useState(false);

@@ -25,9 +25,6 @@ const DepartmentUpdate = () => {
 
   //
   // Register a department
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
-  }, []);
 
   return <DataTable records={departments} title="Department Details" />;
 };

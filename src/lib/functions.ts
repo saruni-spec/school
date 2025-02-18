@@ -8,39 +8,14 @@ export const validInputs = (inputs: FieldValidation[]): boolean => {
   return inputs.every((input) => input.validate(input.value as string));
 };
 
-export function flattenObjectWithReduce(obj: MyRecord, parentKey = "") {
-  // Use Object.entries to get an array of key-value pairs from the input object.
-  // Reduce iterates over this array and accumulates a flattened object.
-  return Object.entries(obj).reduce((acc, [key, value]) => {
-    // Create a new key by concatenating the parent key (if it exists) with the current key.
-    // If there's no parent key, use the current key as is.
-    const newKey = parentKey ? `${parentKey}.${key}` : key;
-
-    // Check if the value is an object, and not null or an array.
-    if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-      // If the value is a nested object, call the function recursively.
-      // The new key becomes the parentKey for the nested object.
-      // Use Object.assign to merge the results of the recursive call into the accumulator.
-      Object.assign(acc, flattenObjectWithReduce(value, newKey));
-    } else {
-      // If the value is not a nested object (base case), add it to the accumulator.
-      // Use the flattened key (`newKey`) as the key.
-      acc[newKey] = value;
-    }
-
-    // Return the updated accumulator to the next iteration.
-    return acc;
-  }, {}); // Initialize the accumulator (`acc`) as an empty object.
-}
-
-export function flattenObjectIterative(obj: MyRecord) {
+export function flattenObjectIterative(obj: MyRecord): MyRecord {
   const result = {};
   const stack = [{ obj, parentKey: "" }];
 
   while (stack.length > 0) {
     const { obj: currentObj, parentKey } = stack.pop();
 
-    for (let key in currentObj) {
+    for (const key in currentObj) {
       if (currentObj.hasOwnProperty(key)) {
         const newKey = parentKey ? `${parentKey}.${key}` : key;
         if (
@@ -48,6 +23,7 @@ export function flattenObjectIterative(obj: MyRecord) {
           currentObj[key] !== null &&
           !Array.isArray(currentObj[key])
         ) {
+          // @ts-expect-error dont know the type of currentObj[key]
           stack.push({ obj: currentObj[key], parentKey: newKey });
         } else {
           result[newKey] = currentObj[key];
@@ -56,7 +32,7 @@ export function flattenObjectIterative(obj: MyRecord) {
     }
   }
 
-  return result;
+  return <MyRecord>result;
 }
 
 export const convertToISOTime = (time: string) => {

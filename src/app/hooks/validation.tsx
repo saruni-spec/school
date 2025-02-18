@@ -99,12 +99,12 @@ export default function Validation(
 export function ListValidation<T>(
   initialValue: T[] = [],
   validators: {
-    listValidator?: (list: T[]) => string | null;
+    listValidator?: (list: T[] | MyRecord[]) => string | null;
     itemValidator?: (item: T) => string | null;
   }
 ) {
   // State to store the current list of objects
-  const [list, setList] = useState<T[]>(initialValue);
+  const [list, setList] = useState<T[] | MyRecord[]>(initialValue);
 
   // State to store any validation error messages
   const [error, setError] = useState<string | null>(null);
@@ -126,7 +126,7 @@ export function ListValidation<T>(
 
     // Then, check each item if item validator is provided
     if (validators.itemValidator) {
-      for (const item of list) {
+      for (const item of list as []) {
         const itemValidationError = validators.itemValidator(item);
         if (itemValidationError) {
           setError(itemValidationError);
@@ -148,7 +148,7 @@ export function ListValidation<T>(
    */
   const addItem = useCallback(
     (item: T) => {
-      const newList = [...list, item];
+      const newList = [...(list as []), item];
       setList(newList);
       return validate();
     },
@@ -163,7 +163,8 @@ export function ListValidation<T>(
    */
   const removeItem = useCallback(
     (index: number) => {
-      const newList = list.filter((_, i) => i !== index);
+      const myList = list as [];
+      const newList = myList.filter((_, i) => i !== index);
       setList(newList);
       return validate();
     },
@@ -179,7 +180,10 @@ export function ListValidation<T>(
    */
   const updateItem = useCallback(
     (index: number, updatedItem: T) => {
-      const newList = list.map((item, i) => (i === index ? updatedItem : item));
+      const myList = list as [];
+      const newList = myList.map((item, i) =>
+        i === index ? updatedItem : item
+      );
       setList(newList);
       return validate();
     },
@@ -193,7 +197,7 @@ export function ListValidation<T>(
    * @returns Boolean indicating whether the new list passes validation
    */
   const setListItems = useCallback(
-    (newList: T[]) => {
+    (newList: T[] | MyRecord[]) => {
       setList(newList);
       return validate();
     },
@@ -230,7 +234,7 @@ export function ObjectValidation<T extends MyRecord>(
   const [object, setObject] = useState<T>(initialValue);
 
   // State to store any validation error messages
-  const [errors, setErrors] = useState<Partial<MyRecord<keyof T, string>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
 
   /**
    * Validates the entire object against provided validator functions
@@ -238,7 +242,7 @@ export function ObjectValidation<T extends MyRecord>(
    * @returns Boolean indicating whether the object passes all validations
    */
   const validate = useCallback(() => {
-    const newErrors: Partial<MyRecord<keyof T, string>> = {};
+    const newErrors: Partial<Record<keyof T, string>> = {};
 
     // Check each key with a validator
     (Object.keys(validators) as Array<keyof T>).forEach((key) => {

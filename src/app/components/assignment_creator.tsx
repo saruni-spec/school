@@ -1,7 +1,12 @@
 import { Form } from "@/app/components/form";
 import { MyInput } from "@/app/components/input";
 import RadioInputs from "@/app/components/radio";
-import { FieldType, generic_record, MyRecord } from "@/app/types/types";
+import {
+  FieldType,
+  generic_record,
+  MyRecord,
+  Question,
+} from "@/app/types/types";
 import React, { useState } from "react";
 import QuestionCreator from "@/app/components/assignment_questions";
 import { useValidation } from "@/app/hooks/validation_hooks";
@@ -12,15 +17,19 @@ import { Select } from "@/app/components/select";
 import { validInputs } from "@/lib/functions";
 import { register } from "@/app/api_functions/functions";
 
+interface Subject extends MyRecord {
+  subject_grade: MyRecord;
+}
+
 const assignmentOptions = [{ name: "File" }, { name: "Questions" }];
 
 const CreateAssignment = () => {
-  const [assignment, setAssignment] = useState<File | MyRecord[]>();
+  const [assignment, setAssignment] = useState<File | Question[]>();
   const [assignmentType, setAssignmentType] = useState<"File" | "Questions">();
   const [selectedRadio, setSelectedRadio] = useState<generic_record>({
     name: "Questions",
   });
-  const [selectedSubject, setSelectedSubject] = useState<MyRecord>();
+  const [selectedSubject, setSelectedSubject] = useState<Subject>();
 
   const file = useValidation({ type: FieldType.Text });
   const subject = useValidation({ type: FieldType.Number, required: true });
@@ -145,7 +154,7 @@ const CreateAssignment = () => {
     }
   };
 
-  const handleQuestions = (questions: any[]) => {
+  const handleQuestions = (questions: File | Question[]) => {
     setAssignment(questions);
   };
 
@@ -155,7 +164,7 @@ const CreateAssignment = () => {
       (subject) => subject.id === parseInt(e.target.value)
     );
 
-    setSelectedSubject(selectedSubject);
+    setSelectedSubject(selectedSubject as Subject);
   };
 
   return (

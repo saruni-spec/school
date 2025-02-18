@@ -36,10 +36,10 @@ export const Select: React.FC<SelectProps> = ({
   ...props
 }) => {
   // Utility function to safely access nested properties
-  const getNestedValue = (obj: any, path: string): any => {
+  const getNestedValue = (option: MyRecord, path: string) => {
     return path
       .split(".")
-      .reduce((acc, key) => (acc ? acc[key] : undefined), obj);
+      .reduce((acc, key) => (acc ? acc[key] : undefined), option);
   };
 
   return (

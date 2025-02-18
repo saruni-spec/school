@@ -219,6 +219,7 @@ const AdminDashboard = async () => {
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
               <Link
+                prefetch={false}
                 href="/admin/reports"
                 className="p-4 bg-blue-50 rounded-lg text-center hover:bg-blue-100 transition-colors"
               >
@@ -228,6 +229,7 @@ const AdminDashboard = async () => {
                 </span>
               </Link>
               <Link
+                prefetch={false}
                 href="/admin/operations"
                 className="p-4 bg-green-50 rounded-lg text-center hover:bg-green-100 transition-colors"
               >
@@ -237,6 +239,7 @@ const AdminDashboard = async () => {
                 </span>
               </Link>
               <Link
+                prefetch={false}
                 href="/admin/schedule"
                 className="p-4 bg-purple-50 rounded-lg text-center hover:bg-purple-100 transition-colors"
               >
@@ -246,6 +249,7 @@ const AdminDashboard = async () => {
                 </span>
               </Link>
               <Link
+                prefetch={false}
                 href="/admin/profile"
                 className="p-4 bg-orange-50 rounded-lg text-center hover:bg-orange-100 transition-colors"
               >

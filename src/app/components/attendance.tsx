@@ -2,6 +2,22 @@ import React from "react";
 import { Button } from "./button";
 import { AlertDescription, Alert } from "./alert";
 import { Check, X } from "lucide-react";
+import { attendance_status } from "@prisma/client";
+
+type Student = {
+  id: number;
+  student: {
+    users: {
+      name: string;
+      id: number;
+    };
+    student_code: string;
+  };
+};
+
+type AttendanceData = {
+  [key: number]: attendance_status;
+};
 
 const Attendance = ({
   error,
@@ -13,8 +29,8 @@ const Attendance = ({
 }: {
   error: string;
   success: string;
-  students: [];
-  attendanceData: {};
+  students: Student[];
+  attendanceData: AttendanceData;
   saveAttendance: () => Promise<void>;
   takeAttendance: (users_id: number, status: attendance_status) => void;
 }) => {

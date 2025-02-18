@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { MyRecord } from "../types/types";
+import { BaseValue, MyRecord, RecordValue } from "../types/types";
 
 interface DataTableProps {
   records: MyRecord[];
@@ -21,8 +21,8 @@ const EditableTable: React.FC<DataTableProps> = ({
   const [editingCell, setEditingCell] = useState<{
     recordId: number | null;
     field: string | null;
-    value: any;
-    relatedRecords?: { id: number; [key: string]: any }[];
+    value: RecordValue;
+    relatedRecords?: MyRecord[];
   }>({ recordId: null, field: null, value: null });
 
   if (!records.length) {
@@ -118,7 +118,7 @@ const EditableTable: React.FC<DataTableProps> = ({
   const handleDoubleClick = async (
     recordId: number,
     field: string,
-    value: any
+    value: RecordValue
   ) => {
     const { table, isRelational } = getTableAndField(field);
 
@@ -145,9 +145,11 @@ const EditableTable: React.FC<DataTableProps> = ({
   ) => {
     if (!editingCell.recordId || !editingCell.field) return;
 
+    const target = e.target as HTMLElement;
+
     if (
       e.key === "Enter" ||
-      (e.type === "change" && e.target.tagName === "SELECT")
+      (e.type === "change" && target.tagName === "SELECT")
     ) {
       try {
         const { table, isRelational } = getTableAndField(editingCell.field);
@@ -165,7 +167,7 @@ const EditableTable: React.FC<DataTableProps> = ({
           await updateDatabase?.(
             editingCell.recordId,
             editingCell.field,
-            editingCell.value,
+            editingCell.value as BaseValue,
             model_name
           );
         }
@@ -199,7 +201,7 @@ const EditableTable: React.FC<DataTableProps> = ({
         <select
           title="Select..."
           className="w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-          value={editingCell.value}
+          value={editingCell.value as string | number | readonly string[]}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
           autoFocus
@@ -207,7 +209,10 @@ const EditableTable: React.FC<DataTableProps> = ({
           <option value="">Select...</option>
           {editingCell.relatedRecords.map((record) => (
             <option key={record.id} value={record.id}>
-              {record.name || record.year || record.level || record.id}
+              {(record.name as string) ||
+                (record.year as string) ||
+                (record.level as string) ||
+                record.id}
             </option>
           ))}
         </select>
@@ -219,7 +224,7 @@ const EditableTable: React.FC<DataTableProps> = ({
         title="Enter to save, Esc to cancel"
         type="text"
         className="w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-        value={editingCell.value}
+        value={editingCell.value as string | number | readonly string[]}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         autoFocus

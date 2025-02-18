@@ -1,10 +1,11 @@
+import { generic_record } from "@/app/types/types";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 interface UpdateData {
-  where: Record<string, any>;
-  data: Record<string, any>;
+  where: Record<string, generic_record>;
+  data: Record<string, generic_record>;
 }
 
 interface UpdateRequest {

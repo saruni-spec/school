@@ -23,14 +23,14 @@ const StudentDashboard = () => {
   const [assignments, setAssignments] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const { studentDetails } = useStudentDetails();
-  const { user } = useUser();
+  const { user, school_id } = useUser();
 
   useEffect(() => {
     // Fetch next class
     const fetchNextClass = async () => {
       try {
         const response = await fetch(
-          `/api/student/slot?school_id=${user?.school_id}&stream_id=${studentDetails?.student_class[0]?.class_progression?.stream_id}`
+          `/api/student/slot?school_id=${school_id}&stream_id=${studentDetails?.student_class[0]?.class_progression?.stream_id}`
         );
         if (!response.ok) throw new Error("Failed to fetch schedule");
         const data = await response.json();
@@ -95,7 +95,7 @@ const StudentDashboard = () => {
       fetchAssignments();
       fetchAttendance();
     }
-  }, [studentDetails, user]);
+  }, [studentDetails, user, school_id]);
 
   const pendingAssignments = assignments.filter(
     (a) => !a.assignment_attempt?.length
@@ -110,8 +110,7 @@ const StudentDashboard = () => {
       {/* Header */}
       <div className="mb-8">
         <p className="text-gray-600">
-          Welcome back, {studentDetails?.first_name}! Here's your overview for
-          today.
+          Welcome back, {user.name}! Here&apos;s your overview for today.
         </p>
       </div>
 
@@ -264,6 +263,7 @@ const StudentDashboard = () => {
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
               <Link
+                prefetch={false}
                 href="/student/assignments"
                 className="p-4 bg-blue-50 rounded-lg text-center hover:bg-blue-100 transition-colors"
               >
@@ -273,6 +273,7 @@ const StudentDashboard = () => {
                 </span>
               </Link>
               <Link
+                prefetch={false}
                 href="/student/attendance"
                 className="p-4 bg-green-50 rounded-lg text-center hover:bg-green-100 transition-colors"
               >
@@ -282,6 +283,7 @@ const StudentDashboard = () => {
                 </span>
               </Link>
               <Link
+                prefetch={false}
                 href="/student/schedule"
                 className="p-4 bg-purple-50 rounded-lg text-center hover:bg-purple-100 transition-colors"
               >
@@ -291,6 +293,7 @@ const StudentDashboard = () => {
                 </span>
               </Link>
               <Link
+                prefetch={false}
                 href="/student/profile"
                 className="p-4 bg-orange-50 rounded-lg text-center hover:bg-orange-100 transition-colors"
               >

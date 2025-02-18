@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 }
 
 //Save a staff member and their role after registration
-export async function completeSchoolAdminRegistration(
+async function completeSchoolAdminRegistration(
   prisma: PrismaClient,
   {
     role_type,

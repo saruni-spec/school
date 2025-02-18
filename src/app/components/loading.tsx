@@ -91,7 +91,7 @@ const InspirationLoader = ({
 
         <div className="bg-white shadow-lg rounded-lg p-4 transform transition-all duration-300 hover:scale-105">
           <p className={`italic mb-3 text-base ${quoteColor}`}>
-            "{currentQuote.quote}"
+            &quot;{currentQuote.quote}&quot;
           </p>
           <p className="text-xs text-gray-500 font-semibold">
             - {currentQuote.author}

@@ -5,7 +5,7 @@ import { Button } from "@/app/components/button";
 import { Alert, AlertDescription } from "@/app/components/alert";
 import { Check, X } from "lucide-react";
 import { attendance_status } from "@prisma/client";
-import { MyRecord } from "@/app/types/types";
+import { AttendanceToday } from "@/app/api_functions/api_types";
 
 type student = {
   id: number;
@@ -18,9 +18,13 @@ type student = {
   } | null;
 };
 
+type AttendanceStatus = {
+  [key: number]: string;
+};
+
 const Attendance = () => {
   const [students, setStudents] = useState<student[]>([]);
-  const [attendanceData, setAttendanceData] = useState({});
+  const [attendanceData, setAttendanceData] = useState<AttendanceStatus>();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
@@ -41,15 +45,13 @@ const Attendance = () => {
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      const data: MyRecord[] = await response.json();
+      const data: AttendanceToday[] = await response.json();
 
       if (data.length > 0) {
-        const attendance = {};
+        const attendance: AttendanceStatus = {};
         data.forEach((record) => {
           attendance[record.users_id] = record.status;
         });
-
-        console.log("Attendance data:", attendance);
         setAttendanceData(attendance);
       }
     } catch (error) {

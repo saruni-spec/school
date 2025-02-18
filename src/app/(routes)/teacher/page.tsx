@@ -23,8 +23,7 @@ const TeacherDashboard = () => {
   const [totalClasses, setTotalClasses] = useState();
   const [assignments, setAssignments] = useState([]);
   const { teacherDetails } = useTeacherDetails();
-  const [todayAttendance, setTodayAttendance] = useState(null);
-
+  const todayAttendance = null;
   useEffect(() => {
     // Fetch next class
     const fetchNextClass = async () => {
@@ -83,7 +82,7 @@ const TeacherDashboard = () => {
       {/* Header */}
       <div className="mb-8">
         <p className="text-gray-600">
-          Welcome back! Here's your overview for today.
+          Welcome back! Here&apos;s your overview for today.
         </p>
       </div>
 
@@ -128,7 +127,7 @@ const TeacherDashboard = () => {
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">
-                Today's Attendance
+                Today&apos;s Attendance
               </p>
               <h3 className="text-2xl font-bold text-gray-800">
                 {todayAttendance || "Not taken"}
@@ -232,6 +231,7 @@ const TeacherDashboard = () => {
             </CardHeader>
             <CardContent className="grid grid-cols-2 gap-4">
               <Link
+                prefetch={false}
                 href="/teacher/assignments"
                 className="p-4 bg-blue-50 rounded-lg text-center hover:bg-blue-100 transition-colors"
               >
@@ -241,6 +241,7 @@ const TeacherDashboard = () => {
                 </span>
               </Link>
               <Link
+                prefetch={false}
                 href="/teacher/attendance"
                 className="p-4 bg-green-50 rounded-lg text-center hover:bg-green-100 transition-colors"
               >
@@ -250,6 +251,7 @@ const TeacherDashboard = () => {
                 </span>
               </Link>
               <Link
+                prefetch={false}
                 href="/teacher/schedule"
                 className="p-4 bg-purple-50 rounded-lg text-center hover:bg-purple-100 transition-colors"
               >
@@ -259,6 +261,7 @@ const TeacherDashboard = () => {
                 </span>
               </Link>
               <Link
+                prefetch={false}
                 href="/teacher/profile"
                 className="p-4 bg-orange-50 rounded-lg text-center hover:bg-orange-100 transition-colors"
               >

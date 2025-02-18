@@ -1,3 +1,4 @@
+import { BaseValue } from "@/app/types/types";
 import prisma from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -30,7 +31,7 @@ export async function GET(request: Request) {
     }
 
     // Prepare dynamic where clause
-    const whereClause: Record<string, any> = {};
+    const whereClause: Record<string, BaseValue> = {};
 
     for (const [key, value] of searchParams.entries()) {
       if (key !== "table_name") {

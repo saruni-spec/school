@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 // Award Registration Route
-export async function POST_AWARD(request: Request) {
+export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { name, semester_id, awarded_by, awared_for, school_id } = body;

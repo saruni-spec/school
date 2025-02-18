@@ -10,21 +10,28 @@ import {
   Award,
 } from "lucide-react";
 import { Button } from "@/app/components/button";
-import { MyRecord } from "@/app/types/types";
+import { generic_record, MyRecord } from "@/app/types/types";
 import RadioInputs from "@/app/components/radio";
 import { Card, CardTitle } from "@/app/components/card";
 import { register } from "@/app/api_functions/functions";
 import { MyInput } from "@/app/components/input";
 import { LoadingSpinner } from "@/app/components/loading";
 
+interface SelectedAssignment extends MyRecord {
+  assignment: MyRecord;
+  question: string;
+  options: generic_record[];
+}
+
 const Assignments = () => {
   const [assignments, setAssignments] = useState<MyRecord[]>([]);
-  const [selectedAssignment, setSelectedAssignment] = useState<MyRecord>();
-  const [attemptedAssignments, setAttemptedAssignments] = useState<MyRecord[]>(
-    []
-  );
+  const [selectedAssignment, setSelectedAssignment] =
+    useState<SelectedAssignment>();
+  const [attemptedAssignments, setAttemptedAssignments] = useState<
+    Assignments[]
+  >([]);
   const [nonAttemptedAssignments, setNonAttemptedAssignments] = useState<
-    MyRecord[]
+    Assignments[]
   >([]);
   const [view, setView] = useState("list"); // 'list' or 'attempt'
   const [currentAnswer, setCurrentAnswer] = useState("");
@@ -74,10 +81,13 @@ const Assignments = () => {
     });
   };
 
-  const handleAttemptAssignment = useCallback((assignment: MyRecord) => {
-    setSelectedAssignment(assignment);
-    setView("attempt");
-  }, []);
+  const handleAttemptAssignment = useCallback(
+    (assignment: SelectedAssignment) => {
+      setSelectedAssignment(assignment);
+      setView("attempt");
+    },
+    []
+  );
 
   const handleOptionSelect = (option) => {
     setCurrentAnswer(option.text);
@@ -136,11 +146,11 @@ const Assignments = () => {
 };
 
 interface AssignmentAttemptViewProps {
-  selectedAssignment: MyRecord;
+  selectedAssignment: SelectedAssignment;
   setView: (view: string) => void;
   currentAnswer: string;
   setCurrentAnswer: (answer: string) => void;
-  handleOptionSelect: (option: any) => void;
+  handleOptionSelect: (option: generic_record) => void;
   submitAnswer: () => void;
   formatDate: (dateString: string) => string;
 }
@@ -164,19 +174,19 @@ const AssignmentAttemptView: React.FC<AssignmentAttemptViewProps> = ({
 
     <Card className="bg-white shadow-lg rounded-xl p-8 border-t-4 border-indigo-500">
       <CardTitle className="text-xl font-bold text-gray-800 mb-4">
-        {selectedAssignment.assignment?.description}
+        {selectedAssignment.assignment?.description as string}
       </CardTitle>
 
       <div className="flex items-center mb-6 text-indigo-600">
         <Clock className="w-5 h-5 mr-2" />
         <span className="font-medium">
-          Due: {formatDate(selectedAssignment.assignment?.due_date)}
+          Due: {formatDate(selectedAssignment.assignment?.due_date as string)}
         </span>
       </div>
 
       <div className="space-y-6">
         <div className="text-lg text-gray-700 font-medium border-l-4 border-indigo-200 pl-4">
-          {selectedAssignment.question}
+          {selectedAssignment.question as string}
         </div>
 
         {selectedAssignment.options && selectedAssignment.options.length > 0 ? (
@@ -218,9 +228,23 @@ const AssignmentAttemptView: React.FC<AssignmentAttemptViewProps> = ({
   </div>
 );
 
+interface Assignments extends MyRecord {
+  assignment: {
+    description: string;
+    due_date: string;
+    file_path: string;
+    subject_allocation: {
+      subject_grade: {
+        name: string;
+      };
+    };
+  };
+  assignment_attempt: MyRecord[];
+}
+
 interface AssignmentListViewProps {
-  nonAttemptedAssignments: MyRecord[];
-  attemptedAssignments: MyRecord[];
+  nonAttemptedAssignments: Assignments[];
+  attemptedAssignments: Assignments[];
   handleFileDownload: (filePath: string) => void;
   handleAttemptAssignment: (assignment: MyRecord) => void;
   formatDate: (dateString: string) => string;
@@ -248,7 +272,7 @@ const AssignmentListView: React.FC<AssignmentListViewProps> = ({
           >
             <div className="p-6 border-l-4 border-orange-400">
               <h3 className="font-bold text-lg text-gray-800 mb-2">
-                {assignment.assignment?.description}
+                {assignment.assignment?.description as string}
               </h3>
               <p className="text-indigo-600 font-medium mb-2">
                 {assignment.assignment?.subject_allocation?.subject_grade?.name}
@@ -317,20 +341,22 @@ const AssignmentListView: React.FC<AssignmentListViewProps> = ({
               <div className="space-y-2 text-sm text-gray-600">
                 <p className="flex items-center">
                   <span className="font-medium mr-2">Submitted:</span>
-                  {formatDate(assignment.assignment_attempt[0]?.date_submitted)}
+                  {formatDate(
+                    assignment.assignment_attempt[0]?.date_submitted as string
+                  )}
                 </p>
                 {assignment.assignment_attempt[0]?.result && (
                   <p className="flex items-center">
                     <span className="font-medium mr-2">Score:</span>
                     <span className="text-green-600 font-bold">
-                      {assignment.assignment_attempt[0].result}%
+                      {assignment.assignment_attempt[0].result as number}%
                     </span>
                   </p>
                 )}
                 {assignment.assignment_attempt[0]?.remarks && (
                   <p className="flex items-center">
                     <span className="font-medium mr-2">Feedback:</span>
-                    {assignment.assignment_attempt[0].remarks}
+                    {assignment.assignment_attempt[0].remarks as string}
                   </p>
                 )}
               </div>

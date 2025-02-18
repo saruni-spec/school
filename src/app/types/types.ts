@@ -5,18 +5,21 @@ import { role_type } from "@prisma/client";
 //all my database tables are of this type
 //an object with key value pairs where key is a string and value is a string,number or json
 //each table has an id field for identification
-type BaseValue = string | number | Date | null | undefined;
+export type BaseValue = string | number | Date | null | undefined | boolean;
 
 export type generic_record = {
   [key: string]: generic_record | BaseValue | generic_record[];
 };
 
-type RecordValue = BaseValue | { [key: string]: RecordValue } | RecordValue[];
+export type RecordValue =
+  | BaseValue
+  | { [key: string]: RecordValue }
+  | RecordValue[];
 
-export type MyRecord = {
+export interface MyRecord {
   id: number;
-  [key: string]: RecordValue;
-};
+  [key: string | number | symbol]: RecordValue;
+}
 
 export type InputField = {
   value: string | number;
@@ -199,3 +202,45 @@ export interface MenuLink {
   action: () => void;
   active?: boolean;
 }
+export type QuestionType = "open" | "multiple";
+export type Option = {
+  id: string;
+  text: string;
+};
+
+export type Question = {
+  id: string;
+  text: string;
+  type: QuestionType;
+  options?: Option[];
+};
+
+export type AssignmentAttempt = {
+  id: number;
+  student_id: number;
+  date_submitted: string;
+  assignment_content_id: number;
+  date_marked: string | null;
+  remarks: string | null;
+  result: number | null;
+};
+
+type AssignmentOption = {
+  id: string;
+  text: string;
+};
+
+export type AssignmentDetails = {
+  id: number;
+  question: string;
+  options: AssignmentOption[];
+  assignment_attempt: AssignmentAttempt[];
+};
+
+export type Assignment = {
+  id: number;
+  description: string;
+  subject_allocation_id: number | null;
+  file_path: string | null;
+  assignment_content: AssignmentDetails[];
+};

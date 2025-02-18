@@ -15,6 +15,7 @@ import {
 import { useValidation } from "@/app/hooks/validation_hooks";
 import { validInputs } from "@/lib/functions";
 import { fetchTable, register } from "@/app/api_functions/functions";
+import { school_type } from "@prisma/client";
 
 // School Registration Component
 const School: React.FC = () => {
@@ -36,7 +37,10 @@ const School: React.FC = () => {
     for (const schoolLevel of selected_levels) {
       //
       //add the grades in each selected school level
-      grades = [...grades, ...gradesInEachLevel[schoolLevel.type]];
+      grades = [
+        ...grades,
+        ...gradesInEachLevel[schoolLevel.type as school_type],
+      ];
     }
     return grades;
   }, [selected_levels]);

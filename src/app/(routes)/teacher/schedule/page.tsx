@@ -9,8 +9,8 @@ import React, {
 } from "react";
 import { Card, CardContent } from "@/app/components/card";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
-import { MyRecord } from "@/app/types/types";
 import { LoadingSpinner } from "@/app/components/loading";
+import { TeacherSchedule } from "@/app/api_functions/api_types";
 
 const daysOfWeek = [
   "SUNDAY",
@@ -24,12 +24,12 @@ const daysOfWeek = [
 const days_of_week = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
 
 const Schedule = () => {
-  const [slots, setSlots] = useState<MyRecord[]>([]);
+  const [slots, setSlots] = useState<TeacherSchedule[]>([]);
   const [error, setError] = useState(null);
-  const [nextSlot, setNextSlot] = useState<MyRecord | null>(null);
+  const [nextSlot, setNextSlot] = useState<TeacherSchedule | null>(null);
   const { teacherDetails } = useTeacherDetails();
 
-  const updateNextSlot = useCallback((currentSlots: MyRecord[]) => {
+  const updateNextSlot = useCallback((currentSlots: TeacherSchedule[]) => {
     if (currentSlots.length === 0) return;
 
     const now = new Date();
@@ -92,8 +92,8 @@ const Schedule = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch schedule");
       }
-      const data = await response.json();
-      console.log(data);
+      const data: TeacherSchedule[] = await response.json();
+
       setSlots(data);
       updateNextSlot(data);
     } catch (err) {
@@ -110,14 +110,6 @@ const Schedule = () => {
 
     return () => clearInterval(interval);
   }, [fetchSlots]);
-
-  const formatTime = (dateTime: string) => {
-    return new Date(dateTime).toLocaleTimeString("en-US", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
 
   if (error) {
     return (
@@ -157,7 +149,7 @@ const Schedule = () => {
                     {nextSlot.subject_allocation?.subject_grade.name}
                   </span>
 
-                  {nextSlot.room_number && (
+                  {nextSlot.slot.room_number && (
                     <span className="text-gray-500 bg-gray-100 px-2 py-1 rounded">
                       Room {nextSlot.slot?.room_number}
                     </span>

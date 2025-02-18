@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 
 // Announcement Registration Route
-export async function POST_ANNOUNCEMENT(request: Request) {
+export async function POST(request: Request) {
   try {
     const body = await request.json();
     const { announcement, semester_id, date_for, valid_upto, scope, made_by } =

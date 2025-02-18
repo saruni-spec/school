@@ -32,7 +32,7 @@ const Payment = () => {
   const payment_methods = Object.keys(payment_method);
 
   const [payed_by, setPayedBy] = useState<MyRecord | null>(null);
-  const [fees, setFees] = useState<unknown>();
+  const [fees, setFees] = useState<MyRecord[]>();
   const [selectedFee, setSelectedFee] = useState<MyRecord>();
   //
   // Handle the selection of the user to pay fees for
@@ -80,7 +80,9 @@ const Payment = () => {
       flattenObjectIterative(fee)
     );
     // Update state with processed fees
-    setFees(flattened_data);
+
+    const fd: unknown = flattened_data;
+    setFees(fd as MyRecord[]);
   };
 
   //
@@ -89,6 +91,8 @@ const Payment = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     fee_id.handle_change(e);
+    if (!fees) return;
+
     const fee_selected = fees.find(
       (fee) => (fee.id = parseInt(e.target.value))
     );

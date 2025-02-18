@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from "react";
 
 const TabsContext = createContext({
   activeTab: "",
-  setActiveTab: (value) => {},
+  setActiveTab: () => {},
 });
 
 export const Tabs = ({ defaultValue, children, className = "" }) => {

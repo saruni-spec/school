@@ -1,11 +1,15 @@
 import React, { useState } from "react";
-import { MyRecord } from "../types/types";
+import { MyRecord, RecordValue } from "../types/types";
 
 interface DataTableProps {
   records: MyRecord[];
   title?: string;
   excludeColumns?: string[];
-  onUpdate?: (recordId: number, field: string, value: any) => Promise<void>;
+  onUpdate?: (
+    recordId: number,
+    field: string,
+    value: RecordValue
+  ) => Promise<void>;
 }
 
 const EditableDataTable: React.FC<DataTableProps> = ({
@@ -17,7 +21,7 @@ const EditableDataTable: React.FC<DataTableProps> = ({
   const [editingCell, setEditingCell] = useState<{
     recordId: number | null;
     field: string | null;
-    value: any;
+    value: RecordValue;
   }>({ recordId: null, field: null, value: null });
 
   if (!records.length) {
@@ -59,7 +63,11 @@ const EditableDataTable: React.FC<DataTableProps> = ({
     };
   };
 
-  const handleDoubleClick = (recordId: number, field: string, value: any) => {
+  const handleDoubleClick = (
+    recordId: number,
+    field: string,
+    value: RecordValue
+  ) => {
     const { table } = getTableAndField(field);
     // Only allow editing of fields that don't come from related tables
     if (!table) {
@@ -137,7 +145,12 @@ const EditableDataTable: React.FC<DataTableProps> = ({
                           title="Edit"
                           type="text"
                           className="w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          value={editingCell.value}
+                          value={
+                            editingCell.value as
+                              | string
+                              | number
+                              | readonly string[]
+                          }
                           onChange={handleChange}
                           onKeyDown={handleKeyDown}
                           autoFocus

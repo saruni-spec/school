@@ -26,8 +26,13 @@ interface UserState {
   setSchool: (school: MyRecord) => void;
 }
 
+interface TeacherDetails extends MyRecord {
+  subject_allocation: MyRecord[];
+  staff: MyRecord;
+}
+
 interface TeacherDetailsState {
-  teacherDetails: MyRecord | undefined;
+  teacherDetails: TeacherDetails | undefined;
   setTeacherDetails: (teacherDetails: MyRecord) => void;
 }
 
@@ -82,7 +87,7 @@ export const useLoadingState = create<LoadingState>((set) => ({
 export const useTeacherDetails = create<TeacherDetailsState>((set) => ({
   teacherDetails: undefined,
 
-  setTeacherDetails: (teacherDetails: MyRecord) =>
+  setTeacherDetails: (teacherDetails: TeacherDetails) =>
     set(() => ({
       teacherDetails,
     })),

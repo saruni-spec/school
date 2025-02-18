@@ -107,6 +107,7 @@ const HomePage = () => {
           </h1>
           {!isLoggedIn && (
             <Link
+              prefetch={false}
               href="/login"
               className="px-6 py-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl hover:shadow-blue-500/20"
             >
@@ -209,12 +210,14 @@ const HomePage = () => {
               {!isLoggedIn && (
                 <div className="space-x-4">
                   <Link
+                    prefetch={false}
                     href="/login"
                     className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-lg hover:shadow-xl hover:shadow-blue-500/20"
                   >
                     Login
                   </Link>
                   <Link
+                    prefetch={false}
                     href="/learn-more"
                     className="inline-block px-6 py-3 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors shadow-md hover:shadow-lg"
                   >

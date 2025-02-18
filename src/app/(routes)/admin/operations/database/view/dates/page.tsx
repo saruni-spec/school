@@ -81,13 +81,15 @@ const DateUpdates = () => {
           {/* Academic Year Header Row */}
           <div className="flex items-center gap-6 mb-8">
             <h2 className="text-xl font-bold text-gray-900 min-w-[120px]">
-              {academic_year.year}
+              {academic_year.year as string}
             </h2>
             <div className="flex-1 grid grid-cols-2 gap-6">
               <DatePicker
                 label="Start Date"
                 value={
-                  new Date(academic_year.start_date).toISOString().split("T")[0]
+                  new Date(academic_year.start_date as Date)
+                    .toISOString()
+                    .split("T")[0]
                 }
                 onChange={(e) =>
                   setAcademicYears((prev) =>
@@ -103,7 +105,9 @@ const DateUpdates = () => {
               <DatePicker
                 label="End Date"
                 value={
-                  new Date(academic_year.end_date).toISOString().split("T")[0]
+                  new Date(academic_year.end_date as Date)
+                    .toISOString()
+                    .split("T")[0]
                 }
                 onChange={(e) =>
                   setAcademicYears((prev) =>
@@ -127,13 +131,15 @@ const DateUpdates = () => {
                 className="bg-gray-50 p-4 rounded-lg w-80 h-36"
               >
                 <h3 className="text-lg font-semibold text-gray-700 mb-4">
-                  {semester.name}
+                  {semester.name as string}
                 </h3>
                 <div className="grid grid-cols-2 gap-2">
                   <DatePicker
                     label="Start Date"
                     value={
-                      new Date(semester.start_date).toISOString().split("T")[0]
+                      new Date(semester.start_date as Date)
+                        .toISOString()
+                        .split("T")[0]
                     }
                     onChange={(e) =>
                       handleSemesterChange(
@@ -147,7 +153,9 @@ const DateUpdates = () => {
                   <DatePicker
                     label="End Date"
                     value={
-                      new Date(semester.end_date).toISOString().split("T")[0]
+                      new Date(semester.end_date as Date)
+                        .toISOString()
+                        .split("T")[0]
                     }
                     onChange={(e) =>
                       handleSemesterChange(

@@ -117,8 +117,6 @@ export const MultiInput: React.FC<MultiInputProps> = ({
   };
 
   const addInput = () => {
-    const newId =
-      inputs.length > 0 ? Math.max(...inputs.map((i) => i.id)) + 1 : 0;
     const newValue = { ...value, "": "" };
     onChange(newValue);
   };

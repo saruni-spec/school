@@ -47,7 +47,12 @@ const CRUD = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {operations.map((op, index) => (
-            <Link key={index} href={op.href} className="block group">
+            <Link
+              prefetch={false}
+              key={index}
+              href={op.href}
+              className="block group"
+            >
               <div className="h-full p-6 bg-white rounded-lg border border-gray-200 shadow-sm hover:border-blue-500 hover:shadow-md transition-all duration-200">
                 <div className="flex items-center gap-3 mb-3">
                   <op.icon className="w-6 h-6 text-blue-500" />

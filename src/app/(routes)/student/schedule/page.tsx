@@ -3,13 +3,13 @@ import { useStudentDetails, useUser } from "@/app/context/user_context";
 import React, { useState, useEffect, useCallback, Suspense } from "react";
 import { Card, CardContent } from "@/app/components/card";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
-import { MyRecord } from "@/app/types/types";
 import { LoadingSpinner } from "@/app/components/loading";
+import { StudentSchedule } from "@/app/api_functions/api_types";
 
 const Schedule = () => {
-  const [slots, setSlots] = useState<MyRecord[]>([]);
+  const [slots, setSlots] = useState<StudentSchedule[]>([]);
   const [error, setError] = useState(null);
-  const [nextSlot, setNextSlot] = useState<MyRecord | null>(null);
+  const [nextSlot, setNextSlot] = useState<StudentSchedule | null>(null);
   const { studentDetails } = useStudentDetails();
   const { school_id } = useUser();
 
@@ -33,8 +33,8 @@ const Schedule = () => {
       if (!response.ok) {
         throw new Error("Failed to fetch schedule");
       }
-      const data = await response.json();
-      console.log(data);
+      const data: StudentSchedule[] = await response.json();
+
       setSlots(data);
       updateNextSlot(data);
     } catch (err) {
@@ -42,7 +42,7 @@ const Schedule = () => {
     }
   }, [studentDetails]);
 
-  const updateNextSlot = (currentSlots: MyRecord[]) => {
+  const updateNextSlot = (currentSlots: StudentSchedule[]) => {
     if (currentSlots.length === 0) return;
 
     const now = new Date();
@@ -144,7 +144,7 @@ const Schedule = () => {
                     {nextSlot.subject_allocation?.subject_grade.name}
                   </span>
 
-                  {nextSlot.room_number && (
+                  {nextSlot.slot.room_number && (
                     <span className="text-gray-500 bg-gray-100 px-2 py-1 rounded">
                       Room {nextSlot.slot?.room_number}
                     </span>
