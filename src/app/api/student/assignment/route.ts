@@ -86,8 +86,6 @@ export async function GET(request: Request) {
       },
     });
 
-    console.log("Fetched assignments:", assignments);
-
     return NextResponse.json(assignments, { status: 200 });
   } catch (error) {
     console.error("Error in assignment fetch:", error);

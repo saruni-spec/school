@@ -43,7 +43,7 @@ const DateUpdates = () => {
         academic_year.id,
         "academic_year_id"
       );
-      semestersByYear[academic_year.id] = sem_response;
+      semestersByYear[academic_year.id as number] = sem_response;
     }
     setSemesters(semestersByYear);
   }, [academic_years]);
@@ -125,7 +125,7 @@ const DateUpdates = () => {
 
           {/* Semesters Section */}
           <div className="pl-8  flex flex-row justify-between">
-            {(semesters[academic_year.id] || []).map((semester) => (
+            {(semesters[academic_year.id as number] || []).map((semester) => (
               <div
                 key={semester.id}
                 className="bg-gray-50 p-4 rounded-lg w-80 h-36"

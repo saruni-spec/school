@@ -5,8 +5,7 @@ import prisma from "@/lib/prisma";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { announcement, semester_id, date_for, valid_upto, scope, made_by } =
-      body;
+    const { announcement, date_for, valid_upto, scope } = body;
 
     // Validate required fields
     if (!date_for || !valid_upto || !scope) {
@@ -30,11 +29,10 @@ export async function POST(request: Request) {
     const newAnnouncement = await prisma.announcement.create({
       data: {
         announcement,
-        semester_id: semester_id || undefined,
+
         date_for: dateFor,
         valid_upto: validUpto,
         scope,
-        made_by: made_by || undefined,
       },
     });
 

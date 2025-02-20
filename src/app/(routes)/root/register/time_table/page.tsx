@@ -33,19 +33,19 @@ interface Assignment {
 interface SkeletonConfig {
   id?: number;
   slot_duration: number;
-  start_time: string;
-  end_time: string;
+  start_time: string | null;
+  end_time: string | null;
   days_per_week: number;
   breaks: { startTime: string; duration: number }[];
-  school_id?: number;
-  semester_id?: number;
+  school_id: number | null;
+  semester_id: number | null;
 }
 
 interface TempSlot {
   day_of_week: number;
   start_time: string;
   end_time: string;
-  room_number?: string;
+  room_number?: string | null;
   assignments: TempSlotAssignment[];
 }
 
@@ -63,7 +63,7 @@ type SaveItem = {
   start_time: string;
   end_time: string;
   day_of_week: string;
-  room_number: string | undefined;
+  room_number?: string | null;
   time_table_id?: number;
   slot_assignment: {
     stream_id: number;
@@ -96,8 +96,8 @@ const TimetableCreator = () => {
     end_time: "16:00",
     days_per_week: 5,
     breaks: [],
-    school_id: school_id,
-    semester_id: current_semester,
+    school_id: school_id ?? null,
+    semester_id: current_semester ?? null,
   });
 
   // Generated slots state
@@ -294,8 +294,8 @@ const TimetableCreator = () => {
         },
       });
     }
-    time_table.school_id = school_id;
-    time_table.semester_id = current_semester;
+    time_table.school_id = school_id ?? null;
+    time_table.semester_id = current_semester ?? null;
     setSkeletonConfig(time_table);
 
     const slots: TimeSlot[] = [];
@@ -578,7 +578,7 @@ const TimetableCreator = () => {
                 </label>
                 <MyInput
                   type="time"
-                  value={skeleton_config.start_time}
+                  value={skeleton_config.start_time ?? undefined}
                   onChange={(e) =>
                     setSkeletonConfig((prev) => ({
                       ...prev,
@@ -593,7 +593,7 @@ const TimetableCreator = () => {
                 </label>
                 <MyInput
                   type="time"
-                  value={skeleton_config.end_time}
+                  value={skeleton_config.end_time ?? undefined}
                   onChange={(e) =>
                     setSkeletonConfig((prev) => ({
                       ...prev,

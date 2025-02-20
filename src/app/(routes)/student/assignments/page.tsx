@@ -16,22 +16,17 @@ import { Card, CardTitle } from "@/app/components/card";
 import { register } from "@/app/api_functions/functions";
 import { MyInput } from "@/app/components/input";
 import { LoadingSpinner } from "@/app/components/loading";
-
-interface SelectedAssignment extends MyRecord {
-  assignment: MyRecord;
-  question: string;
-  options: generic_record[];
-}
+import { AssignmentType } from "@/app/api_functions/api_types";
 
 const Assignments = () => {
-  const [assignments, setAssignments] = useState<MyRecord[]>([]);
+  const [assignments, setAssignments] = useState<AssignmentType[]>([]);
   const [selectedAssignment, setSelectedAssignment] =
-    useState<SelectedAssignment>();
+    useState<AssignmentType>();
   const [attemptedAssignments, setAttemptedAssignments] = useState<
-    Assignments[]
+    AssignmentType[]
   >([]);
   const [nonAttemptedAssignments, setNonAttemptedAssignments] = useState<
-    Assignments[]
+    AssignmentType[]
   >([]);
   const [view, setView] = useState("list"); // 'list' or 'attempt'
   const [currentAnswer, setCurrentAnswer] = useState("");
@@ -48,13 +43,13 @@ const Assignments = () => {
         console.error("error fetching student assignments");
         return;
       }
-      const data = await response.json();
+      const data: AssignmentType[] = await response.json();
       const attemptedAssignments = data.filter(
         (a) => a.assignment_attempt?.length > 0
       );
       setAttemptedAssignments(attemptedAssignments);
       const nonAttemptedAssignments = data.filter(
-        (a) => !a.assignment_attempt?.length
+        (a) => a.assignment_attempt.length === 0
       );
       setNonAttemptedAssignments(nonAttemptedAssignments);
       setAssignments(data);
@@ -81,13 +76,10 @@ const Assignments = () => {
     });
   };
 
-  const handleAttemptAssignment = useCallback(
-    (assignment: SelectedAssignment) => {
-      setSelectedAssignment(assignment);
-      setView("attempt");
-    },
-    []
-  );
+  const handleAttemptAssignment = useCallback((assignment: AssignmentType) => {
+    setSelectedAssignment(assignment);
+    setView("attempt");
+  }, []);
 
   const handleOptionSelect = (option) => {
     setCurrentAnswer(option.text);
@@ -146,7 +138,7 @@ const Assignments = () => {
 };
 
 interface AssignmentAttemptViewProps {
-  selectedAssignment: SelectedAssignment;
+  selectedAssignment: AssignmentType;
   setView: (view: string) => void;
   currentAnswer: string;
   setCurrentAnswer: (answer: string) => void;
@@ -162,7 +154,6 @@ const AssignmentAttemptView: React.FC<AssignmentAttemptViewProps> = ({
   setCurrentAnswer,
   handleOptionSelect,
   submitAnswer,
-  formatDate,
 }) => (
   <div className="max-w-3xl mx-auto">
     <Button
@@ -180,7 +171,10 @@ const AssignmentAttemptView: React.FC<AssignmentAttemptViewProps> = ({
       <div className="flex items-center mb-6 text-indigo-600">
         <Clock className="w-5 h-5 mr-2" />
         <span className="font-medium">
-          Due: {formatDate(selectedAssignment.assignment?.due_date as string)}
+          Due:{" "}
+          {selectedAssignment.assignment?.due_date
+            ? new Date(selectedAssignment.assignment.due_date).toISOString()
+            : "No due date"}
         </span>
       </div>
 
@@ -191,7 +185,7 @@ const AssignmentAttemptView: React.FC<AssignmentAttemptViewProps> = ({
 
         {selectedAssignment.options && selectedAssignment.options.length > 0 ? (
           <div className="mt-6">
-            {Object.values(selectedAssignment.options[0]).includes(
+            {Object.values(selectedAssignment.options[0] as MyRecord).includes(
               "no options"
             ) ? (
               <MyInput
@@ -207,7 +201,7 @@ const AssignmentAttemptView: React.FC<AssignmentAttemptViewProps> = ({
             ) : (
               <RadioInputs
                 name="options"
-                options={selectedAssignment.options}
+                options={selectedAssignment.options as generic_record[]}
                 onChange={handleOptionSelect}
                 id_field="text"
                 value_field="text"
@@ -228,25 +222,11 @@ const AssignmentAttemptView: React.FC<AssignmentAttemptViewProps> = ({
   </div>
 );
 
-interface Assignments extends MyRecord {
-  assignment: {
-    description: string;
-    due_date: string;
-    file_path: string;
-    subject_allocation: {
-      subject_grade: {
-        name: string;
-      };
-    };
-  };
-  assignment_attempt: MyRecord[];
-}
-
 interface AssignmentListViewProps {
-  nonAttemptedAssignments: Assignments[];
-  attemptedAssignments: Assignments[];
+  nonAttemptedAssignments: AssignmentType[];
+  attemptedAssignments: AssignmentType[];
   handleFileDownload: (filePath: string) => void;
-  handleAttemptAssignment: (assignment: MyRecord) => void;
+  handleAttemptAssignment: (assignment: AssignmentType) => void;
   formatDate: (dateString: string) => string;
 }
 
@@ -280,14 +260,15 @@ const AssignmentListView: React.FC<AssignmentListViewProps> = ({
               <div className="flex items-center text-gray-600 mb-4">
                 <Clock className="w-4 h-4 mr-1" />
                 <span className="text-sm">
-                  Due: {formatDate(assignment.assignment?.due_date)}
+                  Due:{" "}
+                  {new Date(assignment.assignment!.due_date!).toISOString()}
                 </span>
               </div>
               <div className="flex justify-between items-center mt-4">
                 {assignment.assignment?.file_path && (
                   <Button
                     onClick={() =>
-                      handleFileDownload(assignment.assignment.file_path)
+                      handleFileDownload(assignment.assignment!.file_path!)
                     }
                     className="text-indigo-600 hover:text-indigo-800"
                   >
@@ -331,47 +312,54 @@ const AssignmentListView: React.FC<AssignmentListViewProps> = ({
             key={assignment.id}
             className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200"
           >
-            <div className="p-6 border-l-4 border-green-400">
-              <h3 className="font-bold text-lg text-gray-800 mb-2">
-                {assignment.assignment?.description}
-              </h3>
-              <p className="text-indigo-600 font-medium mb-2">
-                {assignment.assignment?.subject_allocation?.subject_grade?.name}
-              </p>
-              <div className="space-y-2 text-sm text-gray-600">
-                <p className="flex items-center">
-                  <span className="font-medium mr-2">Submitted:</span>
-                  {formatDate(
-                    assignment.assignment_attempt[0]?.date_submitted as string
-                  )}
+            {assignment.assignment && (
+              <div className="p-6 border-l-4 border-green-400">
+                <h3 className="font-bold text-lg text-gray-800 mb-2">
+                  {assignment.assignment.description}
+                </h3>
+                <p className="text-indigo-600 font-medium mb-2">
+                  {
+                    assignment.assignment.subject_allocation?.subject_grade
+                      ?.name
+                  }
                 </p>
-                {assignment.assignment_attempt[0]?.result && (
+                <div className="space-y-2 text-sm text-gray-600">
                   <p className="flex items-center">
-                    <span className="font-medium mr-2">Score:</span>
-                    <span className="text-green-600 font-bold">
-                      {assignment.assignment_attempt[0].result as number}%
-                    </span>
+                    <span className="font-medium mr-2">Submitted:</span>
+                    {formatDate(
+                      assignment.assignment_attempt[0]?.date_submitted!.toISOString()
+                    )}
                   </p>
-                )}
-                {assignment.assignment_attempt[0]?.remarks && (
-                  <p className="flex items-center">
-                    <span className="font-medium mr-2">Feedback:</span>
-                    {assignment.assignment_attempt[0].remarks as string}
-                  </p>
+                  {assignment.assignment_attempt[0]?.result && (
+                    <p className="flex items-center">
+                      <span className="font-medium mr-2">Score:</span>
+                      <span className="text-green-600 font-bold">
+                        {assignment.assignment_attempt[0].result.toNumber()}%
+                      </span>
+                    </p>
+                  )}
+                  {assignment.assignment_attempt[0]?.remarks && (
+                    <p className="flex items-center">
+                      <span className="font-medium mr-2">Feedback:</span>
+                      {assignment.assignment_attempt[0].remarks as string}
+                    </p>
+                  )}
+                </div>
+                {assignment?.assignment?.file_path && (
+                  <Button
+                    onClick={() => {
+                      if (assignment.assignment?.file_path) {
+                        handleFileDownload(assignment.assignment.file_path);
+                      }
+                    }}
+                    className="mt-4 text-indigo-600 hover:text-indigo-800 flex items-center"
+                  >
+                    <Download className="w-5 h-5 mr-1" />
+                    Download
+                  </Button>
                 )}
               </div>
-              {assignment.assignment?.file_path && (
-                <Button
-                  onClick={() =>
-                    handleFileDownload(assignment.assignment.file_path)
-                  }
-                  className="mt-4 text-indigo-600 hover:text-indigo-800 flex items-center"
-                >
-                  <Download className="w-5 h-5 mr-1" />
-                  Download
-                </Button>
-              )}
-            </div>
+            )}
           </Card>
         ))}
         {attemptedAssignments.length === 0 && (

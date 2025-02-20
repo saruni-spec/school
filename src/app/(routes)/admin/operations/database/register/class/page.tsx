@@ -25,7 +25,7 @@ const ClassLevel = () => {
 
   //
   //handle default stream creation
-  const createDefaultStream = async (class_id: number) => {
+  const createDefaultStream = async (class_id: number | undefined) => {
     // Create default stream
     await register({
       data: {

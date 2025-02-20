@@ -89,6 +89,7 @@ const Payment = () => {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     fee_id.handle_change(e);
+    if (!fees) return;
     const fee_selected = fees.find(
       (fee) => (fee.id = parseInt(e.target.value))
     );

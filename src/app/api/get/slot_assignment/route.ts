@@ -32,15 +32,11 @@ export async function GET(request: Request) {
           select: { day_of_week: true, start_time: true, end_time: true },
         },
         stream: { select: { name: true } },
-        teacher: {
-          select: {
-            department_staff: {
-              select: { staff: { select: { school_code: true } } },
-            },
-          },
-        },
         subject_allocation: {
-          select: { subject_grade: { select: { name: true } } },
+          select: {
+            subject_grade: { select: { name: true } },
+            teacher: { select: { staff: { select: { school_code: true } } } },
+          },
         },
       },
     });

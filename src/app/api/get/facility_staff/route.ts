@@ -28,9 +28,9 @@ export async function GET(request: Request) {
       where: { school_facility: { school_id: Number(school_id) } },
       select: {
         role: true,
-        department_staff: {
-          select: { staff: { select: { school_code: true } } },
-        },
+
+        staff: { select: { school_code: true } },
+
         school_facility: { select: { facility: { select: { name: true } } } },
       },
     });

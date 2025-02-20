@@ -118,20 +118,17 @@ export const getDataWithSchoolId = async (
 
 //
 // get teacher specific details
-export const getTeacherDetails = async (
-  users_id: number
-): Promise<MyRecord | null> => {
+export const getTeacherDetails = async (users_id: number) => {
   try {
     const response = await fetch(`/api/teacher/${users_id}`);
     if (!response.ok) {
       throw new Error(response.statusText);
     }
-    const data: MyRecord = await response.json();
+    const data = await response.json();
     return data;
   } catch (error) {
     console.error("Error fetching teacher details:", error);
     console.log("Error fetching teacher details. Please try again.");
-    return null;
   }
 };
 

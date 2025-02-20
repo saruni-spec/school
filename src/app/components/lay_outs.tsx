@@ -1,11 +1,10 @@
-import React, { ReactNode, Suspense, useEffect } from "react";
+import React, { Suspense, useEffect } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { MenuLink } from "../types/types";
 import SideMenu from "./side_menu";
 import SchoolSelection from "./school_selection";
 import {
   usePrincipalDetails,
-  useSecretaryDetails,
   useStudentDetails,
   useTeacherDetails,
   useUser,
@@ -374,110 +373,6 @@ export const PrinciPalLayout = ({
         router.push(createUrl(`/${basePath}/operations`));
       },
     },
-    {
-      label: user ? (user.name as string) : "",
-      icon: <User />,
-      action: () => {
-        router.push(createUrl(`/${basePath}/profile`));
-      },
-    },
-  ];
-
-  return (
-    <div className={`flex ${background_color}`}>
-      <SideMenu links={links} />
-      <Suspense fallback={<InspirationLoader />}>{children}</Suspense>
-    </div>
-  );
-};
-
-export const SecretaryLayout = ({ children }: { children: ReactNode }) => {
-  const { secretaryDetails, setSecretaryDetails } = useSecretaryDetails();
-  const { setUser, setSchool, user } = useUser();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const router = useRouter();
-  const { status, data: session } = useSession({
-    required: true,
-    onUnauthenticated() {
-      router.push("/login");
-    },
-  });
-
-  //
-  //cehck if the teacher details are present,if not,fetch them
-  useEffect(() => {
-    if (status === "loading") return;
-
-    if (!secretaryDetails && session?.user?.id) {
-      const fetchSecretaryDetails = async () => {
-        try {
-          const secretary = await getSecretaryDetails(session.user.id);
-          // if (!secretary) {
-          //   router.push("/login");
-          //   return;
-          // }
-          setUser(session.user);
-          setSchool(session.user.school);
-          setSecretaryDetails(secretary);
-        } catch (error) {
-          console.error("Failed to fetch teacher details:", error);
-        }
-      };
-
-      fetchSecretaryDetails();
-    }
-  }, [
-    session,
-    status,
-    setSchool,
-    setUser,
-    secretaryDetails,
-    setSecretaryDetails,
-    router,
-  ]);
-
-  // Get the base path (e.g., /teacher)
-  const basePath = pathname.split("/")[1];
-
-  // Create a function to preserve and encode query parameters
-  const createUrl = (path: string) => {
-    const params = new URLSearchParams();
-
-    // Preserve all existing query parameters
-    searchParams.forEach((value, key) => {
-      params.append(key, value);
-    });
-
-    return `${path}?${params.toString()}`;
-  };
-
-  const links: MenuLink[] = [
-    {
-      label: "Dashboard",
-      action: () => {
-        router.push(createUrl(`/${basePath}`));
-      },
-    },
-    {
-      label: "Registration",
-      action: () => {
-        router.push(createUrl(`/${basePath}/register`));
-      },
-    },
-    {
-      label: "Reports",
-      action: () => {
-        router.push(createUrl(`/${basePath}/reports`));
-      },
-    },
-    {
-      label: "Schedule",
-      action: () => {
-        router.push(createUrl(`/${basePath}/schedule`));
-      },
-    },
-
     {
       label: user ? (user.name as string) : "",
       icon: <User />,

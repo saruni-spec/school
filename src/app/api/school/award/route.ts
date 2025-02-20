@@ -4,12 +4,12 @@ import prisma from "@/lib/prisma";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, semester_id, awarded_by, awared_for, school_id } = body;
+    const { name, semester_id, awarded_by, awared_for, school_id, type } = body;
 
     // Validate required fields
-    if (!name) {
+    if (!name || !type) {
       return NextResponse.json(
-        { error: "Award name is required" },
+        { error: "Award name or type is required " },
         { status: 400 }
       );
     }
@@ -38,6 +38,7 @@ export async function POST(request: Request) {
         awarded_by,
         awared_for,
         school_id: school_id || undefined,
+        type,
       },
     });
 

@@ -1,8 +1,13 @@
 import React, { createContext, useContext, useState } from "react";
 
-const TabsContext = createContext({
+interface TabsContextValue {
+  activeTab: string;
+  setActiveTab: (value: string) => void;
+}
+
+const TabsContext = createContext<TabsContextValue>({
   activeTab: "",
-  setActiveTab: () => {},
+  setActiveTab: () => {}, // Default function (placeholder)
 });
 
 export const Tabs = ({ defaultValue, children, className = "" }) => {
@@ -15,6 +20,7 @@ export const Tabs = ({ defaultValue, children, className = "" }) => {
   );
 };
 
+// Rest of the components remain the same
 export const TabsList = ({ children, className = "" }) => {
   return (
     <div className={`flex gap-2 p-1 rounded-lg bg-gray-100 ${className}`}>

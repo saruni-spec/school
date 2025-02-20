@@ -13,6 +13,7 @@ const Assignments = () => {
   const { teacherDetails } = useTeacherDetails();
 
   const getAssignments = useCallback(async () => {
+    if (!teacherDetails) return;
     try {
       const response = await fetch(
         `/api/teacher/get_assignments/${teacherDetails.id}`

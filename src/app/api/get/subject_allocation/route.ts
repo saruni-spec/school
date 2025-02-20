@@ -37,9 +37,7 @@ export async function GET(request: Request) {
         },
         teacher: {
           select: {
-            department_staff: {
-              select: { staff: { select: { school_code: true } } },
-            },
+            staff: { select: { school_code: true } },
           },
         },
         semester: { select: { start_date: true } },

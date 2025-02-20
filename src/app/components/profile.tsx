@@ -1,12 +1,11 @@
 import Image from "next/image";
 import { Card, CardContent, CardHeader } from "@/app/components/card";
-
 import { Suspense, useCallback, useEffect, useState } from "react";
-import { MyRecord } from "../types/types";
 import { useUser } from "../context/user_context";
+import { User } from "../api_functions/api_types";
 
 const UserProfile = () => {
-  const [userData, setUserData] = useState<MyRecord>();
+  const [userData, setUserData] = useState<User>();
 
   const { user } = useUser();
 
@@ -32,7 +31,7 @@ const UserProfile = () => {
             <CardHeader className="flex flex-col items-center">
               <div className="relative w-32 h-32 mb-4">
                 <Image
-                  src={userData.picture?.[0]?.url || "/default-avatar.png"}
+                  src={"/default-avatar.png"}
                   alt={`${userData.first_name} ${userData.last_name}`}
                   fill
                   className="rounded-full object-cover"

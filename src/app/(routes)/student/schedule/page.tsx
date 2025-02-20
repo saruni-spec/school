@@ -8,7 +8,6 @@ import { StudentSchedule } from "@/app/api_functions/api_types";
 
 const Schedule = () => {
   const [slots, setSlots] = useState<StudentSchedule[]>([]);
-  const [error, setError] = useState(null);
   const [nextSlot, setNextSlot] = useState<StudentSchedule | null>(null);
   const { studentDetails } = useStudentDetails();
   const { school_id } = useUser();
@@ -38,7 +37,7 @@ const Schedule = () => {
       setSlots(data);
       updateNextSlot(data);
     } catch (err) {
-      setError(err.message);
+      console.error(err);
     }
   }, [studentDetails]);
 
@@ -106,14 +105,6 @@ const Schedule = () => {
     return () => clearInterval(interval);
   }, [fetchSlots]);
 
-  if (error) {
-    return (
-      <div className="text-center p-4 text-red-500">
-        Error loading schedule: {error}
-      </div>
-    );
-  }
-
   return (
     <Suspense fallback={<LoadingSpinner />}>
       <div className="p-4 max-w-6xl mx-auto">
@@ -141,7 +132,7 @@ const Schedule = () => {
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="text-gray-600">
-                    {nextSlot.subject_allocation?.subject_grade.name}
+                    {nextSlot.subject_allocation?.subject_grade?.name}
                   </span>
 
                   {nextSlot.slot.room_number && (
@@ -187,7 +178,7 @@ const Schedule = () => {
                                   <div className="text-sm text-gray-600">
                                     {
                                       item?.subject_allocation?.subject_grade
-                                        .name
+                                        ?.name
                                     }
                                   </div>
 

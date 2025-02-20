@@ -34,7 +34,7 @@ export async function GET(request: Request) {
         fee_for: true,
         installments: true,
         due_date: true,
-        school_leader: { select: { school_code: true } },
+        school_leader: { select: { staff: { select: { school_code: true } } } },
       },
     });
 

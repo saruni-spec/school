@@ -11,15 +11,18 @@ export type generic_record = {
   [key: string]: generic_record | BaseValue | generic_record[];
 };
 
+// Forward declaration of MyRecord to use in RecordValue
+export interface MyRecord
+  extends Record<string | number | symbol, RecordValue> {
+  id: number;
+}
+
+// RecordValue can be a base value, nested object, array, or partial MyRecord
 export type RecordValue =
   | BaseValue
   | { [key: string]: RecordValue }
-  | RecordValue[];
-
-export interface MyRecord {
-  id: number;
-  [key: string | number | symbol]: RecordValue;
-}
+  | RecordValue[]
+  | Partial<MyRecord>;
 
 export type InputField = {
   value: string | number;
@@ -244,3 +247,22 @@ export type Assignment = {
   file_path: string | null;
   assignment_content: AssignmentDetails[];
 };
+export interface SelectedAssignment extends MyRecord {
+  assignment: MyRecord;
+  question: string;
+  options: generic_record[];
+}
+
+export interface AssignmentsType extends MyRecord {
+  assignment: {
+    description: string;
+    due_date: string;
+    file_path: string;
+    subject_allocation: {
+      subject_grade: {
+        name: string;
+      };
+    };
+  };
+  assignment_attempt: MyRecord[];
+}

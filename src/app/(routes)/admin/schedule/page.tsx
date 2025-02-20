@@ -27,6 +27,7 @@ import {
   getUpcomingSchoolEvents,
 } from "@/app/actions/actions";
 import { installment_types, severity } from "@prisma/client";
+import { EventType } from "@/app/api_functions/api_types";
 
 type schedule_item = {
   id: number;
@@ -41,7 +42,7 @@ type schedule_item = {
 const Schedule = () => {
   const [activeTab, setActiveTab] = useState("schedule");
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState<EventType[]>([]);
   const [schedule_items, setScheduleItems] = useState<schedule_item[]>([]);
 
   // Mock data - replace with actual data from your backend

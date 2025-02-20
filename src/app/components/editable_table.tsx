@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BaseValue, MyRecord, RecordValue } from "../types/types";
+import { MyRecord, RecordValue } from "../types/types";
 
 interface DataTableProps {
   records: MyRecord[];
@@ -167,7 +167,7 @@ const EditableTable: React.FC<DataTableProps> = ({
           await updateDatabase?.(
             editingCell.recordId,
             editingCell.field,
-            editingCell.value as BaseValue,
+            editingCell.value as string | number | Date,
             model_name
           );
         }

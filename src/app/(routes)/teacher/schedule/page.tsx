@@ -25,7 +25,6 @@ const days_of_week = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
 
 const Schedule = () => {
   const [slots, setSlots] = useState<TeacherSchedule[]>([]);
-  const [error, setError] = useState(null);
   const [nextSlot, setNextSlot] = useState<TeacherSchedule | null>(null);
   const { teacherDetails } = useTeacherDetails();
 
@@ -97,7 +96,7 @@ const Schedule = () => {
       setSlots(data);
       updateNextSlot(data);
     } catch (err) {
-      setError(err.message);
+      console.error("Error fetching schedule:", err);
     }
   }, [teacherDetails, updateNextSlot]);
 
@@ -110,14 +109,6 @@ const Schedule = () => {
 
     return () => clearInterval(interval);
   }, [fetchSlots]);
-
-  if (error) {
-    return (
-      <div className="text-center p-4 text-red-500">
-        Error loading schedule: {error}
-      </div>
-    );
-  }
 
   return (
     <Suspense fallback={<LoadingSpinner />}>

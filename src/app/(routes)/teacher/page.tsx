@@ -17,11 +17,25 @@ import {
 } from "@/app/components/card";
 import { useTeacherDetails } from "@/app/context/user_context";
 import Link from "next/link";
+import {
+  AssignmentDetailsType,
+  TeacherSchedule,
+} from "@/app/api_functions/api_types";
+
+const week_days = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 const TeacherDashboard = () => {
-  const [nextClass, setNextClass] = useState(null);
-  const [totalClasses, setTotalClasses] = useState();
-  const [assignments, setAssignments] = useState([]);
+  const [nextClass, setNextClass] = useState<TeacherSchedule>();
+  const [totalClasses, setTotalClasses] = useState<number>();
+  const [assignments, setAssignments] = useState<AssignmentDetailsType[]>([]);
   const { teacherDetails } = useTeacherDetails();
   const todayAttendance = null;
   useEffect(() => {
@@ -32,10 +46,10 @@ const TeacherDashboard = () => {
           `/api/teacher/slot?teacher_id=${teacherDetails?.id}`
         );
         if (!response.ok) throw new Error("Failed to fetch schedule");
-        const data = await response.json();
+        const data: TeacherSchedule[] = await response.json();
 
         const todaySlots = data.filter(
-          (slot) => slot.slot.day_of_week === new Date().getDay()
+          (slot) => week_days[slot.slot.day_of_week] === new Date().getDay()
         );
 
         setTotalClasses(todaySlots.length);
@@ -175,7 +189,7 @@ const TeacherDashboard = () => {
                     <span className="text-gray-600">
                       {nextClass.subject_allocation?.subject_grade?.name}
                     </span>
-                    {nextClass.room_number && (
+                    {nextClass.slot.room_number && (
                       <span className="text-gray-500 bg-gray-100 px-2 py-1 rounded">
                         Room {nextClass.slot?.room_number}
                       </span>

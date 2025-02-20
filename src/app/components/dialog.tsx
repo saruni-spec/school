@@ -17,7 +17,7 @@ export const DialogTrigger = ({ children, asChild }) => {
   const { onOpenChange } = useContext(DialogContext);
 
   const handleClick = useCallback(() => {
-    onOpenChange(true);
+    onOpenChange();
   }, [onOpenChange]);
 
   if (asChild) {
@@ -39,7 +39,7 @@ export const DialogContent = ({ children, className = "" }) => {
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 transition-opacity"
-        onClick={() => onOpenChange(false)}
+        onClick={() => onOpenChange()}
       />
 
       {/* Dialog panel */}
@@ -56,7 +56,7 @@ export const DialogContent = ({ children, className = "" }) => {
       >
         <div className="absolute right-4 top-4">
           <button
-            onClick={() => onOpenChange(false)}
+            onClick={() => onOpenChange()}
             className="text-gray-400 hover:text-gray-500 focus:outline-none"
           >
             <span className="sr-only">Close</span>

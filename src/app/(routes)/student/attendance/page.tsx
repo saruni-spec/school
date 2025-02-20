@@ -2,9 +2,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useUser } from "@/app/context/user_context";
 import { CalendarDays, AlertCircle, CheckCircle, Clock } from "lucide-react";
+import { AttendanceType } from "@/app/api_functions/api_types";
 
 const Attendance = () => {
-  const [attendance, setAttendance] = useState([]);
+  const [attendance, setAttendance] = useState<AttendanceType[]>([]);
   const { user } = useUser();
 
   const getAttendanceRecords = useCallback(async () => {

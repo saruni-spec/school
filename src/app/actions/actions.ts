@@ -135,6 +135,8 @@ export async function findUnpaidFees(user: MyRecord) {
 //
 //Get the user's streams in their current school
 async function getUserStreams(user: MyRecord) {
+  const student = user.student as MyRecord;
+
   const userStreams = await prisma.stream.findMany({
     where: {
       school_id: user.school_id as number, // Add constraint for user's current school
@@ -142,9 +144,7 @@ async function getUserStreams(user: MyRecord) {
         some: {
           student_class: {
             some: {
-              student_id: user.student
-                ? (user.student.id as number)
-                : undefined,
+              student_id: user.student ? (student.id as number) : undefined,
             },
           },
         },

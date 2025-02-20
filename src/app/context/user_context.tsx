@@ -26,14 +26,14 @@ interface UserState {
   setSchool: (school: MyRecord) => void;
 }
 
-interface TeacherDetails extends MyRecord {
+type TeacherDetails = MyRecord & {
   subject_allocation: MyRecord[];
   staff: MyRecord;
-}
+};
 
 interface TeacherDetailsState {
   teacherDetails: TeacherDetails | undefined;
-  setTeacherDetails: (teacherDetails: MyRecord) => void;
+  setTeacherDetails: (teacherDetails: TeacherDetails) => void;
 }
 
 interface StudentDetailsState {
@@ -44,11 +44,6 @@ interface StudentDetailsState {
 interface PricipalDetailsState {
   principalDetails: Principal | undefined;
   setPrincipalDetails: (principalDetails: Principal) => void;
-}
-
-interface SecretaryDetails {
-  secretaryDetails: Secretary | undefined;
-  setSecretaryDetails: (secretaryDetails: Secretary) => void;
 }
 
 export const useUser = create<UserState>((set) => ({
@@ -108,15 +103,6 @@ export const usePrincipalDetails = create<PricipalDetailsState>((set) => ({
   setPrincipalDetails: (principalDetails: Principal) =>
     set(() => ({
       principalDetails,
-    })),
-}));
-
-export const useSecretaryDetails = create<SecretaryDetails>((set) => ({
-  secretaryDetails: undefined,
-
-  setSecretaryDetails: (secretaryDetails: Secretary) =>
-    set(() => ({
-      secretaryDetails,
     })),
 }));
 

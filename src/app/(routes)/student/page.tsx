@@ -17,11 +17,16 @@ import {
 } from "@/app/components/card";
 import { useStudentDetails, useUser } from "@/app/context/user_context";
 import Link from "next/link";
+import {
+  AssignmentType,
+  AttendanceType,
+  StudentSchedule,
+} from "@/app/api_functions/api_types";
 
 const StudentDashboard = () => {
-  const [nextClass, setNextClass] = useState(null);
-  const [assignments, setAssignments] = useState([]);
-  const [attendance, setAttendance] = useState([]);
+  const [nextClass, setNextClass] = useState<StudentSchedule>();
+  const [assignments, setAssignments] = useState<AssignmentType[]>([]);
+  const [attendance, setAttendance] = useState<AttendanceType[]>([]);
   const { studentDetails } = useStudentDetails();
   const { user, school_id } = useUser();
 
@@ -33,7 +38,7 @@ const StudentDashboard = () => {
           `/api/student/slot?school_id=${school_id}&stream_id=${studentDetails?.student_class[0]?.class_progression?.stream_id}`
         );
         if (!response.ok) throw new Error("Failed to fetch schedule");
-        const data = await response.json();
+        const data: StudentSchedule[] = await response.json();
 
         const now = new Date();
         const currentTime = `${now.getHours().toString().padStart(2, "0")}:${now
@@ -110,7 +115,7 @@ const StudentDashboard = () => {
       {/* Header */}
       <div className="mb-8">
         <p className="text-gray-600">
-          Welcome back, {user.name}! Here&apos;s your overview for today.
+          Welcome back, {user?.name}! Here&apos;s your overview for today.
         </p>
       </div>
 
@@ -204,7 +209,7 @@ const StudentDashboard = () => {
                     <span className="text-gray-600">
                       {nextClass.subject_allocation?.subject_grade?.name}
                     </span>
-                    {nextClass.room_number && (
+                    {nextClass.slot.room_number && (
                       <span className="text-gray-500 bg-gray-100 px-2 py-1 rounded">
                         Room {nextClass.slot?.room_number}
                       </span>
@@ -238,9 +243,7 @@ const StudentDashboard = () => {
                       </p>
                       <span className="text-xs text-gray-500">
                         Due:{" "}
-                        {new Date(
-                          assignment.assignment?.due_date
-                        ).toLocaleDateString()}
+                        {assignment.assignment?.due_date?.toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -328,7 +331,8 @@ const StudentDashboard = () => {
                       </p>
                       <p className="text-xs text-gray-500">
                         Score:{" "}
-                        {assignment.assignment_attempt[0]?.result || "Pending"}
+                        {assignment.assignment_attempt[0]?.result?.toNumber() ||
+                          "Pending"}
                       </p>
                     </div>
                   </div>

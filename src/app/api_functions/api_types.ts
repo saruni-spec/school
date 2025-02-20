@@ -49,12 +49,12 @@ export type Slots = {
   start_time: string;
   end_time: string;
   day_of_week: string;
-  room_number: string;
+  room_number: string | null | undefined;
   slot_assignment: {
     stream_id: number;
     subject_allocation: {
-      subject_grade_id: number;
-      teacher_id: number;
+      subject_grade_id: number | null;
+      teacher_id: number | null;
     };
   }[];
 };
@@ -126,5 +126,326 @@ export type AttendanceToday = Prisma.attendanceGetPayload<{
     class_progression_id: true;
     staff_id: true;
     taken_on: true;
+  };
+}>;
+
+// const records = await prisma.users.findUnique({
+//   where: { id: Number(users_id) },
+//   include: {
+//     admin: true,
+//     staff: {
+//       include: {
+//         department: true,
+//         teacher: true,
+//         school_leader: { include: { academic_year: true } },
+//       },
+//     },
+//     student: true,
+//     parent: true,
+//     school: true,
+//     role: true,
+//   },
+// });
+
+export type User = Prisma.usersGetPayload<{
+  include: {
+    admin: true;
+    staff: {
+      include: {
+        department: true;
+        teacher: true;
+        school_leader: { include: { academic_year: true } };
+      };
+    };
+    student: true;
+    parent: true;
+    school: true;
+    role: true;
+  };
+}>;
+
+// export const getUpcomingSchoolEvents = async (schoolId: number) => {
+//   const events = await prisma.event.findMany({
+//     where: {
+//       school_id: schoolId,
+//       end_date: {
+//         gte: new Date(), // Only get events that haven't ended yet
+//       },
+//       deleted_at: null, // Exclude deleted events
+//     },
+//     orderBy: {
+//       start_date: "asc", // Order by start date ascending
+//     },
+//     select: {
+//       id: true,
+//       name: true,
+//       description: true,
+//       location: true,
+//       start_date: true,
+//       end_date: true,
+//       scope: true,
+//       users: { select: { id_code: true } },
+//       event_class_participant: {
+//         select: {
+//           class_progression: { select: { stream: { select: { name: true } } } },
+//         },
+//       },
+//       event_department_participant: {
+//         select: { department: { select: { name: true } } },
+//       },
+//       event_school_participant: {
+//         select: { school: { select: { name: true } } },
+//       },
+//       event_user_participant: {
+//         select: { users: { select: { id_code: true } } },
+//       },
+//     },
+//   });
+
+//   return events;
+// };
+
+export type EventType = Prisma.eventGetPayload<{
+  select: {
+    id: true;
+    name: true;
+    description: true;
+    location: true;
+    start_date: true;
+    end_date: true;
+    scope: true;
+    users: { select: { id_code: true } };
+    event_class_participant: {
+      select: {
+        class_progression: { select: { stream: { select: { name: true } } } };
+      };
+    };
+    event_department_participant: {
+      select: { department: { select: { name: true } } };
+    };
+    event_school_participant: {
+      select: { school: { select: { name: true } } };
+    };
+    event_user_participant: {
+      select: { users: { select: { id_code: true } } };
+    };
+  };
+}>;
+
+// const assignments = await prisma.assignment_content.findMany({
+//   where: {
+//     OR: [
+//       {
+//         assignment: {
+//           class_progression_id: Number(class_progression_id),
+//         },
+//       },
+//       {
+//         assignment: {
+//           subject_allocation: {
+//             stream: {
+//               class_progression: {
+//                 some: {
+//                   id: Number(class_progression_id),
+//                   is_current: true,
+//                 },
+//               },
+//             },
+//           },
+//         },
+//       },
+//     ],
+//   },
+//   select: {
+//     id: true,
+//     question: true,
+//     options: true,
+//     assignment: {
+//       select: {
+//         description: true,
+//         due_date: true,
+//         file_path: true,
+//         teacher: {
+//           select: {
+//             staff: {
+//               select: { school_code: true },
+//             },
+//           },
+//         },
+//         subject_allocation: {
+//           select: {
+//             subject_grade: {
+//               select: { name: true },
+//             },
+//           },
+//         },
+//       },
+//     },
+//     assignment_attempt: {
+//       where: {
+//         student: {
+//           student_code: student_code,
+//         },
+//       },
+//       select: {
+//         answer: true,
+//         date_submitted: true,
+//         result: true,
+//         remarks: true,
+//       },
+//     },
+//   },
+// });
+
+export type AssignmentType = Prisma.assignment_contentGetPayload<{
+  select: {
+    id: true;
+    question: true;
+    options: true;
+    assignment: {
+      select: {
+        description: true;
+        due_date: true;
+        file_path: true;
+        teacher: {
+          select: {
+            staff: {
+              select: { school_code: true };
+            };
+          };
+        };
+        subject_allocation: {
+          select: {
+            subject_grade: {
+              select: { name: true };
+            };
+          };
+        };
+      };
+    };
+    assignment_attempt: {
+      where: {
+        student: {
+          student_code: string;
+        };
+      };
+      select: {
+        answer: true;
+        date_submitted: true;
+        result: true;
+        remarks: true;
+      };
+    };
+  };
+}>;
+
+// assignment_attempt: {
+//   where: {
+//       student: {
+//           student_code: string;
+//       };
+//   };
+//   select: {
+//       answer: true;
+//       date_submitted: true;
+//       result: true;
+//       remarks: true;
+//   };
+
+export type AssignmentAttemptType = Prisma.assignment_attemptGetPayload<{
+  where: {
+    student: {
+      student_code: string;
+    };
+  };
+  select: {
+    answer: true;
+    date_submitted: true;
+    result: true;
+    remarks: true;
+  };
+}>;
+// // Fetch all student_schedule from the specified users_id
+// const attendance = await prisma.attendance.findMany({
+//   where: { users_id: Number(users_id) },
+//   select: {
+//     staff_id: true,
+//     taken_on: true,
+//     status: true,
+//     reason_for_absence: true,
+//     notified_on: true,
+//     to_miss_on: true,
+//     up_to: true,
+//     staff: { select: { school_code: true } },
+//   },
+// });
+
+export type AttendanceType = Prisma.attendanceGetPayload<{
+  select: {
+    staff_id: true;
+    taken_on: true;
+    status: true;
+    reason_for_absence: true;
+    notified_on: true;
+    to_miss_on: true;
+    up_to: true;
+    staff: { select: { school_code: true } };
+  };
+}>;
+
+// const records = await prisma.assignment.findMany({
+//   where: { teacher_id: parseInt(teacher_id) },
+//   select: {
+//     id: true,
+//     description: true,
+//     file_path: true,
+//     subject_allocation_id: true,
+//     assignment_content: {
+//       select: {
+//         id: true,
+//         question: true,
+//         options: true,
+//         assignment_attempt: {
+//           select: {
+//             id: true,
+//             student: { select: { student_code: true } },
+//             answer: true,
+//             date_submitted: true,
+//             assignment_content_id: true,
+//             date_marked: true,
+//             remarks: true,
+//             result: true,
+//           },
+//         },
+//       },
+//     },
+//   },
+// });
+
+export type AssignmentDetailsType = Prisma.assignmentGetPayload<{
+  select: {
+    id: true;
+    description: true;
+    file_path: true;
+    subject_allocation_id: true;
+    assignment_content: {
+      select: {
+        id: true;
+        question: true;
+        options: true;
+        assignment_attempt: {
+          select: {
+            id: true;
+            student: { select: { student_code: true } };
+            answer: true;
+            date_submitted: true;
+            assignment_content_id: true;
+            date_marked: true;
+            remarks: true;
+            result: true;
+          };
+        };
+      };
+    };
   };
 }>;

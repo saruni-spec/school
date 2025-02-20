@@ -29,7 +29,7 @@ export async function GET(request: Request) {
       select: {
         id: true,
         amount: true,
-        over_payment: true,
+        balance: true,
         payment_date: true,
         payment_method: true,
         status: true,
