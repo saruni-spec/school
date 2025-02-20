@@ -5,25 +5,17 @@ import { Button } from "@/app/components/button";
 import { Alert, AlertDescription } from "@/app/components/alert";
 import { Check, X } from "lucide-react";
 import { attendance_status } from "@prisma/client";
-import { AttendanceToday } from "@/app/api_functions/api_types";
-
-type student = {
-  id: number;
-  student: {
-    users: {
-      id: number;
-      name: string | null;
-    } | null;
-    student_code: string | null;
-  } | null;
-};
+import {
+  AttendanceToday,
+  StudentDetailsType,
+} from "@/app/api_functions/api_types";
 
 type AttendanceStatus = {
   [key: number]: string;
 };
 
 const Attendance = () => {
-  const [students, setStudents] = useState<student[]>([]);
+  const [students, setStudents] = useState<StudentDetailsType[]>([]);
   const [attendanceData, setAttendanceData] = useState<AttendanceStatus>();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -33,7 +25,7 @@ const Attendance = () => {
   //
   //check if attendance for today has been taken
   const checkAttendance = useCallback(async () => {
-    if (!teacherDetails) {
+    if (!teacherDetails || !teacherDetails.class_progression) {
       return;
     }
 
@@ -50,7 +42,7 @@ const Attendance = () => {
       if (data.length > 0) {
         const attendance: AttendanceStatus = {};
         data.forEach((record) => {
-          attendance[record.users_id] = record.status;
+          attendance[record.users_id ?? ""] = record.status;
         });
         setAttendanceData(attendance);
       }
@@ -77,12 +69,12 @@ const Attendance = () => {
       if (!response.ok) {
         throw new Error(response.statusText);
       }
-      const data: student[] = await response.json();
+      const data: StudentDetailsType[] = await response.json();
       setStudents(data);
 
       const initialAttendance = {};
       data.forEach((student) => {
-        initialAttendance[student?.student?.users?.id] = null;
+        initialAttendance[student?.student?.users?.id ?? ""] = null;
       });
       setAttendanceData(initialAttendance);
     } catch (error) {
@@ -109,6 +101,8 @@ const Attendance = () => {
     try {
       setError("");
 
+      if (!attendanceData) return;
+
       const unmarkedStudents = Object.values(attendanceData).some(
         (status) => status === null
       );
@@ -121,9 +115,7 @@ const Attendance = () => {
         ([users_id, status]) => ({
           users_id: parseInt(users_id),
           staff_id: teacherDetails?.staff?.id,
-          class_progression_id: parseInt(
-            teacherDetails?.class_progression[0]?.id
-          ),
+          class_progression_id: teacherDetails?.class_progression[0]?.id,
           status,
           taken_on: new Date(),
         })
@@ -172,51 +164,57 @@ const Attendance = () => {
               key={student.id}
               className="flex items-center justify-between p-4 border rounded-lg bg-white shadow-sm"
             >
-              <div>
-                <p className="font-medium">{student?.student?.users?.name}</p>
-                <p className="text-sm text-gray-500">
-                  ID: {student?.student?.student_code}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                {attendanceData[student.student.users.id] === "PRESENT" && (
-                  <></>
-                )}
-                <Button
-                  variant={
-                    attendanceData[student.student.users.id] === "PRESENT"
-                      ? "success"
-                      : "outline-success"
-                  }
-                  size="sm"
-                  onClick={() =>
-                    takeAttendance(
-                      student?.student?.users?.id as number,
-                      "PRESENT"
-                    )
-                  }
-                >
-                  <Check className="h-4 w-4 mr-1 inline-block" />
-                  Present
-                </Button>
-                <Button
-                  variant={
-                    attendanceData[student?.student?.users?.id] === "ABSENT"
-                      ? "danger"
-                      : "outline-danger"
-                  }
-                  size="sm"
-                  onClick={() =>
-                    takeAttendance(
-                      student?.student?.users?.id as number,
-                      "ABSENT"
-                    )
-                  }
-                >
-                  <X className="h-4 w-4 mr-1 inline-block" />
-                  Absent
-                </Button>
-              </div>
+              {student.student?.users && attendanceData && (
+                <>
+                  <div>
+                    <p className="font-medium">
+                      {student?.student?.users?.name}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      ID: {student?.student?.student_code}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {attendanceData[student.student.users.id] === "PRESENT" && (
+                      <></>
+                    )}
+                    <Button
+                      variant={
+                        attendanceData[student.student.users.id] === "PRESENT"
+                          ? "success"
+                          : "outline-success"
+                      }
+                      size="sm"
+                      onClick={() =>
+                        takeAttendance(
+                          student?.student?.users?.id as number,
+                          "PRESENT"
+                        )
+                      }
+                    >
+                      <Check className="h-4 w-4 mr-1 inline-block" />
+                      Present
+                    </Button>
+                    <Button
+                      variant={
+                        attendanceData[student?.student?.users?.id] === "ABSENT"
+                          ? "danger"
+                          : "outline-danger"
+                      }
+                      size="sm"
+                      onClick={() =>
+                        takeAttendance(
+                          student?.student?.users?.id as number,
+                          "ABSENT"
+                        )
+                      }
+                    >
+                      <X className="h-4 w-4 mr-1 inline-block" />
+                      Absent
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>

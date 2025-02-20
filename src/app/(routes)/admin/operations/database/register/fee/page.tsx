@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { Form } from "@/app/components/form";
 import { MyInput } from "@/app/components/input";
 import { ListValidation, requiredList } from "@/app/hooks/validation";
@@ -14,6 +14,7 @@ import { getGradeLevels } from "@/app/actions/actions";
 import { fetchData, register } from "@/app/api_functions/functions";
 import { useValidation } from "@/app/hooks/validation_hooks";
 import { validInputs } from "@/lib/functions";
+import { LoadingSpinner } from "@/app/components/loading";
 //
 //fees an be for individuals,streams,classes,department or the entire school
 const possibe_payees = [
@@ -176,77 +177,81 @@ const Fee = () => {
   };
 
   return (
-    <Form
-      title="Register Fee"
-      onSubmit={handleSubmit}
-      submitButtonText="Submit"
-    >
-      <SelectList
-        label="Fee Type"
-        options={fee_types}
-        value={fee_for.value}
-        onChange={fee_for.handle_change}
-        error={fee_for.error}
-      />
-      <MyInput
-        label="Description"
-        placeholder="Enter Fee Description"
-        value={description.value}
-        onChange={description.handle_change}
-        error={description.error}
-      />
-      <MyInput
-        label="Amount"
-        placeholder="Enter Fee Amount"
-        required
-        type="number"
-        value={amount.value}
-        onChange={amount.handle_change}
-        error={amount.error}
-      />
-      <DatePicker
-        label="Due Date"
-        placeholder="Enter Due Date (Optional)"
-        type="date"
-        value={due_date.value}
-        onChange={due_date.handle_change}
-        error={due_date.error}
-      />
-      <SelectList
-        label="Installment Type"
-        options={installment_options}
-        value={installment_type.value}
-        onChange={installment_type.handle_change}
-        error={installment_type.error}
-      />
-      <div>
-        <RadioInputs
-          label="Who does the fee apply to?"
-          options={possibe_payees}
-          id_field="name"
-          name="radio-group"
-          value={selectedRadio ? (selectedRadio["name"] as string) : undefined}
-          onChange={handleRadioChange}
-          value_field="name"
-          orientation="grid"
-          gridColumns={2}
+    <Suspense fallback={<LoadingSpinner />}>
+      <Form
+        title="Register Fee"
+        onSubmit={handleSubmit}
+        submitButtonText="Submit"
+      >
+        <SelectList
+          label="Fee Type"
+          options={fee_types}
+          value={fee_for.value}
+          onChange={fee_for.handle_change}
+          error={fee_for.error}
         />
-        {selectedRadio && (
-          <>
-            <CheckboxGroup
-              label={"Select Payees"}
-              options={options}
-              onChange={payees.setList}
-              value={payees.list as MyRecord[]}
-              error={payees.error}
-              value_field={selectedRadio.name === "Grades" ? "level" : "name"}
-              orientation="grid"
-              gridColumns={2}
-            />
-          </>
-        )}
-      </div>
-    </Form>
+        <MyInput
+          label="Description"
+          placeholder="Enter Fee Description"
+          value={description.value}
+          onChange={description.handle_change}
+          error={description.error}
+        />
+        <MyInput
+          label="Amount"
+          placeholder="Enter Fee Amount"
+          required
+          type="number"
+          value={amount.value}
+          onChange={amount.handle_change}
+          error={amount.error}
+        />
+        <DatePicker
+          label="Due Date"
+          placeholder="Enter Due Date (Optional)"
+          type="date"
+          value={due_date.value}
+          onChange={due_date.handle_change}
+          error={due_date.error}
+        />
+        <SelectList
+          label="Installment Type"
+          options={installment_options}
+          value={installment_type.value}
+          onChange={installment_type.handle_change}
+          error={installment_type.error}
+        />
+        <div>
+          <RadioInputs
+            label="Who does the fee apply to?"
+            options={possibe_payees}
+            id_field="name"
+            name="radio-group"
+            value={
+              selectedRadio ? (selectedRadio["name"] as string) : undefined
+            }
+            onChange={handleRadioChange}
+            value_field="name"
+            orientation="grid"
+            gridColumns={2}
+          />
+          {selectedRadio && (
+            <>
+              <CheckboxGroup
+                label={"Select Payees"}
+                options={options}
+                onChange={payees.setList}
+                value={payees.list as MyRecord[]}
+                error={payees.error}
+                value_field={selectedRadio.name === "Grades" ? "level" : "name"}
+                orientation="grid"
+                gridColumns={2}
+              />
+            </>
+          )}
+        </div>
+      </Form>
+    </Suspense>
   );
 };
 

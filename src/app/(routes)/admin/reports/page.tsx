@@ -49,12 +49,12 @@ const Reports = () => {
 
   useEffect(() => {
     const fetchTotalStudents = async () => {
-      const students = await studentCount(user?.school.id);
+      const students = await studentCount(user?.school?.id);
       setTotalStudents(students);
     };
 
     const fetchTotalTeachers = async () => {
-      const teachers = await teacherCount(user?.school.id);
+      const teachers = await teacherCount(user?.school?.id);
       setTotalTeachers(teachers);
     };
 

@@ -2,16 +2,56 @@ import prisma from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
+type SlotAssignment = {
+  stream_id: number;
+  subject_allocation_id: number;
+};
+
+// const updatedSlot = await tx.slot.update({
+//   where: {
+//     id: existingSlot.id,
+//   },
+//   data: {
+//     // Update end_time and room_number if needed
+//     end_time: slot.end_time,
+//     room_number: slot.room_number,
+//     // Add new assignments
+//     slot_assignment: {
+//       // Delete existing assignments
+//       deleteMany: {},
+//       // Create new assignments
+//       create: slotAssignments,
+//     },
+//   },
+//   include: {
+//     slot_assignment: {
+//       include: {
+//         subject_allocation: true,
+//       },
+//     },
+//   },
+// });
+
+type Slot = Prisma.slotGetPayload<{
+  include: {
+    slot_assignment: {
+      include: {
+        subject_allocation: true;
+      };
+    };
+  };
+}>;
+
 export async function POST(request: Request) {
   try {
     const temp_slots = await request.json();
 
     const createdSlots = await prisma.$transaction(async (tx) => {
-      const results = [];
+      const results: Slot[] = [];
 
       for (const slot of temp_slots) {
         // First create subject allocations for this slot
-        const slotAssignments = [];
+        const slotAssignments: SlotAssignment[] = [];
         for (const assignment of slot.slot_assignment) {
           const subjectAllocation = await tx.subject_allocation.upsert({
             where: {

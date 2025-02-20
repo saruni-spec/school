@@ -193,16 +193,14 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({
   ];
 
   const getallowedUserTypes = () => {
-    if (!user) return [];
-    if (!user.role) return [];
+    if (!user || !user.role) return [];
 
     if (user.role === "SYSTEM_ADMINISTRATOR") return userTypes;
 
-    if (!rolePermissions[user.role]) return [];
+    const permissions = rolePermissions[user.role];
+    if (!permissions) return [];
 
-    return userTypes.filter((userType) =>
-      rolePermissions[user.role]?.includes(userType.type)
-    );
+    return userTypes.filter((userType) => permissions.includes(userType.type));
   };
 
   const allowedUserTypes = getallowedUserTypes();

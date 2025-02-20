@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import {
   gallery_type,
   gallery_visibility,
@@ -13,6 +13,7 @@ import { register } from "@/app/api_functions/functions";
 import { useValidation } from "@/app/hooks/validation_hooks";
 import { FieldType } from "@/app/types/types";
 import { validInputs } from "@/lib/functions";
+import { LoadingSpinner } from "@/app/components/loading";
 //
 // Create a new gallery
 const Gallery = () => {
@@ -62,63 +63,65 @@ const Gallery = () => {
   };
 
   return (
-    <Form
-      onSubmit={handleSubmit}
-      submitButtonText="Save Gallery"
-      title="Create Gallery"
-    >
-      <MyInput
-        label="Gallery Name"
-        placeholder="Name"
-        value={name.value}
-        onChange={name.handle_change}
-        error={name.error}
-      />
-      <MyInput
-        label="Description"
-        placeholder="Description"
-        value={description.value}
-        onChange={description.handle_change}
-        error={description.error}
-      />
-      <SelectList
-        label="Gallery Type"
-        placeholder="Select Gallery Type"
-        value={type.value}
-        onChange={type.handle_change}
-        error={type.error}
-        options={gallery_types}
-      />
-      <SelectList
-        label="Who can see this gallery?"
-        placeholder="Select Visibility"
-        value={visibility.value}
-        onChange={visibility.handle_change}
-        error={visibility.error}
-        options={visibility_types}
-      />
-      <SelectList
-        label="Category"
-        value={category.value}
-        onChange={category.handle_change}
-        error={category.error}
-        options={categories}
-      />
-      <MyInput
-        label="Where are the pictures taken?"
-        placeholder="Location"
-        value={location.value}
-        onChange={location.handle_change}
-        error={location.error}
-      />
-      <MyInput
-        label="Tags"
-        placeholder="Tags"
-        value={tags.value}
-        onChange={tags.handle_change}
-        error={tags.error}
-      />
-    </Form>
+    <Suspense fallback={<LoadingSpinner />}>
+      <Form
+        onSubmit={handleSubmit}
+        submitButtonText="Save Gallery"
+        title="Create Gallery"
+      >
+        <MyInput
+          label="Gallery Name"
+          placeholder="Name"
+          value={name.value}
+          onChange={name.handle_change}
+          error={name.error}
+        />
+        <MyInput
+          label="Description"
+          placeholder="Description"
+          value={description.value}
+          onChange={description.handle_change}
+          error={description.error}
+        />
+        <SelectList
+          label="Gallery Type"
+          placeholder="Select Gallery Type"
+          value={type.value}
+          onChange={type.handle_change}
+          error={type.error}
+          options={gallery_types}
+        />
+        <SelectList
+          label="Who can see this gallery?"
+          placeholder="Select Visibility"
+          value={visibility.value}
+          onChange={visibility.handle_change}
+          error={visibility.error}
+          options={visibility_types}
+        />
+        <SelectList
+          label="Category"
+          value={category.value}
+          onChange={category.handle_change}
+          error={category.error}
+          options={categories}
+        />
+        <MyInput
+          label="Where are the pictures taken?"
+          placeholder="Location"
+          value={location.value}
+          onChange={location.handle_change}
+          error={location.error}
+        />
+        <MyInput
+          label="Tags"
+          placeholder="Tags"
+          value={tags.value}
+          onChange={tags.handle_change}
+          error={tags.error}
+        />
+      </Form>
+    </Suspense>
   );
 };
 

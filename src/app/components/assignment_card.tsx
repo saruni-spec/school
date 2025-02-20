@@ -59,7 +59,7 @@ const StudentAttempt = ({ attempt }) => {
   const markAssignmentAttempt = async () => {
     const assigment_attempt_details = {
       id: attempt.id,
-      teacher_id: teacherDetails.id,
+      teacher_id: teacherDetails?.id,
       date_marked: new Date().toISOString(),
       remarks: remarks.value,
       result: result.value,

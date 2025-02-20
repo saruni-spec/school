@@ -12,7 +12,7 @@ declare module "next-auth" {
   interface Session {
     user: {
       id: number;
-      id_code: string;
+      id_code: string | undefined;
       role: role_type;
       school: MyRecord;
       role_type: privilege_category;
@@ -22,11 +22,11 @@ declare module "next-auth" {
 
   interface User extends DefaultUser {
     id: number;
-    id_code: string;
-    school: MyRecord;
-    role: role_type;
-    role_type: privilege_category;
-    permissions: MyRecord[];
+    id_code: string | undefined;
+    school: MyRecord | undefined;
+    role: role_type | undefined;
+    role_type: privilege_category | undefined;
+    permissions: MyRecord[] | undefined;
   }
 }
 
@@ -85,14 +85,14 @@ export const authOptions: NextAuthOptions = {
 
           // Return user info
           return {
-            id: user.id.toString(),
-            id_code: user.id_code,
-            school: user.school,
-            name: user.name,
+            id: user.id,
+            id_code: user.id_code ?? undefined,
+            school: user.school ?? undefined,
+            name: user.name ?? undefined,
             email: user.email,
-            role: user.role?.type ?? "",
-            role_type: user.role?.category ?? "",
-            permissions: user.role?.permissions ?? [],
+            role: user.role?.type,
+            role_type: user.role?.category ?? undefined,
+            permissions: user.role?.permissions,
           };
         } catch (error) {
           throw new Error(`Authorization error: ${error}`);

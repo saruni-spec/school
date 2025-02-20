@@ -1,7 +1,7 @@
 //
 //Currently not in use
 "use client";
-import React, { useCallback } from "react";
+import React, { Suspense, useCallback } from "react";
 import { Form } from "@/app/components/form";
 import { MyInput } from "@/app/components/input";
 import { SelectList } from "@/app/components/select_list";
@@ -11,6 +11,7 @@ import CheckBoxToggle from "@/app/components/checkbox_toggle";
 import { grade_levels, MyRecord } from "@/app/types/types";
 import { grade_level_type } from "@prisma/client";
 import { getDataFromApi, register } from "@/app/api_functions/functions";
+import { LoadingSpinner } from "@/app/components/loading";
 
 //
 // Register a class level
@@ -104,52 +105,54 @@ const ClassLevel = () => {
   );
 
   return (
-    <Form
-      title="Register Class Level"
-      onSubmit={handleSubmit}
-      submitButtonText="Submit"
-    >
-      <SelectList
-        options={[
-          "PRE_PRIMARY_1",
-          "PRE_PRIMARY_2",
-          "GRADE_1",
-          "GRADE_2",
-          "GRADE_3",
-          "GRADE_4",
-          "GRADE_5",
-          "GRADE_6",
-          "GRADE_7",
-          "GRADE_8",
-          "GRADE_9",
-          "GRADE_10",
-          "GRADE_11",
-          "GRADE_12",
-        ]}
-        label="Grade"
-        placeholder="Grade level ed,GRADE_1,GRADE_2..."
-        required
-        value={grade_level.value}
-        onChange={grade_level.handle_change}
-        error={grade_level.error}
-      />
+    <Suspense fallback={<LoadingSpinner />}>
+      <Form
+        title="Register Class Level"
+        onSubmit={handleSubmit}
+        submitButtonText="Submit"
+      >
+        <SelectList
+          options={[
+            "PRE_PRIMARY_1",
+            "PRE_PRIMARY_2",
+            "GRADE_1",
+            "GRADE_2",
+            "GRADE_3",
+            "GRADE_4",
+            "GRADE_5",
+            "GRADE_6",
+            "GRADE_7",
+            "GRADE_8",
+            "GRADE_9",
+            "GRADE_10",
+            "GRADE_11",
+            "GRADE_12",
+          ]}
+          label="Grade"
+          placeholder="Grade level ed,GRADE_1,GRADE_2..."
+          required
+          value={grade_level.value}
+          onChange={grade_level.handle_change}
+          error={grade_level.error}
+        />
 
-      <CheckBoxToggle
-        label="Is this the class currently in this grade level?"
-        required
-        onChange={current.handle_change}
-        error={current.error}
-      />
+        <CheckBoxToggle
+          label="Is this the class currently in this grade level?"
+          required
+          onChange={current.handle_change}
+          error={current.error}
+        />
 
-      <MyInput
-        label="Year"
-        placeholder="Year eg, 2021..."
-        required
-        value={class_year.value}
-        onChange={class_year.handle_change}
-        error={class_year.error}
-      />
-    </Form>
+        <MyInput
+          label="Year"
+          placeholder="Year eg, 2021..."
+          required
+          value={class_year.value}
+          onChange={class_year.handle_change}
+          error={class_year.error}
+        />
+      </Form>
+    </Suspense>
   );
 };
 

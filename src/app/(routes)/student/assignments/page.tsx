@@ -237,142 +237,149 @@ const AssignmentListView: React.FC<AssignmentListViewProps> = ({
   handleAttemptAssignment,
   formatDate,
 }) => (
-  <div className="space-y-8">
-    {/* Pending Assignments */}
-    <section>
-      <div className="flex items-center mb-6">
-        <Clock className="w-6 h-6 text-orange-500 mr-2" />
-        <h2 className="text-xl font-bold text-gray-800">Pending Assignments</h2>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {nonAttemptedAssignments.map((assignment) => (
-          <Card
-            key={assignment.id}
-            className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200"
-          >
-            <div className="p-6 border-l-4 border-orange-400">
-              <h3 className="font-bold text-lg text-gray-800 mb-2">
-                {assignment.assignment?.description as string}
-              </h3>
-              <p className="text-indigo-600 font-medium mb-2">
-                {assignment.assignment?.subject_allocation?.subject_grade?.name}
-              </p>
-              <div className="flex items-center text-gray-600 mb-4">
-                <Clock className="w-4 h-4 mr-1" />
-                <span className="text-sm">
-                  Due:{" "}
-                  {new Date(assignment.assignment!.due_date!).toISOString()}
-                </span>
-              </div>
-              <div className="flex justify-between items-center mt-4">
-                {assignment.assignment?.file_path && (
-                  <Button
-                    onClick={() =>
-                      handleFileDownload(assignment.assignment!.file_path!)
-                    }
-                    className="text-indigo-600 hover:text-indigo-800"
-                  >
-                    <Download className="w-5 h-5" />
-                  </Button>
-                )}
-                {assignment.question && (
-                  <Button
-                    onClick={() => handleAttemptAssignment(assignment)}
-                    className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-4 py-2 rounded-lg hover:from-indigo-700 hover:to-indigo-800 flex items-center font-medium shadow-md transition-all duration-200"
-                  >
-                    Start Assignment <ChevronRight className="w-4 h-4 ml-1" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          </Card>
-        ))}
-        {nonAttemptedAssignments.length === 0 && (
-          <div className="col-span-2 text-center py-8 bg-white rounded-xl">
-            <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-            <p className="text-gray-600 text-lg">
-              All caught up! No pending assignments
-            </p>
-          </div>
-        )}
-      </div>
-    </section>
-
-    {/* Completed Assignments */}
-    <section>
-      <div className="flex items-center mb-6">
-        <Award className="w-6 h-6 text-green-500 mr-2" />
-        <h2 className="text-xl font-bold text-gray-800">
-          Completed Assignments
-        </h2>
-      </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        {attemptedAssignments.map((assignment) => (
-          <Card
-            key={assignment.id}
-            className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200"
-          >
-            {assignment.assignment && (
-              <div className="p-6 border-l-4 border-green-400">
+  <Suspense fallback={<LoadingSpinner />}>
+    <div className="space-y-8">
+      {/* Pending Assignments */}
+      <section>
+        <div className="flex items-center mb-6">
+          <Clock className="w-6 h-6 text-orange-500 mr-2" />
+          <h2 className="text-xl font-bold text-gray-800">
+            Pending Assignments
+          </h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {nonAttemptedAssignments.map((assignment) => (
+            <Card
+              key={assignment.id}
+              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200"
+            >
+              <div className="p-6 border-l-4 border-orange-400">
                 <h3 className="font-bold text-lg text-gray-800 mb-2">
-                  {assignment.assignment.description}
+                  {assignment.assignment?.description as string}
                 </h3>
                 <p className="text-indigo-600 font-medium mb-2">
                   {
-                    assignment.assignment.subject_allocation?.subject_grade
+                    assignment.assignment?.subject_allocation?.subject_grade
                       ?.name
                   }
                 </p>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <p className="flex items-center">
-                    <span className="font-medium mr-2">Submitted:</span>
-                    {formatDate(
-                      assignment.assignment_attempt[0]?.date_submitted!.toISOString()
-                    )}
-                  </p>
-                  {assignment.assignment_attempt[0]?.result && (
-                    <p className="flex items-center">
-                      <span className="font-medium mr-2">Score:</span>
-                      <span className="text-green-600 font-bold">
-                        {assignment.assignment_attempt[0].result.toNumber()}%
-                      </span>
-                    </p>
+                <div className="flex items-center text-gray-600 mb-4">
+                  <Clock className="w-4 h-4 mr-1" />
+                  <span className="text-sm">
+                    Due:{" "}
+                    {new Date(assignment.assignment!.due_date!).toISOString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center mt-4">
+                  {assignment.assignment?.file_path && (
+                    <Button
+                      onClick={() =>
+                        handleFileDownload(assignment.assignment!.file_path!)
+                      }
+                      className="text-indigo-600 hover:text-indigo-800"
+                    >
+                      <Download className="w-5 h-5" />
+                    </Button>
                   )}
-                  {assignment.assignment_attempt[0]?.remarks && (
-                    <p className="flex items-center">
-                      <span className="font-medium mr-2">Feedback:</span>
-                      {assignment.assignment_attempt[0].remarks as string}
-                    </p>
+                  {assignment.question && (
+                    <Button
+                      onClick={() => handleAttemptAssignment(assignment)}
+                      className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-4 py-2 rounded-lg hover:from-indigo-700 hover:to-indigo-800 flex items-center font-medium shadow-md transition-all duration-200"
+                    >
+                      Start Assignment <ChevronRight className="w-4 h-4 ml-1" />
+                    </Button>
                   )}
                 </div>
-                {assignment?.assignment?.file_path && (
-                  <Button
-                    onClick={() => {
-                      if (assignment.assignment?.file_path) {
-                        handleFileDownload(assignment.assignment.file_path);
-                      }
-                    }}
-                    className="mt-4 text-indigo-600 hover:text-indigo-800 flex items-center"
-                  >
-                    <Download className="w-5 h-5 mr-1" />
-                    Download
-                  </Button>
-                )}
               </div>
-            )}
-          </Card>
-        ))}
-        {attemptedAssignments.length === 0 && (
-          <div className="col-span-2 text-center py-8 bg-white rounded-xl">
-            <BookOpen className="w-12 h-12 text-indigo-400 mx-auto mb-3" />
-            <p className="text-gray-600 text-lg">
-              No completed assignments yet
-            </p>
-          </div>
-        )}
-      </div>
-    </section>
-  </div>
+            </Card>
+          ))}
+          {nonAttemptedAssignments.length === 0 && (
+            <div className="col-span-2 text-center py-8 bg-white rounded-xl">
+              <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+              <p className="text-gray-600 text-lg">
+                All caught up! No pending assignments
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Completed Assignments */}
+      <section>
+        <div className="flex items-center mb-6">
+          <Award className="w-6 h-6 text-green-500 mr-2" />
+          <h2 className="text-xl font-bold text-gray-800">
+            Completed Assignments
+          </h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
+          {attemptedAssignments.map((assignment) => (
+            <Card
+              key={assignment.id}
+              className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-200"
+            >
+              {assignment.assignment && (
+                <div className="p-6 border-l-4 border-green-400">
+                  <h3 className="font-bold text-lg text-gray-800 mb-2">
+                    {assignment.assignment.description}
+                  </h3>
+                  <p className="text-indigo-600 font-medium mb-2">
+                    {
+                      assignment.assignment.subject_allocation?.subject_grade
+                        ?.name
+                    }
+                  </p>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <p className="flex items-center">
+                      <span className="font-medium mr-2">Submitted:</span>
+                      {formatDate(
+                        assignment.assignment_attempt[0]?.date_submitted!.toISOString()
+                      )}
+                    </p>
+                    {assignment.assignment_attempt[0]?.result && (
+                      <p className="flex items-center">
+                        <span className="font-medium mr-2">Score:</span>
+                        <span className="text-green-600 font-bold">
+                          {assignment.assignment_attempt[0].result.toNumber()}%
+                        </span>
+                      </p>
+                    )}
+                    {assignment.assignment_attempt[0]?.remarks && (
+                      <p className="flex items-center">
+                        <span className="font-medium mr-2">Feedback:</span>
+                        {assignment.assignment_attempt[0].remarks as string}
+                      </p>
+                    )}
+                  </div>
+                  {assignment?.assignment?.file_path && (
+                    <Button
+                      onClick={() => {
+                        if (assignment.assignment?.file_path) {
+                          handleFileDownload(assignment.assignment.file_path);
+                        }
+                      }}
+                      className="mt-4 text-indigo-600 hover:text-indigo-800 flex items-center"
+                    >
+                      <Download className="w-5 h-5 mr-1" />
+                      Download
+                    </Button>
+                  )}
+                </div>
+              )}
+            </Card>
+          ))}
+          {attemptedAssignments.length === 0 && (
+            <div className="col-span-2 text-center py-8 bg-white rounded-xl">
+              <BookOpen className="w-12 h-12 text-indigo-400 mx-auto mb-3" />
+              <p className="text-gray-600 text-lg">
+                No completed assignments yet
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  </Suspense>
 );
 
 export default Assignments;

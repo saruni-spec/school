@@ -1,6 +1,6 @@
 "use client";
 import { Form } from "@/app/components/form";
-import React from "react";
+import React, { Suspense } from "react";
 import { MyInput } from "@/app/components/input";
 import { SelectList } from "@/app/components/select_list";
 import { event_scope } from "@prisma/client";
@@ -10,6 +10,7 @@ import { useValidation } from "@/app/hooks/validation_hooks";
 import { FieldType } from "@/app/types/types";
 import { validInputs } from "@/lib/functions";
 import { register } from "@/app/api_functions/functions";
+import { LoadingSpinner } from "@/app/components/loading";
 //
 // This is the page for registering an announcement
 const Announcement = () => {
@@ -50,48 +51,50 @@ const Announcement = () => {
   };
 
   return (
-    <Form title="Event" onSubmit={handleSubmit} submitButtonText="Submit">
-      <MyInput
-        label="Announcement"
-        placeholder="Enter Announcement"
-        required
-        value={name.value}
-        onChange={name.handle_change}
-        error={name.error}
-      />
-      <MyInput
-        label="Description"
-        placeholder="Enter Description"
-        required
-        value={description.value}
-        onChange={description.handle_change}
-        error={description.error}
-      />
+    <Suspense fallback={<LoadingSpinner />}>
+      <Form title="Event" onSubmit={handleSubmit} submitButtonText="Submit">
+        <MyInput
+          label="Announcement"
+          placeholder="Enter Announcement"
+          required
+          value={name.value}
+          onChange={name.handle_change}
+          error={name.error}
+        />
+        <MyInput
+          label="Description"
+          placeholder="Enter Description"
+          required
+          value={description.value}
+          onChange={description.handle_change}
+          error={description.error}
+        />
 
-      <DatePicker
-        label="Start Date"
-        placeholder="Enter Start Date"
-        required
-        value={start_date.value}
-        onChange={start_date.handle_change}
-        error={start_date.error}
-      />
-      <DatePicker
-        label="End Date"
-        placeholder="Enter End Date"
-        required
-        value={end_date.value}
-        onChange={end_date.handle_change}
-        error={end_date.error}
-      />
-      <SelectList
-        label="Scope"
-        options={event_scopes}
-        value={scope.value}
-        onChange={scope.handle_change}
-        error={scope.error}
-      />
-    </Form>
+        <DatePicker
+          label="Start Date"
+          placeholder="Enter Start Date"
+          required
+          value={start_date.value}
+          onChange={start_date.handle_change}
+          error={start_date.error}
+        />
+        <DatePicker
+          label="End Date"
+          placeholder="Enter End Date"
+          required
+          value={end_date.value}
+          onChange={end_date.handle_change}
+          error={end_date.error}
+        />
+        <SelectList
+          label="Scope"
+          options={event_scopes}
+          value={scope.value}
+          onChange={scope.handle_change}
+          error={scope.error}
+        />
+      </Form>
+    </Suspense>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { MenuLink } from "../types/types";
 import SideMenu from "./side_menu";
 import SchoolSelection from "./school_selection";
@@ -73,7 +73,6 @@ export const TeacherLayout = ({ children }: { children: React.ReactNode }) => {
     },
   });
   const { teacherDetails, setTeacherDetails } = useTeacherDetails();
-  const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -115,12 +114,12 @@ export const TeacherLayout = ({ children }: { children: React.ReactNode }) => {
 
   // Create a function to preserve and encode query parameters
   const createUrl = (path: string) => {
+    if (!user) return "";
     const params = new URLSearchParams();
 
     // Preserve all existing query parameters
-    searchParams.forEach((value, key) => {
-      params.append(key, value);
-    });
+
+    params.append("id", user.id.toString());
 
     return `${path}?${params.toString()}`;
   };
@@ -178,7 +177,6 @@ export const StaffLayout = ({ children }: { children: React.ReactNode }) => {
 export const StudentLayout = ({ children }: { children: React.ReactNode }) => {
   const { studentDetails, setStudentDetails } = useStudentDetails();
   const { setUser, setSchool, user } = useUser();
-  const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
   const { status, data: session } = useSession({
@@ -226,12 +224,12 @@ export const StudentLayout = ({ children }: { children: React.ReactNode }) => {
 
   // Create a function to preserve and encode query parameters
   const createUrl = (path: string) => {
+    if (!user) return "";
     const params = new URLSearchParams();
 
     // Preserve all existing query parameters
-    searchParams.forEach((value, key) => {
-      params.append(key, value);
-    });
+
+    params.append("id", user.id.toString());
 
     return `${path}?${params.toString()}`;
   };
@@ -290,7 +288,6 @@ export const PrinciPalLayout = ({
 }) => {
   const { principalDetails, setPrincipalDetails } = usePrincipalDetails();
   const { setUser, setSchool, user } = useUser();
-  const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
   const { status, data: session } = useSession({
@@ -338,12 +335,12 @@ export const PrinciPalLayout = ({
 
   // Create a function to preserve and encode query parameters
   const createUrl = (path: string) => {
+    if (!user) return "";
     const params = new URLSearchParams();
 
     // Preserve all existing query parameters
-    searchParams.forEach((value, key) => {
-      params.append(key, value);
-    });
+
+    params.append("id", user.id.toString());
 
     return `${path}?${params.toString()}`;
   };

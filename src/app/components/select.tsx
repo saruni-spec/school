@@ -37,9 +37,13 @@ export const Select: React.FC<SelectProps> = ({
 }) => {
   // Utility function to safely access nested properties
   const getNestedValue = (option: MyRecord, path: string) => {
-    return path
+    const nested = path
       .split(".")
-      .reduce((acc, key) => (acc ? acc[key] : undefined), option);
+      .reduce((acc, key) => acc[key] as MyRecord, option);
+
+    if (typeof nested !== "string" || typeof nested !== "number")
+      return "No value";
+    return nested;
   };
 
   return (
@@ -98,7 +102,7 @@ export const Select: React.FC<SelectProps> = ({
                 value={option[id_field] as string | number}
               >
                 {split_show_field
-                  ? (getNestedValue(option, show_field as string) as string)
+                  ? getNestedValue(option, show_field as string)
                   : (option[show_field] as string)}
               </option>
             ))}

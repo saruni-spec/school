@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { Suspense } from "react";
 import {
   UserPlus,
   Building,
@@ -24,6 +24,7 @@ import { useUser } from "@/app/context/user_context";
 import { MyRecord } from "@/app/types/types";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import InspirationLoader from "@/app/components/loading";
 //
 // Review page
 const ReviewPage = () => {
@@ -140,21 +141,25 @@ const ReviewPage = () => {
 
   if (selectedTable && selectedItem) {
     return (
-      <GenericUpdateTable
-        modelName={selectedTable}
-        title={`${selectedItem.label} Table`}
-      />
+      <Suspense fallback={<InspirationLoader />}>
+        <GenericUpdateTable
+          modelName={selectedTable}
+          title={`${selectedItem.label} Table`}
+        />
+      </Suspense>
     );
   }
 
   // Otherwise, render the menu screen
   return (
-    <Screen
-      items={registerItems}
-      title="Register Options"
-      columns={4}
-      path_name={path_name}
-    />
+    <Suspense fallback={<InspirationLoader />}>
+      <Screen
+        items={registerItems}
+        title="Register Options"
+        columns={4}
+        path_name={path_name}
+      />
+    </Suspense>
   );
 };
 

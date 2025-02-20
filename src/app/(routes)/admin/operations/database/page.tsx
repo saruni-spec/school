@@ -1,6 +1,8 @@
+"use client";
 import Link from "next/link";
-import React from "react";
+import React, { Suspense } from "react";
 import { PlusCircle, Eye, RefreshCw, Search, Database } from "lucide-react";
+import { LoadingSpinner } from "@/app/components/loading";
 
 const CRUD = () => {
   const operations = [
@@ -31,42 +33,44 @@ const CRUD = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-3">
-            <Database className="w-8 h-8 text-blue-500" />
-            <h1 className="text-3xl font-bold text-gray-800">
-              Database Operations
-            </h1>
+    <Suspense fallback={<LoadingSpinner />}>
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-3">
+              <Database className="w-8 h-8 text-blue-500" />
+              <h1 className="text-3xl font-bold text-gray-800">
+                Database Operations
+              </h1>
+            </div>
+            <p className="text-gray-600">
+              Manage and interact with the school database system
+            </p>
           </div>
-          <p className="text-gray-600">
-            Manage and interact with the school database system
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {operations.map((op, index) => (
-            <Link
-              prefetch={false}
-              key={index}
-              href={op.href}
-              className="block group"
-            >
-              <div className="h-full p-6 bg-white rounded-lg border border-gray-200 shadow-sm hover:border-blue-500 hover:shadow-md transition-all duration-200">
-                <div className="flex items-center gap-3 mb-3">
-                  <op.icon className="w-6 h-6 text-blue-500" />
-                  <h2 className="text-xl font-semibold text-gray-800 group-hover:text-blue-600">
-                    {op.title}
-                  </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {operations.map((op, index) => (
+              <Link
+                prefetch={false}
+                key={index}
+                href={op.href}
+                className="block group"
+              >
+                <div className="h-full p-6 bg-white rounded-lg border border-gray-200 shadow-sm hover:border-blue-500 hover:shadow-md transition-all duration-200">
+                  <div className="flex items-center gap-3 mb-3">
+                    <op.icon className="w-6 h-6 text-blue-500" />
+                    <h2 className="text-xl font-semibold text-gray-800 group-hover:text-blue-600">
+                      {op.title}
+                    </h2>
+                  </div>
+                  <p className="text-gray-600">{op.description}</p>
                 </div>
-                <p className="text-gray-600">{op.description}</p>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </Suspense>
   );
 };
 

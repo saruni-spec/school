@@ -52,7 +52,8 @@ const EditableTable: React.FC<DataTableProps> = ({
     return String(value);
   };
 
-  const getRelatedRecords = async (tableName: string) => {
+  const getRelatedRecords = async (tableName: string | null | undefined) => {
+    if (!tableName) return [];
     try {
       const response = await fetch(
         `/api/related_records?table=${tableName}&school_id=${school_id}`

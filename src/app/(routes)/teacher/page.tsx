@@ -111,9 +111,7 @@ const TeacherDashboard = () => {
               <p className="text-sm font-medium text-gray-600">
                 Total Students
               </p>
-              <h3 className="text-2xl font-bold text-gray-800">
-                {teacherDetails?.class_progression?.[0]?.total_students || 0}
-              </h3>
+              <h3 className="text-2xl font-bold text-gray-800">{0}</h3>
             </div>
           </CardContent>
         </Card>

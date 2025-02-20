@@ -13,7 +13,9 @@ export function flattenObjectIterative(obj: MyRecord): MyRecord {
   const stack = [{ obj, parentKey: "" }];
 
   while (stack.length > 0) {
-    const { obj: currentObj, parentKey } = stack.pop();
+    const item = stack.pop();
+    if (!item) continue;
+    const { obj: currentObj, parentKey } = item;
 
     for (const key in currentObj) {
       if (currentObj.hasOwnProperty(key)) {

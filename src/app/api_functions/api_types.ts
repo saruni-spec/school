@@ -449,3 +449,117 @@ export type AssignmentDetailsType = Prisma.assignmentGetPayload<{
     };
   };
 }>;
+// const records = await prisma.teacher.findFirst({
+//   where: {
+//     staff: { users_id: parseInt(id) },
+//   },
+//   select: {
+//     id: true,
+//     staff: { select: { school_code: true, id: true } },
+//     class_progression: {
+//       where: { is_current: true },
+//       select: {
+//         id: true,
+//         name: true,
+//         stream: { select: { name: true } },
+//       },
+//     },
+//     subject_allocation: {
+//       select: {
+//         id: true,
+//         subject_grade: { select: { name: true, id: true } },
+//       },
+//     },
+//   },
+// });
+
+export type TeacherDetailsType = Prisma.teacherGetPayload<{
+  select: {
+    id: true;
+    staff: { select: { school_code: true; id: true } };
+    class_progression: {
+      where: { is_current: true };
+      select: {
+        id: true;
+        name: true;
+        stream: { select: { name: true } };
+      };
+    };
+    subject_allocation: {
+      select: {
+        id: true;
+        subject_grade: { select: { name: true; id: true } };
+      };
+    };
+  };
+}>;
+
+// const records = await prisma.student_class.findMany({
+//   where: { class_progression_id: Number(class_progression_id) },
+//   select: {
+//     id: true,
+//     student: {
+//       select: {
+//         student_code: true,
+//         users: { select: { name: true, id: true } },
+//       },
+//     },
+//   },
+// });
+
+export type StudentDetailsType = Prisma.student_classGetPayload<{
+  select: {
+    id: true;
+    student: {
+      select: {
+        student_code: true;
+        users: { select: { name: true; id: true } };
+      };
+    };
+  };
+}>;
+
+// const user = await prisma.users.findUnique({
+//   where: { id_code: credentials.id_code },
+//   select: {
+//     id: true,
+//     id_code: true,
+//     name: true,
+//     email: true,
+//     password: true,
+//     school: { select: { name: true, id: true } },
+//     role: {
+//       select: {
+//         category: true,
+//         type: true,
+//         permissions: true,
+//       },
+//     },
+//   },
+// });
+
+// if (!user) {
+//   throw new Error("No user found with this email");
+// }
+
+// // Verify password
+// const isPasswordValid = await compare(
+//   credentials.password,
+//   user.password
+// );
+
+// if (!isPasswordValid) {
+//   throw new Error("Invalid password");
+// }
+
+// // Return user info
+// return {
+//   id: user.id,
+//   id_code: user.id_code,
+//   school: user.school,
+//   name: user.name,
+//   email: user.email,
+//   role: user.role?.type,
+//   role_type: user.role?.category,
+//   permissions: user.role?.permissions ?? [],
+// };

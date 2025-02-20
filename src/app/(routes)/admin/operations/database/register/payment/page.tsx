@@ -1,6 +1,6 @@
 "use client";
 import { Form } from "@/app/components/form";
-import React from "react";
+import React, { Suspense } from "react";
 import { useCallback, useState } from "react";
 import { MyInput } from "@/app/components/input";
 import { DatePicker } from "@/app/components/calendar";
@@ -13,6 +13,7 @@ import { payment_method } from "@prisma/client";
 import { register } from "@/app/api_functions/functions";
 import { useValidation } from "@/app/hooks/validation_hooks";
 import { flattenObjectIterative, validInputs } from "@/lib/functions";
+import { LoadingSpinner } from "@/app/components/loading";
 //
 // Add a new payment for a user
 const Payment = () => {
@@ -152,53 +153,55 @@ const Payment = () => {
   );
 
   return (
-    <Form title="Payment" onSubmit={handleSubmit} submitButtonText="Submit">
-      <SearchDb onSelect={hanlePayedBy} />
-      <Select
-        options={fees as MyRecord[]}
-        label="Fee ID"
-        placeholder="Select fee to pay"
-        id_field={"fee_payee_id"}
-        show_field={"fee_for"}
-        value={fee_id.value}
-        onChange={handleFeeSelection}
-        error={fee_id.error}
-      />
-      <MyInput
-        label="Amount"
-        placeholder="Enter Amount"
-        required
-        value={amount.value}
-        onChange={amount.handle_change}
-        error={amount.error}
-      />
-      <DatePicker
-        label="Payment Date"
-        placeholder="Enter Payment Date"
-        required
-        type="date"
-        value={payment_date.value}
-        onChange={payment_date.handle_change}
-        error={payment_date.error}
-      />
-      <SelectList
-        label="Payment Method"
-        placeholder="Enter Payment Method"
-        options={payment_methods}
-        value={pay_method.value}
-        onChange={pay_method.handle_change}
-        error={pay_method.error}
-      />
+    <Suspense fallback={<LoadingSpinner />}>
+      <Form title="Payment" onSubmit={handleSubmit} submitButtonText="Submit">
+        <SearchDb onSelect={hanlePayedBy} />
+        <Select
+          options={fees as MyRecord[]}
+          label="Fee ID"
+          placeholder="Select fee to pay"
+          id_field={"fee_payee_id"}
+          show_field={"fee_for"}
+          value={fee_id.value}
+          onChange={handleFeeSelection}
+          error={fee_id.error}
+        />
+        <MyInput
+          label="Amount"
+          placeholder="Enter Amount"
+          required
+          value={amount.value}
+          onChange={amount.handle_change}
+          error={amount.error}
+        />
+        <DatePicker
+          label="Payment Date"
+          placeholder="Enter Payment Date"
+          required
+          type="date"
+          value={payment_date.value}
+          onChange={payment_date.handle_change}
+          error={payment_date.error}
+        />
+        <SelectList
+          label="Payment Method"
+          placeholder="Enter Payment Method"
+          options={payment_methods}
+          value={pay_method.value}
+          onChange={pay_method.handle_change}
+          error={pay_method.error}
+        />
 
-      <MyInput
-        label="Reference Number"
-        placeholder="Enter Reference Number"
-        required
-        value={reference_number.value}
-        onChange={reference_number.handle_change}
-        error={reference_number.error}
-      />
-    </Form>
+        <MyInput
+          label="Reference Number"
+          placeholder="Enter Reference Number"
+          required
+          value={reference_number.value}
+          onChange={reference_number.handle_change}
+          error={reference_number.error}
+        />
+      </Form>
+    </Suspense>
   );
 };
 

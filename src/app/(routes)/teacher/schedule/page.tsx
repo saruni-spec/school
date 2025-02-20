@@ -137,7 +137,7 @@ const Schedule = () => {
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="text-gray-600">
-                    {nextSlot.subject_allocation?.subject_grade.name}
+                    {nextSlot.subject_allocation?.subject_grade?.name}
                   </span>
 
                   {nextSlot.slot.room_number && (
@@ -180,7 +180,10 @@ const Schedule = () => {
                                 </div>
 
                                 <div className="text-sm text-gray-600">
-                                  {item?.subject_allocation?.subject_grade.name}
+                                  {
+                                    item?.subject_allocation?.subject_grade
+                                      ?.name
+                                  }
                                 </div>
 
                                 {item?.slot?.room_number && (

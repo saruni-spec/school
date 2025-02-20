@@ -2,17 +2,18 @@
 import { create } from "zustand";
 import { MyRecord, Principal, Student } from "@/app/types/types";
 import { privilege_category, role_type } from "@prisma/client";
+import { TeacherDetailsType } from "../api_functions/api_types";
 
 type User = {
   id: number;
-  id_code: string;
-  role: role_type;
-  school: MyRecord;
-  role_type: privilege_category;
-  permissions: MyRecord[];
+  id_code: string | undefined;
+  role: role_type | undefined;
+  school: MyRecord | undefined;
+  role_type: privilege_category | undefined | undefined;
+  permissions: MyRecord[] | undefined;
 } & {
-  name?: string | null;
-  email?: string | null;
+  name?: string | undefined | null;
+  email?: string | null | undefined;
   image?: string | null;
 };
 
@@ -26,14 +27,9 @@ interface UserState {
   setSchool: (school: MyRecord) => void;
 }
 
-type TeacherDetails = MyRecord & {
-  subject_allocation: MyRecord[];
-  staff: MyRecord;
-};
-
 interface TeacherDetailsState {
-  teacherDetails: TeacherDetails | undefined;
-  setTeacherDetails: (teacherDetails: TeacherDetails) => void;
+  teacherDetails: TeacherDetailsType | undefined;
+  setTeacherDetails: (teacherDetails: TeacherDetailsType) => void;
 }
 
 interface StudentDetailsState {
@@ -57,7 +53,7 @@ export const useUser = create<UserState>((set) => ({
     set(() => ({
       user,
       school: user.school,
-      school_id: user.school.id,
+      school_id: user.school?.id,
       roles: user.role_type,
       permissions: user.permissions,
     })),
@@ -82,7 +78,7 @@ export const useLoadingState = create<LoadingState>((set) => ({
 export const useTeacherDetails = create<TeacherDetailsState>((set) => ({
   teacherDetails: undefined,
 
-  setTeacherDetails: (teacherDetails: TeacherDetails) =>
+  setTeacherDetails: (teacherDetails: TeacherDetailsType) =>
     set(() => ({
       teacherDetails,
     })),
