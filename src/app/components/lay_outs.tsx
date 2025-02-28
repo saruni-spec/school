@@ -5,6 +5,7 @@ import SideMenu from "./side_menu";
 import SchoolSelection from "./school_selection";
 import {
   usePrincipalDetails,
+  useSecretaryDetails,
   useStudentDetails,
   useTeacherDetails,
   useUser,
@@ -13,9 +14,10 @@ import InspirationLoader from "@/app/components/loading";
 import { User, ClipboardList, NotebookTabs, CheckSquare } from "lucide-react";
 import { useSession } from "next-auth/react";
 import {
-  getPrincipalDetails as getSecretaryDetails,
+  getPrincipalDetails,
   getStudentDetails,
   getTeacherDetails,
+  getSecretaryDetails,
 } from "../api_functions/functions";
 
 const background_color = "bg-gray-50 ";
@@ -305,7 +307,7 @@ export const PrinciPalLayout = ({
     if (!principalDetails && session?.user?.id) {
       const fetchPrincipalDetails = async () => {
         try {
-          const principal = await getSecretaryDetails(session.user.id);
+          const principal = await getPrincipalDetails(session.user.id);
           if (!principal) {
             router.push("/login");
             return;
@@ -368,6 +370,112 @@ export const PrinciPalLayout = ({
       label: "Operations",
       action: () => {
         router.push(createUrl(`/${basePath}/operations`));
+      },
+    },
+    {
+      label: user ? (user.name as string) : "",
+      icon: <User />,
+      action: () => {
+        router.push(createUrl(`/${basePath}/profile`));
+      },
+    },
+  ];
+
+  return (
+    <div className={`flex ${background_color}`}>
+      <SideMenu links={links} />
+      <Suspense fallback={<InspirationLoader />}>{children}</Suspense>
+    </div>
+  );
+};
+
+export const SecretaryLayout = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const { secretaryDetails, setSecretaryDetails } = useSecretaryDetails();
+  const { setUser, setSchool, user } = useUser();
+  const pathname = usePathname();
+  const router = useRouter();
+  const { status, data: session } = useSession({
+    required: true,
+    onUnauthenticated() {
+      router.push("/login");
+    },
+  });
+
+  //
+  //cehck if the teacher details are present,if not,fetch them
+  useEffect(() => {
+    if (status === "loading") return;
+
+    if (!secretaryDetails && session?.user?.id) {
+      const fetchSecretaryDetails = async () => {
+        try {
+          const secretary = await getSecretaryDetails(session.user.id);
+          if (!secretary) {
+            router.push("/login");
+            return;
+          }
+          setUser(session.user);
+          setSchool(session.user.school);
+          setSecretaryDetails(secretary);
+        } catch (error) {
+          console.error("Failed to fetch teacher details:", error);
+        }
+      };
+
+      fetchSecretaryDetails();
+    }
+  }, [
+    session,
+    status,
+    setSchool,
+    setUser,
+    secretaryDetails,
+    setSecretaryDetails,
+    router,
+  ]);
+
+  // Get the base path (e.g., /teacher)
+  const basePath = pathname.split("/")[1];
+
+  // Create a function to preserve and encode query parameters
+  const createUrl = (path: string) => {
+    if (!user) return "";
+    const params = new URLSearchParams();
+
+    // Preserve all existing query parameters
+
+    params.append("id", user.id.toString());
+
+    return `${path}?${params.toString()}`;
+  };
+
+  const links: MenuLink[] = [
+    {
+      label: "Dashboard",
+      action: () => {
+        router.push(createUrl(`/${basePath}`));
+      },
+    },
+    {
+      label: "Reports",
+      action: () => {
+        router.push(createUrl(`/${basePath}/reports`));
+      },
+    },
+    {
+      label: "Schedule",
+      action: () => {
+        router.push(createUrl(`/${basePath}/schedule`));
+      },
+    },
+    {
+      label: "Operations",
+      action: () => {
+        router.push(createUrl(`/${basePath}/register`));
       },
     },
     {

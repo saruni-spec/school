@@ -67,6 +67,11 @@ export type Principal = {
   } | null;
 } | null;
 
+export type Secretary = {
+  id: number;
+  school_code: string | null;
+} | null;
+
 export type DateField = {
   value: string;
   error: string | null;

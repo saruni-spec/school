@@ -163,3 +163,17 @@ export const getPrincipalDetails = async (users_id: number) => {
     return null;
   }
 };
+
+export const getSecretaryDetails = async (users_id: number) => {
+  try {
+    const response = await fetch(`/api/secretary/${users_id}`);
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching secretary details:", error);
+    console.log("Error fetching secretary details. Please try again.");
+  }
+};
